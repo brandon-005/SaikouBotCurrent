@@ -1,0 +1,144 @@
+/* eslint-disable no-inner-declarations */
+import { Client, User, Message, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, Interaction } from 'discord.js';
+
+import { PROMPT_TIMEOUT, EMBED_COLOURS, MESSAGE_TIMEOUT } from '../../utils/constants';
+import suggestData from '../../models/suggestions';
+
+const openPrompt = new Set();
+
+export = async (_bot: Client, reaction: any, user: User) => {
+	/* FEATURED SUGGESTIONS SYSTEM */
+	const { message } = reaction;
+
+	function disabledButtons(button: Message) {
+		button.edit({
+			components: [
+				new ActionRowBuilder<ButtonBuilder>().addComponents([
+					// prettier-ignore
+					new ButtonBuilder().setLabel('Delete').setStyle(ButtonStyle.Success).setCustomId('Yes').setDisabled(true),
+					new ButtonBuilder().setLabel('Cancel').setStyle(ButtonStyle.Danger).setCustomId('No').setDisabled(true),
+				]),
+			],
+		});
+	}
+
+	if (reaction.message.channel.id === process.env.SUGGEST_CHANNEL) {
+		/* If not cached by bot (old suggestions) try to fetch */
+		if (reaction.message.partial) {
+			try {
+				await reaction.message.fetch();
+			} catch (err) {
+				return;
+			}
+		}
+
+		const suggestion = await suggestData.findOne({ messageID: message.id });
+
+		if (!suggestion) return;
+
+		/* Deleting Suggestion if author downvotes */
+		if (reaction.emoji.name === '⬇️' && user.id! === suggestion!.userID) {
+			try {
+				const dmChannel = await user.createDM();
+
+				if (openPrompt.has(user.id)) {
+					return await user
+						.send({
+							embeds: [
+								new EmbedBuilder() // prettier-ignore
+									.setTitle('🗃️ Prompt already open!')
+									.setDescription('You already have a deletion prompt open, please finish it and try again!')
+									.setColor(EMBED_COLOURS.red)
+									.setFooter({ text: 'Already open prompt' }),
+							],
+						})
+						.then((msg: Message) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
+				}
+
+				openPrompt.add(user.id);
+
+				const buttonMsg = await user.send({
+					embeds: [
+						new EmbedBuilder() // prettier-ignore
+							.setTitle('Are you sure?')
+							.setDescription('Please confirm that you want to delete your suggestion.')
+							.setColor(EMBED_COLOURS.red),
+					],
+					components: [
+						new ActionRowBuilder<ButtonBuilder>().addComponents([
+							// prettier-ignore
+							new ButtonBuilder().setLabel('Delete').setStyle(ButtonStyle.Success).setCustomId('Yes'),
+							new ButtonBuilder().setLabel('Cancel').setStyle(ButtonStyle.Danger).setCustomId('No'),
+						]),
+					],
+				});
+
+				const collector = dmChannel.createMessageComponentCollector({ filter: (interaction: Interaction) => interaction.user.id === user.id, max: 1, time: PROMPT_TIMEOUT });
+
+				collector.on('end', async (buttonInteraction) => {
+					if (!buttonInteraction.first()) {
+						openPrompt.delete(user.id);
+						return disabledButtons(buttonMsg);
+					}
+
+					switch (buttonInteraction.first()!.customId) {
+						case 'Yes':
+							await suggestData.deleteOne({ messageID: message.id });
+							await message.delete();
+
+							buttonInteraction.first()!.reply({
+								embeds: [
+									new EmbedBuilder() // prettier-ignore
+										.setDescription('**✅ Successfully deleted suggestion!**')
+										.setColor(EMBED_COLOURS.green),
+								],
+							});
+
+							disabledButtons(buttonMsg);
+							openPrompt.delete(user.id);
+							break;
+
+						case 'No':
+							buttonInteraction.first()!.reply({
+								embeds: [
+									new EmbedBuilder() // prettier-ignore
+										.setDescription('**✅ Successfully cancelled deletion.**')
+										.setColor(EMBED_COLOURS.green),
+								],
+							});
+
+							disabledButtons(buttonMsg);
+							openPrompt.delete(user.id);
+							break;
+
+						default:
+							break;
+					}
+				});
+			} catch (err) {
+				await suggestData.deleteOne({ messageID: message.id });
+				openPrompt.delete(user.id);
+				return message.delete();
+			}
+		}
+
+		// /* If suggestion reaches 10 downvotes, delete */
+		// if (message.reactions.cache.get('⬇️').count - 1 >= 2) {
+		// 	await suggestData.deleteOne({ messageID: message.id });
+		// 	await message.delete();
+		// }
+
+		/* Adding Suggestion to featured if it wasn't denied */
+		if (!suggestion.featured && message.reactions.cache.get('⬆️').count - 1 >= 15) {
+			if (message.embeds[0]?.fields[0]?.value.includes('❌')) return;
+
+			suggestion.featured = true;
+			await suggestion.save();
+
+			message.guild?.channels.cache
+				.get(`${BigInt(String(process.env.FEATURED_CHANNEL))}`)!
+				.send({ embeds: [message.embeds[0]] })
+				.then((embed: Message) => embed.react('⬆️').then(() => embed.react('↔').then(() => embed.react('⬇️'))));
+		}
+	}
+};
