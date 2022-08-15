@@ -102,7 +102,7 @@ const command: Command = {
 			platformFinal = String(Object.keys(platformTypes).find((key: any) => platformTypes[key] === inputtedReaction));
 		} catch (err: any) {
 			openPrompt.delete(message.author.id);
-			if (err.httpStatus === 403) {
+			if (err.status === 403) {
 				return message.channel
 					.send({
 						embeds: [

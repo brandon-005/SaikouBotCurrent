@@ -94,7 +94,7 @@ const command: Command = {
 			categoryFinal = String(Object.keys(categoryTypes).find((key: any) => categoryTypes[key] === inputtedReaction));
 		} catch (err: any) {
 			openPrompt.delete(message.author.id);
-			if (err.httpStatus === 403) {
+			if (err.status === 403) {
 				return message.channel
 					.send({
 						embeds: [

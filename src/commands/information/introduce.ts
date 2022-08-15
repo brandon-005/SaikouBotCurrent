@@ -11,6 +11,8 @@ const command: Command = {
 		limitedChannel: 'introductions',
 	},
 	run: async ({ message }) => {
+		let welcome: any;
+
 		/* IF USER HAS PROMPT OPEN */
 		if (openPrompt.has(message.author.id))
 			return message.channel
@@ -25,6 +27,38 @@ const command: Command = {
 				})
 				.then((msg: Message) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
 
+		try {
+			welcome = await message.author.send({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setTitle('👋 Introduce Yourself!')
+						.setDescription('To begin introducing yourself to others, navigate to the button below.')
+						.setThumbnail('https://i.ibb.co/B6CQp1H/3-128.png')
+						.setColor(EMBED_COLOURS.blurple),
+				],
+				components: [
+					new ActionRowBuilder<ButtonBuilder>().addComponents([
+						// prettier-ignore
+						new ButtonBuilder().setLabel('Begin Introduction 📝').setStyle(ButtonStyle.Primary).setCustomId('intro-menu'),
+					]),
+				],
+			});
+		} catch (err: any) {
+			if (err.status === 403) {
+				return message.channel
+					.send({
+						embeds: [
+							new EmbedBuilder() // prettier-ignore
+								.setTitle('❌ Unable to DM!')
+								.setDescription("Please ensure your DM's are enabled in order for the bot to message you the prompt.")
+								.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+								.setColor(EMBED_COLOURS.red),
+						],
+					})
+					.then((msg: Message) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
+			}
+		}
+
 		openPrompt.add(message.author.id);
 
 		message.channel
@@ -36,22 +70,6 @@ const command: Command = {
 				],
 			})
 			.then((msg: Message) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
-
-		const welcome = await message.author.send({
-			embeds: [
-				new EmbedBuilder() // prettier-ignore
-					.setTitle('👋 Introduce Yourself!')
-					.setDescription('To begin introducing yourself to others, navigate to the button below.')
-					.setThumbnail('https://i.ibb.co/B6CQp1H/3-128.png')
-					.setColor(EMBED_COLOURS.blurple),
-			],
-			components: [
-				new ActionRowBuilder<ButtonBuilder>().addComponents([
-					// prettier-ignore
-					new ButtonBuilder().setLabel('Begin Introduction 📝').setStyle(ButtonStyle.Primary).setCustomId('intro-menu'),
-				]),
-			],
-		});
 
 		const dmChannel = await message.author.createDM();
 		const collector = dmChannel.createMessageComponentCollector({ filter: (msgFilter) => msgFilter.user.id === message.author.id, componentType: ComponentType.Button, time: 600000 });
