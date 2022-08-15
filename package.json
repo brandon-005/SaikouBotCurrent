@@ -1,6 +1,6 @@
 {
 	"name": "saikoubot",
-	"version": "4.0.0",
+	"version": "4.0.1",
 	"description": "The bot built to deliver a better user experience for the Saikou Discord.",
 	"main": "dist/bot.js",
 	"scripts": {

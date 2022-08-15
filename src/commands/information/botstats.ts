@@ -26,7 +26,7 @@ const command: Command = {
 
 		const status = new EmbedBuilder()
 			.setTitle('Saikou Bot Status')
-			.setDescription(`**${bot.user!.username}** has been running for \`${duration(Number(bot.uptime))}\`\nDown below lists some statistics.\n\n**Bot Latency:** \`${botLatency}ms\`\n**Version:** \`v4.0.0\`\n**Memory Usage:** \`${Math.round(memoryPercentage)}%\` `)
+			.setDescription(`**${bot.user!.username}** has been running for \`${duration(Number(bot.uptime))}\`\nDown below lists some statistics.\n\n**Bot Latency:** \`${botLatency}ms\`\n**Version:** \`v4.0.1\`\n**Memory Usage:** \`${Math.round(memoryPercentage)}%\` `)
 			.setThumbnail(bot.user!.displayAvatarURL());
 
 		// Memory Usage
