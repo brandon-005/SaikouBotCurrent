@@ -13,8 +13,9 @@ const webhookClient: WebhookClient = new WebhookClient({ id: `${BigInt(String(pr
 export = async (bot: Client, interaction: Interaction) => {
 	/* HANDLING SLASH COMMANDS */
 	if (interaction.isChatInputCommand()) {
-		if (!interaction.inGuild()) return interaction.followUp({ content: 'Slash commands can only be ran in the server.' });
 		await interaction.deferReply().catch(() => {});
+
+		if (!interaction.inGuild()) return (interaction as CommandInteraction).followUp({ content: 'Slash commands can only be ran in the server.' });
 
 		const commandFile = bot.slashCommands.get(interaction.commandName);
 		const args: any = [];
@@ -41,7 +42,6 @@ export = async (bot: Client, interaction: Interaction) => {
 				})
 				.then(() => setTimeout(() => interaction.deleteReply(), MESSAGE_TIMEOUT));
 		}
-
 
 		/* --- COOLDOWN CONFIGURATION --- */
 		let { COOLDOWN_TIME } = commandFile.config;
