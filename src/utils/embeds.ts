@@ -42,6 +42,16 @@ export function cancel(message: Message, dm: Boolean) {
 	return message.channel.send({ embeds: [embed] });
 }
 
+export function noContent(message: Message) {
+	const embed = new EmbedBuilder() // prettier-ignore
+		.setTitle('❌ No Content!')
+		.setDescription("You didn't input any message content for this prompt. Please ensure you're not submitting videos or images and re-run the prompt again.")
+		.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+		.setColor(EMBED_COLOURS.red);
+
+	return message.author.send({ embeds: [embed] });
+}
+
 export function timeout(message: Message, dm: Boolean) {
 	const embed = new EmbedBuilder() // prettier-ignore
 		.setTitle('❌ Cancelled!')

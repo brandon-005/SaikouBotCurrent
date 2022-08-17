@@ -1,7 +1,7 @@
 import { Command, Message, AttachmentBuilder, Attachment, MessageCollector, EmbedBuilder } from 'discord.js';
 import urlRegex from 'url-regex';
 
-import { interactiveSetup, cancel, timeout } from '../../utils/embeds';
+import { interactiveSetup, cancel, noContent, timeout } from '../../utils/embeds';
 import { LETTER_EMOJIS, EMBED_COLOURS, PROMPT_TIMEOUT, MESSAGE_TIMEOUT, VIDEO_FILE_TYPES } from '../../utils/constants';
 
 const openPrompt = new Set();
@@ -34,6 +34,14 @@ const command: Command = {
 			if (userMessage?.content.toLowerCase() === 'cancel') {
 				openPrompt.delete(message.author.id);
 				return cancel(message, true);
+			}
+			return false;
+		}
+
+		function sendNoContent(userMessage: Message) {
+			if (!userMessage.content) {
+				openPrompt.delete(message.author.id);
+				return noContent(message);
 			}
 			return false;
 		}
@@ -117,7 +125,7 @@ const command: Command = {
 			const collectingMessage = await dmChannel.awaitMessages({ filter: (sentMsg: Message) => sentMsg.author.id === message.author.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
 			const inputtedMessage = collectingMessage.first();
 
-			if (sendCancel(false, null, inputtedMessage) !== false) return;
+			if (sendCancel(false, null, inputtedMessage) !== false || sendNoContent(inputtedMessage) !== false) return;
 
 			bugTitle = inputtedMessage!.content;
 		} catch (err) {
@@ -132,7 +140,7 @@ const command: Command = {
 			const collectingMessage = await dmChannel.awaitMessages({ filter: (sentMsg: Message) => sentMsg.author.id === message.author.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
 			const inputtedMessage = collectingMessage.first();
 
-			if (sendCancel(false, null, inputtedMessage) !== false) return;
+			if (sendCancel(false, null, inputtedMessage) !== false || sendNoContent(inputtedMessage) !== false) return;
 
 			reportDescription = inputtedMessage!.content;
 		} catch (err) {
