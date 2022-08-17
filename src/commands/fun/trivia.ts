@@ -9,7 +9,7 @@ const command: Command = {
 		commandName: 'trivia',
 		commandAliases: ['quiz', 'gamequestion', 't'],
 		commandDescription: "Answer questions based on Saikou's games, how good is your knowledge?",
-		COOLDOWN_TIME: 60,
+		COOLDOWN_TIME: 30,
 		serverOnly: false,
 		slashCommand: true,
 	},
