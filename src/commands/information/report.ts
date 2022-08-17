@@ -2,7 +2,7 @@ import { Command, Message, AttachmentBuilder, MessageCollector, EmbedBuilder } f
 import axios from 'axios';
 import urlRegex from 'url-regex';
 
-import { interactiveSetup, cancel, timeout, noUser } from '../../utils/embeds';
+import { interactiveSetup, cancel, noContent, timeout, noUser } from '../../utils/embeds';
 import { LETTER_EMOJIS, EMBED_COLOURS, PROMPT_TIMEOUT, MESSAGE_TIMEOUT, VIDEO_FILE_TYPES } from '../../utils/constants';
 import reportData from '../../models/reports';
 
@@ -43,6 +43,14 @@ const command: Command = {
 			if (userMessage?.content.toLowerCase() === 'cancel') {
 				openPrompt.delete(message.author.id);
 				return cancel(message, true);
+			}
+			return false;
+		}
+
+		function sendNoContent(userMessage: Message) {
+			if (!userMessage.content) {
+				openPrompt.delete(message.author.id);
+				return noContent(message);
 			}
 			return false;
 		}
@@ -102,7 +110,7 @@ const command: Command = {
 			platformFinal = String(Object.keys(platformTypes).find((key: any) => platformTypes[key] === inputtedReaction));
 		} catch (err: any) {
 			openPrompt.delete(message.author.id);
-			if (err.httpStatus === 403) {
+			if (err.status === 403) {
 				return message.channel
 					.send({
 						embeds: [
@@ -126,7 +134,7 @@ const command: Command = {
 			const collectingMessage = await dmChannel.awaitMessages({ filter: (sentMsg: Message) => sentMsg.author.id === message.author.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
 			const inputtedMessage = collectingMessage.first();
 
-			if (sendCancel(false, null, inputtedMessage) !== false) return;
+			if (sendCancel(false, null, inputtedMessage) !== false || sendNoContent(inputtedMessage) !== false) return;
 
 			finalName = inputtedMessage!.content;
 
@@ -165,7 +173,7 @@ const command: Command = {
 			const collectingMessage = await dmChannel.awaitMessages({ filter: (sentMsg: Message) => sentMsg.author.id === message.author.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
 			const inputtedMessage = collectingMessage.first();
 
-			if (sendCancel(false, null, inputtedMessage) !== false) return;
+			if (sendCancel(false, null, inputtedMessage) !== false || sendNoContent(inputtedMessage) !== false) return;
 
 			reportReason = inputtedMessage!.content;
 		} catch (err) {

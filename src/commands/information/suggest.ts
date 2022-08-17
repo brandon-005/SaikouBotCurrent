@@ -1,6 +1,6 @@
 import { Command, Message, EmbedBuilder } from 'discord.js';
 
-import { interactiveSetup, cancel, timeout, confirmationPrompt } from '../../utils/embeds';
+import { interactiveSetup, cancel, noContent, timeout, confirmationPrompt } from '../../utils/embeds';
 import { LETTER_EMOJIS, EMBED_COLOURS, PROMPT_TIMEOUT, MESSAGE_TIMEOUT } from '../../utils/constants';
 import suggestionData from '../../models/suggestions';
 
@@ -35,6 +35,14 @@ const command: Command = {
 			if (userMessage?.content.toLowerCase() === 'cancel') {
 				openPrompt.delete(message.author.id);
 				return cancel(message, true);
+			}
+			return false;
+		}
+
+		function sendNoContent(userMessage: Message) {
+			if (!userMessage.content) {
+				openPrompt.delete(message.author.id);
+				return noContent(message);
 			}
 			return false;
 		}
@@ -94,7 +102,7 @@ const command: Command = {
 			categoryFinal = String(Object.keys(categoryTypes).find((key: any) => categoryTypes[key] === inputtedReaction));
 		} catch (err: any) {
 			openPrompt.delete(message.author.id);
-			if (err.httpStatus === 403) {
+			if (err.status === 403) {
 				return message.channel
 					.send({
 						embeds: [
@@ -118,7 +126,7 @@ const command: Command = {
 			const collectingMessage = await dmChannel.awaitMessages({ filter: (sentMsg: Message) => sentMsg.author.id === message.author.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
 			const inputtedMessage = collectingMessage.first();
 
-			if (sendCancel(false, null, inputtedMessage) !== false) return;
+			if (sendCancel(false, null, inputtedMessage) !== false || sendNoContent(inputtedMessage) !== false) return;
 
 			suggestionMsg = inputtedMessage.content;
 		} catch (err) {
