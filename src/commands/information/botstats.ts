@@ -1,5 +1,9 @@
 import { ButtonInteraction, Command, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle, ComponentType } from 'discord.js';
+import { connection } from 'mongoose';
 import { EMBED_COLOURS, PROMPT_TIMEOUT } from '../../utils/constants';
+
+// eslint-disable-next-line import/no-commonjs
+const packageJson = require('../../../package.json');
 
 const activeInteraction = new Set();
 
@@ -11,105 +15,163 @@ const command: Command = {
 		slashCommand: true,
 	},
 	run: async ({ bot, message, interaction }) => {
-		const botLatency = bot.ws.ping;
-		const memoryUsage = process.memoryUsage();
-		const memoryPercentage = ((memoryUsage.heapTotal - memoryUsage.heapUsed) / memoryUsage.heapTotal) * 100;
-		let statusMsg = '';
+		// Loading Message
+		const loadingEmbed = new EmbedBuilder() // prettier-ignore
+			.setTitle('Loading...')
+			.setDescription('Calculating latency, hold tight!')
+			.setColor(EMBED_COLOURS.blurple);
+
+		const loadingMsg = message ? await message.channel.send({ embeds: [loadingEmbed] }) : await interaction.followUp({ embeds: [loadingEmbed] });
+
+		const memoryPercentage = Math.round(((process.memoryUsage().heapTotal - process.memoryUsage().heapUsed) / process.memoryUsage().heapTotal) * 100);
+		const botLatency = loadingMsg.createdTimestamp - (message ? message.createdTimestamp : interaction.createdTimestamp);
 		let memoryMsg = '';
+		let latencyMsg = '';
 
-		function duration(ms: number) {
-			const sec = Math.floor((ms / 1000) % 60).toString();
-			const min = Math.floor((ms / (1000 * 60)) % 60).toString();
-			const hrs = Math.floor((ms / (1000 * 60 * 60)) % 60).toString();
-			return `${hrs.padStart(2, '0')} hrs, ${min.padStart(2, '0')} mins, ${sec.padStart(2, '0')} secs `;
+		// Calculating Database State
+		function databaseState(readyState: number) {
+			let status = '';
+
+			switch (readyState) {
+				case 0:
+					status = `\`🔴 Offline\``;
+					break;
+
+				case 1:
+					status = `\`🟢 Operational\``;
+					break;
+
+				case 2:
+					status = `\`🟠 Connecting\``;
+					break;
+
+				case 3:
+					status = `\`🟣 Disconnecting\``;
+					break;
+			}
+
+			return status;
 		}
 
-		const status = new EmbedBuilder()
-			.setTitle('Saikou Bot Status')
-			.setDescription(`**${bot.user!.username}** has been running for \`${duration(Number(bot.uptime))}\`\nDown below lists some statistics.\n\n**Bot Latency:** \`${botLatency}ms\`\n**Version:** \`v4.0.1\`\n**Memory Usage:** \`${Math.round(memoryPercentage)}%\` `)
-			.setThumbnail(bot.user!.displayAvatarURL());
+		// Calculating Memory Usage Acknowledgement
+		switch (true) {
+			case memoryPercentage > 0 && memoryPercentage < 30:
+				memoryMsg = '✅ Normal memory usage.';
+				break;
 
-		// Memory Usage
-		if (memoryPercentage > 0 && memoryPercentage < 30) memoryMsg = '✅ Normal memory usage.';
-		else if (memoryPercentage > 29 && memoryPercentage < 50) memoryMsg = '⚠️ Higher than average memory usage.';
-		else if (memoryPercentage > 49) memoryMsg = '❗ Extremely high memory usage.';
-		else memoryMsg = '✅ Normal memory usage.';
+			case memoryPercentage > 29 && memoryPercentage < 50:
+				memoryMsg = '⚠️ Higher than average memory usage.';
+				break;
 
-		// Bot latency
-		if (botLatency > 399 && botLatency < 600) {
-			status.setColor(EMBED_COLOURS.yellow);
-			statusMsg = '⚠️ Higher than average bot latency.';
-		} else if (botLatency > 0 && botLatency < 200) {
-			status.setColor(EMBED_COLOURS.green);
-			statusMsg = '✅ Normal bot latency.';
-		} else if (botLatency > 599 && botLatency < 999999999) {
-			status.setColor(EMBED_COLOURS.red);
-			statusMsg = '❗ Extremely high bot latency.';
-		} else {
-			status.setColor(EMBED_COLOURS.green);
-			statusMsg = '✅ Normal bot latency.';
+			case memoryPercentage > 49:
+				memoryMsg = '❗ Extremely high memory usage.';
+				break;
+
+			default:
+				memoryMsg = '✅ Normal memory usage.';
+				break;
 		}
 
-		status.addFields([{ name: 'Acknowledgements', value: `${statusMsg}\n${memoryMsg}` }]);
+		// Calculating Latency Acknowledgement
+		switch (true) {
+			case botLatency > 0 && botLatency < 200:
+				latencyMsg = '✅ Normal bot latency.';
+				break;
+
+			case botLatency > 399 && botLatency < 600:
+				latencyMsg = '⚠️ Higher than average bot latency.';
+				break;
+
+			case botLatency > 599:
+				latencyMsg = '❗ Extremely high bot latency.';
+				break;
+
+			default:
+				latencyMsg = '✅ Normal bot latency.';
+				break;
+		}
+
+		const statusEmbed = new EmbedBuilder() // prettier-ignore
+			.setTitle('SaikouBot Status 🛠️')
+			.setDescription(`The **${bot.user.username}** service has been operational since <t:${parseInt(String(bot.readyTimestamp / 1000))}:R>.`)
+			.addFields(
+				{
+					name: '🧭 Bot Version',
+					value: `\`${packageJson.version}\``,
+					inline: true,
+				},
+				{
+					name: '🏓 Bot Latency',
+					value: `\`${botLatency}ms\``,
+					inline: true,
+				},
+				{
+					name: '📊 Memory Usage',
+					value: `\`${memoryPercentage}%\``,
+					inline: true,
+				},
+				{
+					name: '🕔 API Latency',
+					value: `\`${bot.ws.ping}ms\``,
+					inline: true,
+				},
+				{
+					name: '🔎 Discord.js Version',
+					value: `\`${packageJson.dependencies['discord.js']}\``,
+					inline: true,
+				},
+				{
+					name: '🗄️ Bot Database',
+					value: `${databaseState(connection.readyState)}`,
+					inline: true,
+				},
+				{
+					name: 'Acknowledgements',
+					value: `${latencyMsg}\n${memoryMsg}`,
+				}
+			)
+			.setColor(EMBED_COLOURS.blurple);
 
 		/* Restart Button */
 		if (message ? message.member!.id === '229142187382669312' : interaction.user.id === '229142187382669312') {
 			/* IF USER HAS PROMPT OPEN */
 			if (activeInteraction.has(message ? message.author.id : interaction.user.id)) {
-				status.setFooter({ text: 'Exit previous uptime prompt to receive the option to restart.' });
-				return message ? message.channel.send({ embeds: [status] }) : interaction.followUp({ embeds: [status] });
+				statusEmbed.setFooter({ text: 'Exit previous uptime prompt to receive the option to restart.' });
+				return loadingMsg.edit({ embeds: [statusEmbed] });
 			}
 
 			activeInteraction.add(message ? message.author.id : interaction.user.id);
 
-			const uptimeEmbed: any = message
-				? await message.channel.send({
-						embeds: [status],
-						components: [
-							new ActionRowBuilder<ButtonBuilder>() // prettier-ignore
-								.addComponents([
-									new ButtonBuilder() // prettier-ignore
-										.setLabel('Restart 🔁')
-										.setStyle(ButtonStyle.Danger)
-										.setCustomId('restart'),
+			loadingMsg.edit({
+				embeds: [statusEmbed],
+				components: [
+					new ActionRowBuilder<ButtonBuilder>() // prettier-ignore
+						.addComponents([
+							new ButtonBuilder() // prettier-ignore
+								.setLabel('Restart 🔁')
+								.setStyle(ButtonStyle.Danger)
+								.setCustomId('restart'),
 
-									new ButtonBuilder() // prettier-ignore
-										.setLabel('Exit 🚪')
-										.setStyle(ButtonStyle.Primary)
-										.setCustomId('exit-prompt'),
-								]),
-						],
-				  })
-				: await interaction.followUp({
-						embeds: [status],
-						components: [
-							new ActionRowBuilder() // prettier-ignore
-								.addComponents([
-									new ButtonBuilder() // prettier-ignore
-										.setLabel('Restart')
-										.setStyle(ButtonStyle.Danger)
-										.setCustomId('restart'),
-
-									new ButtonBuilder() // prettier-ignore
-										.setLabel('Exit')
-										.setStyle(ButtonStyle.Primary)
-										.setCustomId('exit-prompt'),
-								]),
-						],
-				  });
+							new ButtonBuilder() // prettier-ignore
+								.setLabel('Exit 🚪')
+								.setStyle(ButtonStyle.Primary)
+								.setCustomId('exit-prompt'),
+						]),
+				],
+			});
 
 			const collector = message ? message.channel.createMessageComponentCollector({ filter: (msgFilter) => msgFilter.user.id === message.author.id, componentType: ComponentType.Button, time: PROMPT_TIMEOUT }) : interaction.channel!.createMessageComponentCollector({ filter: (menu: any) => menu.user.id === interaction.user.id, componentType: ComponentType.Button, time: PROMPT_TIMEOUT });
 
 			collector.on('collect', async (button: ButtonInteraction) => {
 				switch (button.customId) {
 					case 'exit-prompt':
-						uptimeEmbed.edit({ components: [] });
+						loadingMsg.edit({ components: [] });
 						collector.stop();
 						activeInteraction.delete(message ? message.author.id : interaction.user.id);
 						break;
 
 					case 'restart':
-						await uptimeEmbed.edit({
+						await loadingMsg.edit({
 							embeds: [
 								new EmbedBuilder() // prettier-ignore
 									.setTitle('Restarting Application!')
@@ -127,7 +189,7 @@ const command: Command = {
 				}
 			});
 		} else {
-			return message ? message.channel.send({ embeds: [status] }) : interaction.followUp({ embeds: [status] });
+			return loadingMsg.edit({ embeds: [statusEmbed] });
 		}
 	},
 };
