@@ -188,6 +188,10 @@ const command: Command = {
 						return process.exit();
 				}
 			});
+
+			collector.on('end', () => {
+				loadingMsg.edit({ components: [] });
+			});
 		} else {
 			return loadingMsg.edit({ embeds: [statusEmbed] });
 		}
