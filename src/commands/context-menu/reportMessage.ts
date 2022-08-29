@@ -113,7 +113,7 @@ const menu: ContextMenu = {
 		});
 
 		collector.on('end', () => {
-			reportedMsgsEmbed.edit({ components: [] });
+			reportedMsgsEmbed.edit({ components: [] }).catch(() => {});
 		});
 
 		cooldown.add(interaction.user.id);
