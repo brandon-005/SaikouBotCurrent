@@ -13,7 +13,6 @@ const command: Command = {
 		userPermissions: 'ManageMessages',
 		limitedChannel: '🤖staff-cmds',
 		COOLDOWN_TIME: 10,
-		slashCommand: true,
 		slashOptions: [
 			{
 				name: 'game',
@@ -56,110 +55,42 @@ const command: Command = {
 		let robloxID: any;
 		let invalidUser = false;
 
-		if (!message) {
-			/* CHECKING IF ROBLOX NAME IS VALID */
-			await axios({
-				method: 'post',
-				url: 'https://users.roblox.com/v1/usernames/users',
-				data: {
-					usernames: [args[1]],
-				},
+		/* CHECKING IF ROBLOX NAME IS VALID */
+		await axios({
+			method: 'post',
+			url: 'https://users.roblox.com/v1/usernames/users',
+			data: {
+				usernames: [args[1]],
+			},
+		})
+			.then((response: any) => {
+				robloxName = response.data.data.map((value: any) => value.name);
+				robloxID = response.data.data.map((value: any) => value.id);
+				if (response.data.data.length === 0) invalidUser = true;
 			})
-				.then((response: any) => {
-					robloxName = response.data.data.map((value: any) => value.name);
-					robloxID = response.data.data.map((value: any) => value.id);
-					if (response.data.data.length === 0) invalidUser = true;
-				})
-				.catch((error) => {
-					console.error(error);
-				});
+			.catch((error) => {
+				console.error(error);
+			});
 
-			if (invalidUser !== false) {
-				return noUser(message, false, interaction as CommandInteraction);
-			}
+		if (invalidUser !== false) {
+			return noUser(message, false, interaction as CommandInteraction);
+		}
 
-			/* ADDING BAN */
-			if (args[3]) {
-				if (!ms(args[3])) {
-					return interaction.followUp({ content: 'Invalid time.' });
-				}
-
-				return axios({
-					url: 'https://bans.saikouapi.xyz/v1/timebans/create-new',
-					method: 'POST',
-					data: {
-						RobloxUsername: String(robloxName),
-						RobloxID: Number(robloxID),
-						Moderator: String(interaction.guild?.members.cache.get(interaction.user.id)?.displayName),
-						Reason: String(args[2]),
-						Duration: ms(args[3]),
-						Place: args[0],
-					},
-					headers: {
-						'X-API-KEY': String(process.env.SAIKOU_BANS_TOKEN),
-					},
-				})
-					.then(async () => {
-						/* MOD LOG EMBED */
-						const modLog = new EmbedBuilder() //
-							.setAuthor({ name: `${args[0]} | ${ms(ms(String(args[3])), { long: true })} ban`, iconURL: `https://www.roblox.com/bust-thumbnail/image?userId=${robloxID}&width=48&height=48&format=png` })
-							.addFields([
-								// prettier-ignore
-								{ name: 'User:', value: `[${robloxName}](https://www.roblox.com/users/${robloxID}/profile)`, inline: true},
-								{ name: 'Moderator:', value: `${interaction.guild?.members.cache.get(interaction.user.id)?.displayName}`, inline: true },
-								{ name: 'Reason:', value: `${args[2]}` },
-							])
-							.setColor(EMBED_COLOURS.green)
-							.setFooter({ text: `${args[0]} • ${ms(ms(String(args[3])))} ban` })
-							.setTimestamp();
-
-						await axios.get(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${robloxID}&size=720x720&format=png`).then((image: any) => {
-							modLog.setThumbnail(String(image.data.data.map((value: any) => value.imageUrl)));
-						});
-
-						await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${robloxID}&size=720x720&format=png`).then((image: any) => {
-							modLog.setAuthor({ name: `${args[0]} | ${ms(ms(String(args[3])), { long: true })} ban`, iconURL: String(image.data.data.map((value: any) => value.imageUrl)) });
-						});
-
-						await (bot.channels.cache.get(String(process.env.MODERATION_CHANNEL)) as TextChannel)!.send({
-							embeds: [modLog],
-						});
-
-						return interaction.followUp({
-							embeds: [
-								new EmbedBuilder() // prettier-ignore
-									.setColor(EMBED_COLOURS.green)
-									.setDescription(`✅ Successfully time-banned **${robloxName}**!`),
-							],
-						});
-					})
-					.catch((err) => {
-						const embed = new EmbedBuilder() // prettier-ignore
-							.setColor(EMBED_COLOURS.red)
-							.setThumbnail('https://i.ibb.co/C5YvkJg/4-128.png');
-
-						switch (err.response.data.errorCode) {
-							case 8:
-								embed.setTitle('🗄️ Player Already Banned');
-								embed.setDescription("Hmmm. It appears that this player is already in our database and banned. Make sure...\n\n• The player you're trying to ban is spelt correctly\n• The player doesn't already have a moderation log");
-								return interaction.followUp({ embeds: [embed] });
-
-							case 13:
-								embed.setTitle('🛡️ Invalid Staff Member');
-								embed.setDescription("Oh no! Looks like the name provided doesn't appear to be a Saikou staff member. Make sure...\n\n• Your nickname is set to your Roblox username\n• You have permission to do this action");
-								return interaction.followUp({ embeds: [embed] });
-						}
-					});
+		/* ADDING BAN */
+		if (args[3]) {
+			if (!ms(args[3])) {
+				return interaction.followUp({ content: 'Invalid time.' });
 			}
 
 			return axios({
-				url: 'https://bans.saikouapi.xyz/v1/bans/create-new',
+				url: 'https://bans.saikouapi.xyz/v1/timebans/create-new',
 				method: 'POST',
 				data: {
 					RobloxUsername: String(robloxName),
 					RobloxID: Number(robloxID),
 					Moderator: String(interaction.guild?.members.cache.get(interaction.user.id)?.displayName),
 					Reason: String(args[2]),
+					Duration: ms(args[3]),
 					Place: args[0],
 				},
 				headers: {
@@ -167,7 +98,9 @@ const command: Command = {
 				},
 			})
 				.then(async () => {
+					/* MOD LOG EMBED */
 					const modLog = new EmbedBuilder() //
+						.setAuthor({ name: `${args[0]} | ${ms(ms(String(args[3])), { long: true })} ban`, iconURL: `https://www.roblox.com/bust-thumbnail/image?userId=${robloxID}&width=48&height=48&format=png` })
 						.addFields([
 							// prettier-ignore
 							{ name: 'User:', value: `[${robloxName}](https://www.roblox.com/users/${robloxID}/profile)`, inline: true},
@@ -175,7 +108,7 @@ const command: Command = {
 							{ name: 'Reason:', value: `${args[2]}` },
 						])
 						.setColor(EMBED_COLOURS.green)
-						.setFooter({ text: `${args[0]} • Permanent ban` })
+						.setFooter({ text: `${args[0]} • ${ms(ms(String(args[3])))} ban` })
 						.setTimestamp();
 
 					await axios.get(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${robloxID}&size=720x720&format=png`).then((image: any) => {
@@ -183,7 +116,7 @@ const command: Command = {
 					});
 
 					await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${robloxID}&size=720x720&format=png`).then((image: any) => {
-						modLog.setAuthor({ name: `${args[0]} | Permanent ban`, iconURL: String(image.data.data.map((value: any) => value.imageUrl)) });
+						modLog.setAuthor({ name: `${args[0]} | ${ms(ms(String(args[3])), { long: true })} ban`, iconURL: String(image.data.data.map((value: any) => value.imageUrl)) });
 					});
 
 					await (bot.channels.cache.get(String(process.env.MODERATION_CHANNEL)) as TextChannel)!.send({
@@ -194,7 +127,7 @@ const command: Command = {
 						embeds: [
 							new EmbedBuilder() // prettier-ignore
 								.setColor(EMBED_COLOURS.green)
-								.setDescription(`✅ Successfully perm-banned **${robloxName}**!`),
+								.setDescription(`✅ Successfully time-banned **${robloxName}**!`),
 						],
 					});
 				})
@@ -213,15 +146,77 @@ const command: Command = {
 							embed.setTitle('🛡️ Invalid Staff Member');
 							embed.setDescription("Oh no! Looks like the name provided doesn't appear to be a Saikou staff member. Make sure...\n\n• Your nickname is set to your Roblox username\n• You have permission to do this action");
 							return interaction.followUp({ embeds: [embed] });
-
-						default:
-							console.error(err);
-							break;
 					}
 				});
 		}
 
-		return message.channel.send('❌ **Please Use Slash Commands**\n\nThis command relies on slash commands to work, please type /robloxban to get started. Support for chat commands will come within the near future.');
+		return axios({
+			url: 'https://bans.saikouapi.xyz/v1/bans/create-new',
+			method: 'POST',
+			data: {
+				RobloxUsername: String(robloxName),
+				RobloxID: Number(robloxID),
+				Moderator: String(interaction.guild?.members.cache.get(interaction.user.id)?.displayName),
+				Reason: String(args[2]),
+				Place: args[0],
+			},
+			headers: {
+				'X-API-KEY': String(process.env.SAIKOU_BANS_TOKEN),
+			},
+		})
+			.then(async () => {
+				const modLog = new EmbedBuilder() //
+					.addFields([
+						// prettier-ignore
+						{ name: 'User:', value: `[${robloxName}](https://www.roblox.com/users/${robloxID}/profile)`, inline: true},
+						{ name: 'Moderator:', value: `${interaction.guild?.members.cache.get(interaction.user.id)?.displayName}`, inline: true },
+						{ name: 'Reason:', value: `${args[2]}` },
+					])
+					.setColor(EMBED_COLOURS.green)
+					.setFooter({ text: `${args[0]} • Permanent ban` })
+					.setTimestamp();
+
+				await axios.get(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${robloxID}&size=720x720&format=png`).then((image: any) => {
+					modLog.setThumbnail(String(image.data.data.map((value: any) => value.imageUrl)));
+				});
+
+				await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${robloxID}&size=720x720&format=png`).then((image: any) => {
+					modLog.setAuthor({ name: `${args[0]} | Permanent ban`, iconURL: String(image.data.data.map((value: any) => value.imageUrl)) });
+				});
+
+				await (bot.channels.cache.get(String(process.env.MODERATION_CHANNEL)) as TextChannel)!.send({
+					embeds: [modLog],
+				});
+
+				return interaction.followUp({
+					embeds: [
+						new EmbedBuilder() // prettier-ignore
+							.setColor(EMBED_COLOURS.green)
+							.setDescription(`✅ Successfully perm-banned **${robloxName}**!`),
+					],
+				});
+			})
+			.catch((err) => {
+				const embed = new EmbedBuilder() // prettier-ignore
+					.setColor(EMBED_COLOURS.red)
+					.setThumbnail('https://i.ibb.co/C5YvkJg/4-128.png');
+
+				switch (err.response.data.errorCode) {
+					case 8:
+						embed.setTitle('🗄️ Player Already Banned');
+						embed.setDescription("Hmmm. It appears that this player is already in our database and banned. Make sure...\n\n• The player you're trying to ban is spelt correctly\n• The player doesn't already have a moderation log");
+						return interaction.followUp({ embeds: [embed] });
+
+					case 13:
+						embed.setTitle('🛡️ Invalid Staff Member');
+						embed.setDescription("Oh no! Looks like the name provided doesn't appear to be a Saikou staff member. Make sure...\n\n• Your nickname is set to your Roblox username\n• You have permission to do this action");
+						return interaction.followUp({ embeds: [embed] });
+
+					default:
+						console.error(err);
+						break;
+				}
+			});
 	},
 };
 

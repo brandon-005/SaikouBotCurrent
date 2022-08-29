@@ -32,14 +32,9 @@ const bot: Client = new Client({
 	presence: { activities: [{ name: '🤖 Starting up...' }] },
 });
 
-bot.commands = new Collection();
 bot.slashCommands = new Collection();
 bot.cooldowns = new Collection();
-bot.aliases = new Collection();
 
-['commands', 'aliases'].forEach((collection: string) => {
-	bot[collection] = new Collection();
-});
 ['load-commands', 'load-events'].forEach((handlerFile: string): string => require(`./handlers/${handlerFile}.js`)(bot));
 
 process.on('uncaughtException', (exceptionError: Error) => {

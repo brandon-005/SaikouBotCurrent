@@ -2,10 +2,10 @@ import { EmbedBuilder, Message, Client, CommandInteraction, WebhookClient } from
 
 import { EMBED_COLOURS } from './constants';
 
-export function interactiveSetup(message: Message, bot: Client, dm: Boolean, stepNumber: string, description: any, reaction?: Boolean) {
+export function interactiveSetup(message: Message, interaction: CommandInteraction, bot: Client, dm: Boolean, stepNumber: string, description: any, reaction?: Boolean) {
 	const embed = new EmbedBuilder() // prettier-ignore
 		.setTitle(`Prompt [${stepNumber}]`)
-		.setFooter({ text: `Setup by ${message.author.tag} | Prompt will timeout in 5 mins`, iconURL: message.author.displayAvatarURL() })
+		.setFooter({ text: `Setup by ${interaction.user.tag} | Prompt will timeout in 5 mins`, iconURL: interaction.user.displayAvatarURL() })
 		.setColor(EMBED_COLOURS.blurple)
 		.setThumbnail(bot.user!.displayAvatarURL());
 
@@ -16,7 +16,7 @@ export function interactiveSetup(message: Message, bot: Client, dm: Boolean, ste
 	}
 
 	if (dm === true) return message.author.send({ embeds: [embed] });
-	return message.channel.send({ embeds: [embed] });
+	return interaction.channel.send({ embeds: [embed] });
 }
 
 export function confirmationPrompt(message: Message, bot: Client, dm: Boolean, description: any) {
@@ -52,7 +52,7 @@ export function noContent(message: Message) {
 	return message.author.send({ embeds: [embed] });
 }
 
-export function timeout(message: Message, dm: Boolean) {
+export function timeout(interaction: CommandInteraction, dm: Boolean, message: Message) {
 	const embed = new EmbedBuilder() // prettier-ignore
 		.setTitle('❌ Cancelled!')
 		.setDescription("You didn't input in time, please try again.")
@@ -60,10 +60,10 @@ export function timeout(message: Message, dm: Boolean) {
 		.setColor(EMBED_COLOURS.red);
 
 	if (dm === true) return message.author.send({ embeds: [embed] });
-	return message.channel.send({ embeds: [embed] });
+	return interaction.channel.send({ embeds: [embed] });
 }
 
-export function noUser(message: Message, dm?: Boolean, interaction?: CommandInteraction): Promise<any | Message<boolean>> {
+export function noUser(interaction: CommandInteraction, dm?: Boolean): Promise<any | Message<boolean>> {
 	const embed = new EmbedBuilder() // prettier-ignore
 		.setTitle('🔍 Unable to find User!')
 		.setDescription(`Please provide a valid user to complete this action.`)
@@ -71,9 +71,8 @@ export function noUser(message: Message, dm?: Boolean, interaction?: CommandInte
 		.setFooter({ text: 'Invalid User' })
 		.setTimestamp();
 
-	if (dm === true) return message.author.send({ embeds: [embed] });
-	if (interaction) return interaction.followUp({ embeds: [embed] });
-	return message.channel.send({ embeds: [embed] });
+	if (dm === true) return interaction.user.send({ embeds: [embed] });
+	return interaction.followUp({ embeds: [embed] });
 }
 
 export function equalPerms(message: Message, perms: string, interaction?: CommandInteraction): Promise<any | Message<boolean>> {

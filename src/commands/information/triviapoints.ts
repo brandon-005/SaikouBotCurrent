@@ -1,6 +1,5 @@
-import { Command, EmbedBuilder } from 'discord.js';
+import { Command, ApplicationCommandOptionType, EmbedBuilder } from 'discord.js';
 
-import { getMember } from '../../utils/functions';
 import { EMBED_COLOURS } from '../../utils/constants';
 import triviaUserData from '../../models/correctTrivia';
 
@@ -11,15 +10,17 @@ const command: Command = {
 		commandDescription: 'Get some more in depth stats about your correct trivia answers!',
 		commandUsage: '[user]',
 		slashCommand: true,
+		slashOptions: [
+			{
+				name: 'user',
+				description: 'The user who you would like to view stats of.',
+				type: ApplicationCommandOptionType.User,
+				required: false,
+			},
+		],
 	},
-	run: async ({ message, args, interaction }) => {
-		let member: any;
-
-		if (!message) {
-			member = interaction.options.getUser('user') || interaction.user;
-		} else {
-			member = getMember(message, args.join(' '));
-		}
+	run: async ({ interaction }) => {
+		const member = interaction.options.getUser('user') || interaction.user;
 
 		const triviaUser = await triviaUserData.findOne({ userID: member.id ? member.id : member.user.id });
 		let rank = 0;
@@ -31,25 +32,30 @@ const command: Command = {
 		});
 
 		/* If no user */
-		const noUser = new EmbedBuilder() // prettier-ignore
-			.setTitle('🗃️ No trivia data!')
-			.setColor(EMBED_COLOURS.red)
-			.setDescription(`**${member.displayName ? member.displayName : member.username}** hasn't got any data yet.`);
-
-		if (!triviaUser) return message ? message.channel.send({ embeds: [noUser] }) : interaction.followUp({ embeds: [noUser] });
+		if (!triviaUser)
+			return interaction.followUp({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setTitle('🗃️ No trivia data!')
+						.setColor(EMBED_COLOURS.red)
+						.setDescription(`**${member.displayName ? member.displayName : member.username}** hasn't got any data yet.`),
+				],
+			});
 
 		/* If found user */
-		const pointsEmbed = new EmbedBuilder() // prettier-ignore
-			.setTitle('🎖️ Trivia Statistics')
-			.setDescription(`Down below you can find **${member.displayName ? member.displayName : member.username}'s** trivia statistics.`)
-			.addFields([
-				// prettier-ignore
-				{ name: 'Trivia Points', value: `${triviaUser.answersCorrect}`, inline: true },
-				{ name: 'Leaderboard Position', value: `#${rank}`, inline: true },
-			])
-			.setColor(EMBED_COLOURS.blurple);
-
-		return message ? message.channel.send({ embeds: [pointsEmbed] }) : interaction.followUp({ embeds: [pointsEmbed] });
+		return interaction.followUp({
+			embeds: [
+				new EmbedBuilder() // prettier-ignore
+					.setTitle('🎖️ Trivia Statistics')
+					.setDescription(`Down below you can find **${member.displayName ? member.displayName : member.username}'s** trivia statistics.`)
+					.addFields([
+						// prettier-ignore
+						{ name: 'Trivia Points', value: `${triviaUser.answersCorrect}`, inline: true },
+						{ name: 'Leaderboard Position', value: `#${rank}`, inline: true },
+					])
+					.setColor(EMBED_COLOURS.blurple),
+			],
+		});
 	},
 };
 

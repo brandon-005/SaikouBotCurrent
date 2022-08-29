@@ -1,4 +1,4 @@
-import { Command, EmbedBuilder, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, ButtonInteraction, ModalBuilder, ModalActionRowComponentBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
+import { Command, EmbedBuilder, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, ButtonInteraction, ModalBuilder, ModalActionRowComponentBuilder, TextInputBuilder, TextInputStyle, Interaction } from 'discord.js';
 import { EMBED_COLOURS, MESSAGE_TIMEOUT } from '../../utils/constants';
 
 const openPrompt = new Set();
@@ -10,12 +10,12 @@ const command: Command = {
 		commandDescription: 'Introduce yourself to other users in the server, make new friends and bond!',
 		limitedChannel: 'introductions',
 	},
-	run: async ({ message }) => {
+	run: async ({ interaction }) => {
 		let welcome: any;
 
 		/* IF USER HAS PROMPT OPEN */
-		if (openPrompt.has(message.author.id))
-			return message.channel
+		if (openPrompt.has(interaction.user.id))
+			return interaction.channel
 				.send({
 					embeds: [
 						new EmbedBuilder() // prettier-ignore
@@ -28,7 +28,7 @@ const command: Command = {
 				.then((msg: Message) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
 
 		try {
-			welcome = await message.author.send({
+			welcome = await interaction.user.send({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('👋 Introduce Yourself!')
@@ -45,7 +45,7 @@ const command: Command = {
 			});
 		} catch (err: any) {
 			if (err.status === 403) {
-				return message.channel
+				return interaction.channel
 					.send({
 						embeds: [
 							new EmbedBuilder() // prettier-ignore
@@ -59,20 +59,20 @@ const command: Command = {
 			}
 		}
 
-		openPrompt.add(message.author.id);
+		openPrompt.add(interaction.user.id);
 
-		message.channel
-			.send({
+		interaction
+			.followUp({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
-						.setDescription(`📬 A message has been sent to your DM's <@${message.author.id}>`)
+						.setDescription(`📬 A message has been sent to your DM's <@${interaction.user.id}>`)
 						.setColor(EMBED_COLOURS.green),
 				],
 			})
 			.then((msg: Message) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
 
-		const dmChannel = await message.author.createDM();
-		const collector = dmChannel.createMessageComponentCollector({ filter: (msgFilter) => msgFilter.user.id === message.author.id, componentType: ComponentType.Button, time: 600000 });
+		const dmChannel = await interaction.user.createDM();
+		const collector = dmChannel.createMessageComponentCollector({ filter: (msgFilter: Interaction) => msgFilter.user.id === interaction.user.id, componentType: ComponentType.Button, time: 600000 });
 
 		collector.on('collect', async (button: ButtonInteraction) => {
 			if (button.customId === 'intro-menu') {
@@ -104,7 +104,7 @@ const command: Command = {
 		});
 
 		collector.on('end', () => {
-			openPrompt.delete(message.author.id);
+			openPrompt.delete(interaction.user.id);
 			welcome.edit({
 				components: [],
 			});

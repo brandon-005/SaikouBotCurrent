@@ -11,7 +11,7 @@ const command: Command = {
 		userPermissions: 'ManageMessages',
 		limitedChannel: '🤖staff-cmds',
 	},
-	run: async ({ bot, message }) => {
+	run: async ({ bot, interaction, message }) => {
 		const suggestionChannels: any = {
 			'💡suggestions': '🇦',
 			'suggestions-nitro': '🇧',
@@ -33,6 +33,7 @@ const command: Command = {
 		/* SELECT CHANNEL PROMPT */
 		const channelEmbed = await interactiveSetup(
 			message,
+			interaction,
 			bot,
 			false,
 			'1/4',
@@ -49,30 +50,30 @@ const command: Command = {
 		channelEmbed?.react('🚪');
 
 		try {
-			const collectingReaction = await channelEmbed!.awaitReactions({ filter: (reaction: any, user: any) => LETTER_EMOJIS.includes(reaction.emoji.name) && user.id === message.author.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
+			const collectingReaction = await channelEmbed!.awaitReactions({ filter: (reaction: any, user: any) => LETTER_EMOJIS.includes(reaction.emoji.name) && user.id === interaction.user.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
 			const inputtedReaction = collectingReaction.first()?.emoji.name;
 
 			if (sendCancel(true, inputtedReaction) !== false) return;
 
 			channelFinal = String(Object.keys(suggestionChannels).find((key: any) => suggestionChannels[key] === inputtedReaction));
 		} catch (err) {
-			return timeout(message, false);
+			return timeout(interaction, false, message);
 		}
 
 		/* MESSAGE ID PROMPT */
-		await interactiveSetup(message, bot, false, '2/4', '❓ **What is the suggestion ID you would like to accept/deny?**');
+		await interactiveSetup(message, interaction, bot, false, '2/4', '❓ **What is the suggestion ID you would like to accept/deny?**');
 
 		try {
-			const collectingMessage = await message.channel.awaitMessages({ filter: (sentMsg: Message) => sentMsg.author.id === message.author.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
+			const collectingMessage = await interaction.channel.awaitMessages({ filter: (sentMsg: Message) => sentMsg.author.id === interaction.user.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
 			const inputtedMessage = collectingMessage.first();
 
 			if (sendCancel(false, null, inputtedMessage) !== false) return;
 
 			try {
-				targetMsg = await (message.guild.channels.cache.find((channel: any) => channel.name.includes(channelFinal)) as TextChannel).messages.fetch(inputtedMessage.content);
+				targetMsg = await (interaction.guild.channels.cache.find((channel: any) => channel.name.includes(channelFinal)) as TextChannel).messages.fetch(inputtedMessage.content);
 			} catch (err) {
 				console.log(err);
-				return message.channel.send({
+				return interaction.followUp({
 					embeds: [
 						new EmbedBuilder() // prettier-ignore
 							.setTitle('❌ Incorrect Message ID!')
@@ -83,30 +84,30 @@ const command: Command = {
 				});
 			}
 		} catch (err) {
-			return timeout(message, false);
+			return timeout(interaction, false, message);
 		}
 
 		/* ACCEPT OR DENY PROMPT */
-		const updatePrompt = await interactiveSetup(message, bot, false, '3/4', '❓ **Would you like to accept or deny this suggestion?\n\nReact with 🇦 to accept or 🇧 to deny.**', true);
+		const updatePrompt = await interactiveSetup(message, interaction, bot, false, '3/4', '❓ **Would you like to accept or deny this suggestion?\n\nReact with 🇦 to accept or 🇧 to deny.**', true);
 
 		promptReactions.forEach((reaction) => updatePrompt.react(reaction));
 
 		try {
-			const collectingReaction = await updatePrompt!.awaitReactions({ filter: (reaction: any, user: any) => promptReactions.includes(reaction.emoji.name) && user.id === message.author.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
+			const collectingReaction = await updatePrompt!.awaitReactions({ filter: (reaction: any, user: any) => promptReactions.includes(reaction.emoji.name) && user.id === interaction.user.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
 			const inputtedReaction = collectingReaction.first()?.emoji.name;
 
 			if (sendCancel(true, inputtedReaction) !== false) return;
 
 			if (inputtedReaction === '🇧') accept = false;
 		} catch (err) {
-			return timeout(message, false);
+			return timeout(interaction, false, message);
 		}
 
 		/* OPTIONAL REASON PROMPT */
-		await interactiveSetup(message, bot, false, '4/4', '❓ **What is the staff note you would like to attach to this suggestion?\n\nIf you don\'t wish to add a staff note, please respond with "None".** ');
+		await interactiveSetup(message, interaction, bot, false, '4/4', '❓ **What is the staff note you would like to attach to this suggestion?\n\nIf you don\'t wish to add a staff note, please respond with "None".** ');
 
 		try {
-			const collectingMessage = await message.channel.awaitMessages({ filter: (sentMsg: Message) => sentMsg.author.id === message.author.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
+			const collectingMessage = await interaction.channel.awaitMessages({ filter: (sentMsg: Message) => sentMsg.author.id === interaction.user.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
 			const inputtedMessage = collectingMessage.first();
 			const oldEmbed = targetMsg.embeds[0];
 
@@ -132,7 +133,7 @@ const command: Command = {
 				}
 
 				targetMsg.edit({ embeds: [denyEmbed] });
-				return await message.channel.send({ embeds: [successEmbed] });
+				return interaction.followUp({ embeds: [successEmbed] });
 			}
 
 			const acceptEmbed = new EmbedBuilder() // prettier-ignore
@@ -149,10 +150,10 @@ const command: Command = {
 			}
 
 			targetMsg.edit({ embeds: [acceptEmbed] });
-			return await message.channel.send({ embeds: [successEmbed] });
+			return interaction.followUp({ embeds: [successEmbed] });
 		} catch (err) {
 			console.error(err);
-			return timeout(message, false);
+			return timeout(interaction, false, message);
 		}
 	},
 };

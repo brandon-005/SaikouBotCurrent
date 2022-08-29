@@ -34,9 +34,7 @@ declare module 'discord.js' {
 declare module 'discord.js' {
 	export interface Client {
 		[key: string];
-		commands: Collection<string, Command>;
 		cooldowns: Collection<string, number>;
-		aliases: Collection<string, string>;
 		slashCommands: Collection<string, Command>;
 	}
 }

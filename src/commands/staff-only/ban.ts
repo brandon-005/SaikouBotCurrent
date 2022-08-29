@@ -10,9 +10,7 @@ const command: Command = {
 		commandAliases: ['permremove'],
 		commandDescription: 'Removes a user from the Discord server.',
 		userPermissions: 'BanMembers',
-		commandUsage: '<member> [reason]',
 		limitedChannel: 'None',
-		slashCommand: true,
 		COOLDOWN_TIME: 30,
 		slashOptions: [
 			{
@@ -30,62 +28,32 @@ const command: Command = {
 		],
 	},
 	run: async ({ bot, message, args, interaction }) => {
-		let member: any;
-		let reason: any;
+		const member = interaction.options.getMember('user');
+		let reason = args[1];
 
-		if (!message) {
-			member = interaction.options.getMember('user');
-			// eslint-disable-next-line prefer-destructuring
-			reason = args[1];
-
-			if (!member) return noUser(message, false, interaction as CommandInteraction);
-		} else {
-			member = getMember(message, String(args[0]), true) || bot.users.cache.get(args[0]);
-			reason = args.slice(1).join(' ');
-
-			if (!member) return noUser(message);
-		}
+		if (!member) return noUser(message, false, interaction as CommandInteraction);
 
 		if (member.permissions && member.permissions.has(PermissionFlagsBits.BanMembers)) return equalPerms(message, 'Ban Members');
 		if (!reason) reason = 'None Provided';
 
 		/* DELETE MESSAGE HISTORY PROMPT */
-		let buttonMsg: any;
+		const buttonMsg = await interaction.followUp({
+			embeds: [
+				new EmbedBuilder() // prettier-ignore
+					.setDescription("**🗑️ Do you want to delete the user's message history?**")
+					.setColor(EMBED_COLOURS.red),
+			],
+			components: [
+				new ActionRowBuilder().addComponents([
+					// prettier-ignore
+					new ButtonBuilder().setLabel('Yes').setStyle(ButtonStyle.Success).setCustomId('Yes'),
+					new ButtonBuilder().setLabel('No').setStyle(ButtonStyle.Danger).setCustomId('No'),
+				]),
+			],
+			fetchReply: true,
+		});
 
-		if (!message) {
-			buttonMsg = await interaction.followUp({
-				embeds: [
-					new EmbedBuilder() // prettier-ignore
-						.setDescription("**🗑️ Do you want to delete the user's message history?**")
-						.setColor(EMBED_COLOURS.red),
-				],
-				components: [
-					new ActionRowBuilder().addComponents([
-						// prettier-ignore
-						new ButtonBuilder().setLabel('Yes').setStyle(ButtonStyle.Success).setCustomId('Yes'),
-						new ButtonBuilder().setLabel('No').setStyle(ButtonStyle.Danger).setCustomId('No'),
-					]),
-				],
-				fetchReply: true,
-			});
-		} else {
-			buttonMsg = await message.channel.send({
-				embeds: [
-					new EmbedBuilder() // prettier-ignore
-						.setDescription("**🗑️ Do you want to delete the user's message history?**")
-						.setColor(EMBED_COLOURS.red),
-				],
-				components: [
-					new ActionRowBuilder<ButtonBuilder>().addComponents([
-						// prettier-ignore
-						new ButtonBuilder().setLabel('Yes').setStyle(ButtonStyle.Success).setCustomId('Yes'),
-						new ButtonBuilder().setLabel('No').setStyle(ButtonStyle.Danger).setCustomId('No'),
-					]),
-				],
-			});
-		}
-
-		const collector = buttonMsg.createMessageComponentCollector({ filter: (userInteraction: Interaction) => userInteraction.user.id === (message ? message.author.id : interaction.user.id), max: 1, time: PROMPT_TIMEOUT });
+		const collector = buttonMsg.createMessageComponentCollector({ filter: (userInteraction: Interaction) => userInteraction.user.id === interaction.user.id, max: 1, time: PROMPT_TIMEOUT });
 
 		const successEmbed = new EmbedBuilder() // prettier-ignore
 			.setDescription(`✅ **${member.displayName ? member.displayName : member.username} has been banned.**`)
@@ -101,11 +69,7 @@ const command: Command = {
 					try {
 						member.ban({ days: 7, reason });
 					} catch (err) {
-						if (!message) {
-							interaction.guild?.members.ban(member);
-						} else {
-							message.guild?.members.ban(member);
-						}
+						interaction.guild?.members.ban(member);
 					}
 					break;
 
@@ -115,11 +79,7 @@ const command: Command = {
 					try {
 						member.ban({ reason });
 					} catch (err) {
-						if (!message) {
-							interaction.guild?.members.ban(member);
-						} else {
-							message.guild?.members.ban(member);
-						}
+						interaction.guild?.members.ban(member);
 					}
 					break;
 
@@ -135,7 +95,7 @@ const command: Command = {
 						.setAuthor({ name: `Saikou Discord | Ban`, iconURL: member.user ? member.user.displayAvatarURL() : bot.user.displayAvatarURL() })
 						.addFields([
 							// prettier-ignore
-							{ name: 'Moderator', value: `<@${message ? message.author.id : interaction.user.id}>`, inline: true },
+							{ name: 'Moderator', value: `<@${interaction.user.id}>`, inline: true },
 							{ name: 'User', value: `<@${member.id}>`, inline: true },
 							{ name: 'Reason', value: reason },
 						])
@@ -146,7 +106,7 @@ const command: Command = {
 				],
 			});
 
-			if (reason === 'None Provided') await (bot.channels.cache.get(process.env.MODERATION_CHANNEL) as TextChannel).send({ content: `<@${message ? message.author.id : interaction.user.id}>, Please provide a reason for this punishment in your proof as one wasn't provided.` });
+			if (reason === 'None Provided') await (bot.channels.cache.get(process.env.MODERATION_CHANNEL) as TextChannel).send({ content: `<@${interaction.user.id}>, Please provide a reason for this punishment in your proof as one wasn't provided.` });
 		});
 	},
 };

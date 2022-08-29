@@ -1,7 +1,6 @@
 import { Command, ApplicationCommandOptionType, CommandInteraction, EmbedBuilder, PermissionFlagsBits, TextChannel } from 'discord.js';
 import { Types } from 'mongoose';
 
-import { getMember } from '../../utils/functions';
 import { noUser, equalPerms, moderationDmEmbed, moderationEmbed } from '../../utils/embeds';
 import { EMBED_COLOURS } from '../../utils/constants';
 
@@ -13,9 +12,7 @@ const command: Command = {
 		commandAliases: ['tempremove'],
 		commandDescription: 'Removes a user from the Discord server.',
 		userPermissions: 'KickMembers',
-		commandUsage: '<member> [reason]',
 		limitedChannel: 'None',
-		slashCommand: true,
 		COOLDOWN_TIME: 30,
 		slashOptions: [
 			{
@@ -33,21 +30,10 @@ const command: Command = {
 		],
 	},
 	run: async ({ bot, message, args, interaction }) => {
-		let member: any;
-		let reason: any;
+		const member = interaction.options.getMember('user');
+		let reason = args[1];
 
-		if (!message) {
-			member = interaction.options.getMember('user');
-			// eslint-disable-next-line prefer-destructuring
-			reason = args[1];
-
-			if (!member) return noUser(message, false, interaction as CommandInteraction);
-		} else {
-			member = getMember(message, String(args[0]), true);
-			reason = args.slice(1).join(' ');
-
-			if (!member) return noUser(message);
-		}
+		if (!member) return noUser(interaction, false);
 
 		if (member.permissions && member.permissions.has(PermissionFlagsBits.KickMembers)) return equalPerms(message, 'Kick Members');
 		if (!reason) reason = 'None Provided';
@@ -56,15 +42,13 @@ const command: Command = {
 
 		member.kick(reason);
 
-		const successEmbed = new EmbedBuilder() // prettier-ignore
-			.setDescription(`✅ **${member.displayName ? member.displayName : member.username} has been kicked.**`)
-			.setColor(EMBED_COLOURS.green);
-
-		if (!message) {
-			interaction.followUp({ embeds: [successEmbed] });
-		} else {
-			message.channel.send({ embeds: [successEmbed] });
-		}
+		interaction.followUp({
+			embeds: [
+				new EmbedBuilder() // prettier-ignore
+					.setDescription(`✅ **${member.displayName ? member.displayName : member.username} has been kicked.**`)
+					.setColor(EMBED_COLOURS.green),
+			],
+		});
 
 		const userWarns = await warnData.findOne({ userID: member.id });
 
@@ -72,15 +56,15 @@ const command: Command = {
 		if (!userWarns) {
 			await warnData.create({
 				userID: member.id,
-				warnings: [{ _id: new Types.ObjectId(), date: new Date(), moderator: message ? message.author.id : interaction.user.id, reason: `**[kick]** ${reason}` }],
+				warnings: [{ _id: new Types.ObjectId(), date: new Date(), moderator: interaction.user.id, reason: `**[kick]** ${reason}` }],
 			});
 		} else {
-			userWarns.warnings.push({ _id: new Types.ObjectId(), date: new Date(), moderator: message ? message.author.id : interaction.user.id, reason: `**[kick]** ${reason}` });
+			userWarns.warnings.push({ _id: new Types.ObjectId(), date: new Date(), moderator: interaction.user.id, reason: `**[kick]** ${reason}` });
 			await userWarns.save();
 		}
 
 		await moderationEmbed(message, bot, 'Kick', member, reason, false, interaction as CommandInteraction);
-		if (reason === 'None Provided') await (bot.channels.cache.get(process.env.MODERATION_CHANNEL) as TextChannel).send({ content: `<@${message ? message.author.id : interaction.user.id}>, Please provide a reason for this punishment in your proof as one wasn't provided.` });
+		if (reason === 'None Provided') await (bot.channels.cache.get(process.env.MODERATION_CHANNEL) as TextChannel).send({ content: `<@${interaction.user.id}>, Please provide a reason for this punishment in your proof as one wasn't provided.` });
 	},
 };
 

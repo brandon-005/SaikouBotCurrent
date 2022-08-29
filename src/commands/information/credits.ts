@@ -6,21 +6,19 @@ const command: Command = {
 		commandName: 'credits',
 		commandAliases: ['creds', 'botcredits', 'bothelpers'],
 		commandDescription: "A small thank you to our testing and developer hero's ❤",
-		serverOnly: false,
-		slashCommand: true,
 	},
-	run: async ({ bot, message, interaction }) => {
+	run: async ({ bot, interaction }) => {
 		const users = {
 			bot: {
 				'229142187382669312': 'Head Developer',
-				'800398087432437770': 'V2 Developer ❤️',
+				'800398087432437770': 'v2 Developer ❤️',
 			},
 			contributors: {
-				'458023820129992716': 'Tester',
-				'697864119302225952': 'Tester',
-				'341317140655243266': 'Tester',
-				'659547368504688650': 'Tester',
-				'670080884249985085': 'Tester',
+				'458023820129992716': 'v3 Tester',
+				'697864119302225952': 'v3 Tester',
+				'341317140655243266': 'v3 Tester',
+				'659547368504688650': 'v3 Tester',
+				'670080884249985085': 'v3 Tester',
 			},
 		};
 
@@ -34,22 +32,20 @@ const command: Command = {
 			return returnedUsers;
 		}
 
-		const creditsEmbed = new EmbedBuilder() // prettier-ignore
-			.setTitle('❤ SaikouBot Credits')
-			.setDescription(`Massive thank you to our testing and developer hero's who without them wouldn't of provided the experience SaikouBot has today.`)
-			.addFields([
-				// prettier-ignore
-				{ name: '→ Bot Developers:', value: await fetchUsers(users.bot) },
-				{ name: '→ Contributors:', value: await fetchUsers(users.contributors) },
-			])
-			.setColor(EMBED_COLOURS.blurple)
-			.setThumbnail(String(bot.user?.displayAvatarURL()));
-
-		if (!message) {
-			return interaction.editReply({ embeds: [creditsEmbed] });
-		}
-
-		return message.channel.send({ embeds: [creditsEmbed] });
+		return interaction.followUp({
+			embeds: [
+				new EmbedBuilder() // prettier-ignore
+					.setTitle('❤ SaikouBot Credits')
+					.setDescription(`Massive thank you to our testing and developer hero's who without them wouldn't of provided the experience SaikouBot has today.`)
+					.addFields([
+						// prettier-ignore
+						{ name: '→ Bot Developers:', value: await fetchUsers(users.bot) },
+						{ name: '→ Contributors:', value: await fetchUsers(users.contributors) },
+					])
+					.setColor(EMBED_COLOURS.blurple)
+					.setThumbnail(String(bot.user?.displayAvatarURL())),
+			],
+		});
 	},
 };
 

@@ -12,19 +12,20 @@ const command: Command = {
 		commandName: 'botstats',
 		commandAliases: ['bot', 'status', 'uptime', 'ping'],
 		commandDescription: "Looking to find SaikouBot's statistics? Well you're in the right place!",
-		slashCommand: true,
 	},
-	run: async ({ bot, message, interaction }) => {
+	run: async ({ bot, interaction }) => {
 		// Loading Message
-		const loadingEmbed = new EmbedBuilder() // prettier-ignore
-			.setTitle('Loading...')
-			.setDescription('Calculating latency, hold tight!')
-			.setColor(EMBED_COLOURS.blurple);
-
-		const loadingMsg = message ? await message.channel.send({ embeds: [loadingEmbed] }) : await interaction.followUp({ embeds: [loadingEmbed] });
+		const loadingMsg = await interaction.followUp({
+			embeds: [
+				new EmbedBuilder() // prettier-ignore
+					.setTitle('Loading...')
+					.setDescription('Calculating latency, hold tight!')
+					.setColor(EMBED_COLOURS.blurple),
+			],
+		});
 
 		const memoryPercentage = Math.round(((process.memoryUsage().heapTotal - process.memoryUsage().heapUsed) / process.memoryUsage().heapTotal) * 100);
-		const botLatency = loadingMsg.createdTimestamp - (message ? message.createdTimestamp : interaction.createdTimestamp);
+		const botLatency = loadingMsg.createdTimestamp - interaction.createdTimestamp;
 		let memoryMsg = '';
 		let latencyMsg = '';
 
@@ -133,14 +134,14 @@ const command: Command = {
 			.setColor(EMBED_COLOURS.blurple);
 
 		/* Restart Button */
-		if (message ? message.member!.id === '229142187382669312' : interaction.user.id === '229142187382669312') {
+		if (interaction.user.id === '229142187382669312') {
 			/* IF USER HAS PROMPT OPEN */
-			if (activeInteraction.has(message ? message.author.id : interaction.user.id)) {
+			if (activeInteraction.has(interaction.user.id)) {
 				statusEmbed.setFooter({ text: 'Exit previous uptime prompt to receive the option to restart.' });
 				return loadingMsg.edit({ embeds: [statusEmbed] });
 			}
 
-			activeInteraction.add(message ? message.author.id : interaction.user.id);
+			activeInteraction.add(interaction.user.id);
 
 			loadingMsg.edit({
 				embeds: [statusEmbed],
@@ -160,14 +161,14 @@ const command: Command = {
 				],
 			});
 
-			const collector = message ? message.channel.createMessageComponentCollector({ filter: (msgFilter) => msgFilter.user.id === message.author.id, componentType: ComponentType.Button, time: PROMPT_TIMEOUT }) : interaction.channel!.createMessageComponentCollector({ filter: (menu: any) => menu.user.id === interaction.user.id, componentType: ComponentType.Button, time: PROMPT_TIMEOUT });
+			const collector = interaction.channel!.createMessageComponentCollector({ filter: (menu: any) => menu.user.id === interaction.user.id, componentType: ComponentType.Button, time: PROMPT_TIMEOUT });
 
 			collector.on('collect', async (button: ButtonInteraction) => {
 				switch (button.customId) {
 					case 'exit-prompt':
 						loadingMsg.edit({ components: [] });
 						collector.stop();
-						activeInteraction.delete(message ? message.author.id : interaction.user.id);
+						activeInteraction.delete(interaction.user.id);
 						break;
 
 					case 'restart':
@@ -182,7 +183,7 @@ const command: Command = {
 						});
 
 						collector.stop();
-						activeInteraction.delete(message ? message.author.id : interaction.user.id);
+						activeInteraction.delete(interaction.user.id);
 
 						// eslint-disable-next-line no-process-exit
 						return process.exit();
