@@ -2,7 +2,6 @@ import { Command, ApplicationCommandOptionType, EmbedBuilder } from 'discord.js'
 import { EMBED_COLOURS } from '../../utils/constants';
 
 import suggestData from '../../models/suggestions';
-import reportData from '../../models/reports';
 
 const command: Command = {
 	config: {
@@ -25,26 +24,7 @@ const command: Command = {
 		const data = await suggestData.findOne({ messageID: inputtedID });
 
 		if (!data) {
-			const reportUser = await reportData.findOne({ messageID: inputtedID });
-
-			if (!reportUser) {
-				return interaction.followUp({ content: 'Inputted ID does not exist! ' });
-			}
-
-			const fetchedUser = await bot.users.fetch(`${BigInt(reportUser!.userID)}`);
-
-			return interaction.followUp({
-				embeds: [
-					new EmbedBuilder() // prettier-ignore
-						.setTitle('🔎 User Found!')
-						.addFields([
-							// prettier-ignore
-							{ name: 'Username', value: `${fetchedUser.username}#${fetchedUser.discriminator}`, inline: true },
-							{ name: 'User ID', value: fetchedUser.id, inline: true },
-						])
-						.setColor(EMBED_COLOURS.blurple),
-				],
-			});
+			return interaction.followUp({ content: 'Inputted ID does not exist! ' });
 		}
 
 		const fetchedUser = await bot.users.fetch(`${BigInt(data!.userID)}`);
