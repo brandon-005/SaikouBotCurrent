@@ -52,14 +52,14 @@ export function noContent(message: Message) {
 	return message.author.send({ embeds: [embed] });
 }
 
-export function timeout(interaction: CommandInteraction, dm: Boolean, message: Message) {
+export function timeout(interaction: CommandInteraction, dm: Boolean) {
 	const embed = new EmbedBuilder() // prettier-ignore
 		.setTitle('❌ Cancelled!')
 		.setDescription("You didn't input in time, please try again.")
 		.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
 		.setColor(EMBED_COLOURS.red);
 
-	if (dm === true) return message.author.send({ embeds: [embed] });
+	if (dm === true) return interaction.user.send({ embeds: [embed] });
 	return interaction.channel.send({ embeds: [embed] });
 }
 
