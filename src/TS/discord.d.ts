@@ -15,8 +15,6 @@ declare module 'discord.js' {
 			userPermissions?: PermissionsString;
 			commandUsage?: string;
 			limitedChannel?: string;
-			serverOnly?: boolean;
-			slashCommand?: boolean;
 			slashOptions?: { name: string; description: string; type: ApplicationCommandOptionType; required: boolean; choices?: { name: string; value: string }[] }[];
 		};
 		run: ({ bot, message, args, interaction }: { bot: Client; message?: Message; args?: string[]; interaction?: CommandInteraction | ContextMenuInteraction }) => Promise<any>;
