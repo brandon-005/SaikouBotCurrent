@@ -43,32 +43,6 @@ export = async (bot: Client, interaction: Interaction) => {
 				.then(() => setTimeout(() => interaction.deleteReply(), MESSAGE_TIMEOUT));
 		}
 
-		/* --- COOLDOWN CONFIGURATION --- */
-		let { COOLDOWN_TIME } = commandFile.config;
-
-		if (bot.cooldowns.has(`${interaction.user.id}-${commandName}`)) {
-			const titleOptions = ['🐌 Woah there, slow down!', '🦥 Way too fast there!'];
-
-			return interaction
-				.followUp({
-					embeds: [
-						new EmbedBuilder() // prettier-ignore
-							.setTitle(String(choose(titleOptions)))
-							.setDescription(`You must wait **${ms(bot.cooldowns.get(`${interaction.user.id}-${commandName}`)! - Date.now(), { long: true })}** before re-using the **${commandName}** command.\nThe default cooldown is \`${COOLDOWN_TIME || 5}s\`. `)
-							.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
-							.setColor(EMBED_COLOURS.red),
-					],
-				})
-				.then(() => setTimeout(() => interaction.deleteReply(), MESSAGE_TIMEOUT));
-		}
-
-		if (!COOLDOWN_TIME) COOLDOWN_TIME = 5;
-
-		bot.cooldowns.set(`${interaction.user.id}-${commandName}`, Date.now() + COOLDOWN_TIME * 1000);
-		setTimeout((): void => {
-			bot.cooldowns.delete(`${interaction.user.id}-${commandName}`);
-		}, COOLDOWN_TIME * 1000);
-
 		/* --- LIMITED CHANNEL CONFIGURATION --- */
 		if (interaction.channel!.type === ChannelType.GuildText && limitedChannel && limitedChannel.toLowerCase() !== 'none') {
 			if (interaction.channel!.name.match(limitedChannel) === null) {
@@ -132,6 +106,32 @@ export = async (bot: Client, interaction: Interaction) => {
 				})
 				.then(() => setTimeout(() => interaction.deleteReply(), 15000));
 		}
+
+		/* --- COOLDOWN CONFIGURATION --- */
+		let { COOLDOWN_TIME } = commandFile.config;
+
+		if (bot.cooldowns.has(`${interaction.user.id}-${commandName}`)) {
+			const titleOptions = ['🐌 Woah there, slow down!', '🦥 Way too fast there!'];
+
+			return interaction
+				.followUp({
+					embeds: [
+						new EmbedBuilder() // prettier-ignore
+							.setTitle(String(choose(titleOptions)))
+							.setDescription(`You must wait **${ms(bot.cooldowns.get(`${interaction.user.id}-${commandName}`)! - Date.now(), { long: true })}** before re-using the **${commandName}** command.\nThe default cooldown is \`${COOLDOWN_TIME || 5}s\`. `)
+							.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+							.setColor(EMBED_COLOURS.red),
+					],
+				})
+				.then(() => setTimeout(() => interaction.deleteReply(), MESSAGE_TIMEOUT));
+		}
+
+		if (!COOLDOWN_TIME) COOLDOWN_TIME = 5;
+
+		bot.cooldowns.set(`${interaction.user.id}-${commandName}`, Date.now() + COOLDOWN_TIME * 1000);
+		setTimeout((): void => {
+			bot.cooldowns.delete(`${interaction.user.id}-${commandName}`);
+		}, COOLDOWN_TIME * 1000);
 
 		commandFile.run({ bot, args, interaction }).catch((errorMessage: Error) => {
 			console.error(errorMessage);
