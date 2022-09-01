@@ -2,7 +2,6 @@ import { Command, Message, ActionRowBuilder, SelectMenuBuilder, Interaction, Com
 import axios from 'axios';
 import urlRegex from 'url-regex';
 
-import { timeout } from '../../utils/embeds';
 import { EMBED_COLOURS, PROMPT_TIMEOUT, MESSAGE_TIMEOUT, VIDEO_FILE_TYPES } from '../../utils/constants';
 import reportData from '../../models/reports';
 
@@ -16,6 +15,7 @@ const command: Command = {
 		limitedChannel: 'report-abuse',
 	},
 	run: async ({ interaction }) => {
+		let sentMenu: Message;
 		let robloxDisplayName = '';
 		let robloxID = '';
 
@@ -36,7 +36,7 @@ const command: Command = {
 		openPrompt.add(interaction.user.id);
 
 		try {
-			await interaction.user.send({
+			sentMenu = await interaction.user.send({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('[1/3] Select Platform 🔎')
@@ -269,11 +269,11 @@ const command: Command = {
 							}
 						});
 
+						// @ts-ignore
 						attachmentCollector.on('end', async (_collected: any, response: any) => {
 							if (response === 'Prompt Cancelled') return;
 							if (response === 'idle') {
-								openPrompt.delete(interaction.user.id);
-								await timeout(interaction, true);
+								return openPrompt.delete(interaction.user.id);
 							}
 
 							interaction.user.send({
@@ -341,6 +341,21 @@ const command: Command = {
 						break;
 				}
 			});
+		});
+
+		/* Handling when collectors end */
+		menuCollector.on('end', () => {
+			sentMenu.edit({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setTitle('❌ Cancelled!')
+						.setDescription("You didn't input in time, please try again.")
+						.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+						.setColor(EMBED_COLOURS.red),
+				],
+				components: [],
+			});
+			openPrompt.delete(interaction.user.id);
 		});
 	},
 };
