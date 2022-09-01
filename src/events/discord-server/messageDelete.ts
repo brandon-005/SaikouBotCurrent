@@ -30,14 +30,14 @@ export = async (bot: any, message: Message) => {
 			.setTimestamp();
 
 		if (message.attachments.first()) {
-			messageDeletedEmbed.setDescription(`**<@!${message.author.id}> deleted an attachment posted <t:${parseInt(message.createdTimestamp / 1000)}:R> in <#${message.channel.id}>**`);
+			messageDeletedEmbed.setDescription(`**<@!${message.author.id}> deleted an attachment posted <t:${parseInt(String(message.createdTimestamp / 1000))}:R> in <#${message.channel.id}>**`);
 			messageDeletedEmbed.setImage(message.attachments.first().proxyURL);
 
 			if (message.content) {
 				messageDeletedEmbed.addFields([{ name: 'Message Content', value: `> ${message.content}`, inline: true }]);
 			}
 		} else {
-			messageDeletedEmbed.setDescription(`**<@!${message.author.id}> deleted a message posted <t:${parseInt(message.createdTimestamp / 1000)}:R> in <#${message.channel.id}>**`);
+			messageDeletedEmbed.setDescription(`**<@!${message.author.id}> deleted a message posted <t:${parseInt(String(message.createdTimestamp / 1000))}:R> in <#${message.channel.id}>**`);
 			messageDeletedEmbed.addFields([{ name: 'Message Content', value: `> ${message.content}`, inline: true }]);
 		}
 
