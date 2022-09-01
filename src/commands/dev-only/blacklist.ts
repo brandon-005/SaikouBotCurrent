@@ -9,7 +9,6 @@ const command: Command = {
 		commandAliases: ['botban'],
 		commandDescription: 'DEVELOPER ONLY - Bans user from bot access.',
 		limitedChannel: 'None',
-		slashCommand: true,
 		developerOnly: true,
 		slashOptions: [
 			{
@@ -20,33 +19,28 @@ const command: Command = {
 			},
 		],
 	},
-	run: async ({ message, args, interaction }) => {
-		if (!message) {
-			console.log(args[0]);
-			const blacklistedUser = await blacklisted.findOne({ userID: args[0] });
+	run: async ({ interaction, args }) => {
+		const blacklistedUser = await blacklisted.findOne({ userID: args[0] });
 
-			if (blacklistedUser) {
-				return interaction.followUp({
-					embeds: [
-						new EmbedBuilder() // prettier-ignore
-							.setColor(EMBED_COLOURS.red)
-							.setDescription('❌ User already blacklisted.'),
-					],
-				});
-			}
-
-			return blacklisted.create({ userID: args[0] }).then(() => {
-				interaction.followUp({
-					embeds: [
-						new EmbedBuilder() // prettier-ignore
-							.setColor(EMBED_COLOURS.green)
-							.setDescription('✅ Successfully blacklisted.'),
-					],
-				});
+		if (blacklistedUser) {
+			return interaction.followUp({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setColor(EMBED_COLOURS.red)
+						.setDescription('❌ User already blacklisted.'),
+				],
 			});
 		}
 
-		return message.channel.send('❌ **Please Use Slash Commands**\n\nThis command relies on slash commands to work, please type /blacklist to get started.');
+		return blacklisted.create({ userID: args[0] }).then(() => {
+			interaction.followUp({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setColor(EMBED_COLOURS.green)
+						.setDescription('✅ Successfully blacklisted.'),
+				],
+			});
+		});
 	},
 };
 

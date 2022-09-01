@@ -8,7 +8,6 @@ const command: Command = {
 		commandName: 'pickweapon',
 		commandAliases: ['mwtweapon', 'pickmyweapon'],
 		commandDescription: 'Looking for a challenge or unsure on what weapon to pick in MWT? Let this command do the hard work for you!',
-		slashCommand: true,
 		slashOptions: [
 			{
 				name: 'weapon-count',
@@ -18,7 +17,7 @@ const command: Command = {
 			},
 		],
 	},
-	run: async ({ message, args, interaction }) => {
+	run: async ({ interaction, args }) => {
 		let weaponList: any = '';
 
 		const weaponEmbed = new EmbedBuilder().setTitle('Your New Arsenal').setColor(EMBED_COLOURS.blurple).setThumbnail('https://i.ibb.co/FqgT3fp/Group-1.png');
@@ -37,20 +36,12 @@ const command: Command = {
 			weaponEmbed.setDescription(`We've picked **${args[0]} weapons** for you to roll out on the battlefield with.`);
 			weaponEmbed.addFields([{ name: 'Weapons', value: weaponList }]);
 
-			if (message) {
-				message.channel.send({ embeds: [weaponEmbed] });
-			} else {
-				interaction.followUp({ embeds: [weaponEmbed] });
-			}
+			interaction.followUp({ embeds: [weaponEmbed] });
 		} else {
 			weaponEmbed.setDescription("We've picked **1 weapon** for you to roll out on the battlefield with.");
 			weaponEmbed.addFields([{ name: 'Weapon', value: `• ${choose(MWT_WEAPONS)}` }]);
 
-			if (message) {
-				message.channel.send({ embeds: [weaponEmbed] });
-			} else {
-				interaction.followUp({ embeds: [weaponEmbed] });
-			}
+			interaction.followUp({ embeds: [weaponEmbed] });
 		}
 	},
 };

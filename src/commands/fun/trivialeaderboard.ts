@@ -19,7 +19,7 @@ const command: Command = {
 			},
 		],
 	},
-	run: async ({ bot, message, args, interaction }) => {
+	run: async ({ bot, interaction, args }) => {
 		const numbers = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'keycap_ten'];
 		let number = '';
 		let tenUsers = '';
@@ -28,7 +28,7 @@ const command: Command = {
 		const leaderboard = new EmbedBuilder() // prettier-ignore
 			.setTitle('👑 Trivia Leaderboard')
 			.setColor(EMBED_COLOURS.blurple)
-			.setFooter({ text: `${message ? message.guild!.name : interaction.guild!.name}`, iconURL: message ? message.guild?.iconURL()! : interaction.guild?.iconURL()! })
+			.setFooter({ text: `${interaction.guild!.name}`, iconURL: interaction.guild?.iconURL()! })
 			.setTimestamp();
 
 		if (args[0] && !Number.isNaN(Number(args[0]))) {
@@ -41,8 +41,7 @@ const command: Command = {
 
 		if (triviaData.length === 0) {
 			leaderboard.setDescription('Uh oh! Looks like no data was found. Try getting some correct trivias and try again!');
-			if (!message) return interaction.followUp({ embeds: [leaderboard] });
-			return message.channel.send({ embeds: [leaderboard] });
+			return interaction.followUp({ embeds: [leaderboard] });
 		}
 
 		triviaData.forEach((user, count: number) => {
@@ -63,45 +62,42 @@ const command: Command = {
 			tenUsers += `${number} <@${user.userID}> | **${user.answersCorrect.toLocaleString()} Points**\n`;
 		});
 
-		const tooManyEmbed = new EmbedBuilder() // prettier-ignore
-			.setTitle('❌ Too many users!')
-			.setDescription('There is too many users to display this embed, try providing less.')
-			.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
-			.setColor(EMBED_COLOURS.red);
-
 		try {
 			leaderboard.addFields([{ name: 'Users', value: tenUsers }]);
 		} catch (err) {
-			if (!message) return interaction.followUp({ embeds: [tooManyEmbed] });
-			return message.channel.send({ embeds: [tooManyEmbed] });
+			return interaction.followUp({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setTitle('❌ Too many users!')
+						.setDescription('There is too many users to display this embed, try providing less.')
+						.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+						.setColor(EMBED_COLOURS.red),
+				],
+			});
 		}
 
-		if (!message) {
-			interaction.followUp({ embeds: [leaderboard] });
-		} else {
-			message.channel.send({ embeds: [leaderboard] });
-		}
+		interaction.followUp({ embeds: [leaderboard] });
 
 		const topUser = await triviaUsers.find({}, '-_id').sort({ answersCorrect: -1 }).limit(1);
 
-		const kingUsers = message ? message.guild!.roles.cache.find((role: any) => role.name === 'Trivia King 👑')!.members.map((member: GuildMember) => member.user.id) : interaction.guild!.roles.cache.find((role: any) => role.name === 'Trivia King 👑')!.members.map((member: GuildMember) => member.user.id);
-		const topUserInServer = message ? message.guild?.members.cache.get(`${BigInt(Object.values(topUser)[0]!.userID)}`) : interaction.guild?.members.cache.get(`${BigInt(Object.values(topUser)[0]!.userID)}`);
+		const kingUsers = interaction.guild!.roles.cache.find((role: any) => role.name === 'Trivia King 👑')!.members.map((member: GuildMember) => member.user.id);
+		const topUserInServer = interaction.guild?.members.cache.get(`${BigInt(Object.values(topUser)[0]!.userID)}`);
 
 		if (kingUsers.length === 0 && topUserInServer) {
-			topUserInServer.roles.add(message ? message.guild!.roles.cache.find((role: any) => role.name === 'Trivia King 👑')! : interaction.guild!.roles.cache.find((role: any) => role.name === 'Trivia King 👑')!, 'New Leaderboard King!');
+			topUserInServer.roles.add(interaction.guild!.roles.cache.find((role: any) => role.name === 'Trivia King 👑')!, 'New Leaderboard King!');
 			(bot.channels.cache.get(process.env.OFFTOPIC_CHANNEL) as TextChannel).send({ content: `<@${Object.values(topUser)[0]!.userID}> is the new trivia leaderboard king! 👑` });
 		}
 
 		kingUsers.forEach(async (userID: string) => {
-			const oldTopUserInServer = message ? message.guild?.members.cache.get(`${BigInt(userID)}`) : interaction.guild?.members.cache.get(`${BigInt(userID)}`);
+			const oldTopUserInServer = interaction.guild?.members.cache.get(`${BigInt(userID)}`);
 
 			if (topUserInServer && oldTopUserInServer) {
 				if (String(userID) !== String(Object.values(topUser)[0]!.userID)) {
 					/* Removing Role from old leaderboard king */
-					oldTopUserInServer.roles.remove(message ? message.guild!.roles.cache.find((role: any) => role.name === 'Trivia King 👑')! : interaction.guild!.roles.cache.find((role: any) => role.name === 'Trivia King 👑')!, 'New Leaderboard King!').catch(() => {});
+					oldTopUserInServer.roles.remove(interaction.guild!.roles.cache.find((role: any) => role.name === 'Trivia King 👑')!, 'New Leaderboard King!').catch(() => {});
 
 					/* Adding Role to new leaderboard king */
-					topUserInServer.roles.add(message ? message.guild!.roles.cache.find((role: any) => role.name === 'Trivia King 👑')! : interaction.guild!.roles.cache.find((role: any) => role.name === 'Trivia King 👑')!, 'New Leaderboard King!').catch(() => {});
+					topUserInServer.roles.add(interaction.guild!.roles.cache.find((role: any) => role.name === 'Trivia King 👑')!, 'New Leaderboard King!').catch(() => {});
 
 					(bot.channels.cache.get(process.env.OFFTOPIC_CHANNEL) as TextChannel).send({ content: `<@${Object.values(topUser)[0]!.userID}> is the new trivia leaderboard king! 👑` });
 				}

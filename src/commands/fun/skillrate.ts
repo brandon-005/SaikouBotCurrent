@@ -1,7 +1,7 @@
-import { Command, ApplicationCommandOptionType, GuildMember, EmbedBuilder, User } from 'discord.js';
+import { Command, ApplicationCommandOptionType, EmbedBuilder, User } from 'discord.js';
 
 import { EMBED_COLOURS } from '../../utils/constants';
-import { getRandomInt, getMember } from '../../utils/functions';
+import { getRandomInt } from '../../utils/functions';
 
 const command: Command = {
 	config: {
@@ -19,49 +19,26 @@ const command: Command = {
 			},
 		],
 	},
-	run: async ({ message, args, interaction }) => {
+	run: async ({ interaction }) => {
 		/* If command is slash command */
-		if (!message) {
-			const interactionUser: User = interaction.options.getUser('user') || interaction.user;
 
-			if (getRandomInt(0, 100) < 98) {
-				return interaction.followUp({
-					embeds: [
-						new EmbedBuilder() //
-							.setAuthor({ name: 'Skill Rating ✨', iconURL: interactionUser.displayAvatarURL() })
-							.setDescription(`**${interactionUser.username}** is ${getRandomInt(0, 100)}% skilled! 🏆`)
-							.setColor('Random'),
-					],
-				});
-			}
+		const interactionUser: User = interaction.options.getUser('user') || interaction.user;
+
+		if (getRandomInt(0, 100) < 98) {
 			return interaction.followUp({
 				embeds: [
 					new EmbedBuilder() //
-						.setAuthor({ name: 'Skill Rating 🔥', iconURL: interactionUser.displayAvatarURL() })
-						.setDescription(`**${interactionUser.username}** is 𝐁𝐄𝐘𝐎𝐍𝐃 𝐆𝐎𝐃𝐋𝐈𝐊𝐄!! 🏆`)
-						.setColor(EMBED_COLOURS.red),
-				],
-			});
-		}
-
-		/* If command is text based */
-		const member: GuildMember = getMember(message, args.join(' '));
-
-		if (getRandomInt(0, 100) < 98) {
-			return message.channel.send({
-				embeds: [
-					new EmbedBuilder() //
-						.setAuthor({ name: 'Skill Rating ✨', iconURL: member.user.displayAvatarURL() })
-						.setDescription(`**${member.displayName}** is ${getRandomInt(0, 100)}% skilled! 🏆`)
+						.setAuthor({ name: 'Skill Rating ✨', iconURL: interactionUser.displayAvatarURL() })
+						.setDescription(`**${interactionUser.username}** is ${getRandomInt(0, 100)}% skilled! 🏆`)
 						.setColor('Random'),
 				],
 			});
 		}
-		return message.channel.send({
+		return interaction.followUp({
 			embeds: [
 				new EmbedBuilder() //
-					.setAuthor({ name: 'Skill Rating 🔥', iconURL: member.user.displayAvatarURL() })
-					.setDescription(`**${member.displayName}** is 𝐁𝐄𝐘𝐎𝐍𝐃 𝐆𝐎𝐃𝐋𝐈𝐊𝐄!! 🏆`)
+					.setAuthor({ name: 'Skill Rating 🔥', iconURL: interactionUser.displayAvatarURL() })
+					.setDescription(`**${interactionUser.username}** is 𝐁𝐄𝐘𝐎𝐍𝐃 𝐆𝐎𝐃𝐋𝐈𝐊𝐄!! 🏆`)
 					.setColor(EMBED_COLOURS.red),
 			],
 		});
