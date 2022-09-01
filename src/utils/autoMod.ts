@@ -111,8 +111,10 @@ export async function swearCheck(bot: any, message: Message) {
 	const data: any = {};
 	const requestedAttributes: any = {};
 	const attributeThresholds: any = {
-		PROFANITY_EXPERIMENTAL: 0.65,
+		PROFANITY: 0.9,
 		SEXUALLY_EXPLICIT: 0.95,
+		TOXICITY: 0.8,
+		INSULT: 0.8,
 	};
 
 	let filteredContent: any;
@@ -143,7 +145,18 @@ export async function swearCheck(bot: any, message: Message) {
 			data[key] = res.data.attributeScores[key].summaryScore.value > attributeThresholds[key];
 		}
 
-		await autoPunish(data.PROFANITY_EXPERIMENTAL === true || data.SEXUALLY_EXPLICIT === true, message, data.PROFANITY_EXPERIMENTAL ? 'PROFANITY' : 'SEXUALLY_EXPLICIT', `\`1.3\` - Swearing, bypassing the bot filter in any way, and all NSFW content is strictly forbidden.`, bot);
+		if ((data.INSULT === true && data.PROFANITY !== true) || (data.TOXICITY === true && data.PROFANITY !== true)) {
+			message.channel.send({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setDescription("We've detected some behaviour that may be toxic or insulting.\n\n🔎 **Looking on how to quick report? Follow below.**")
+						.setImage('https://i.ibb.co/HFcn5k4/image.png')
+						.setColor(EMBED_COLOURS.red),
+				],
+			});
+		}
+
+		await autoPunish(data.PROFANITY === true || data.SEXUALLY_EXPLICIT === true, message, data.PROFANITY ? 'PROFANITY' : 'SEXUALLY_EXPLICIT', `\`1.3\` - Swearing, bypassing the bot filter in any way, and all NSFW content is strictly forbidden.`, bot);
 	});
 }
 
