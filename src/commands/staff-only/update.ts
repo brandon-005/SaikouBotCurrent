@@ -9,6 +9,7 @@ const command: Command = {
 		commandName: 'update',
 		commandAliases: ['ui', 'upidea', 'updatesuggestion', 'updatereport'],
 		commandDescription: 'Approve/deny reports & suggestions.',
+		commandUsage: '<channel> <message-id> <status> [note]',
 		userPermissions: 'ManageMessages',
 		limitedChannel: '🤖staff-cmds',
 		slashOptions: [
@@ -89,7 +90,7 @@ const command: Command = {
 		const suggester = await suggestData.findOne({ messageID: args[1] });
 		const oldEmbed = targetMsg.embeds[0];
 
-		if (!suggester || !reporter)
+		if (!suggester && !reporter)
 			return interaction.followUp({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
