@@ -9,7 +9,6 @@ export = async (bot: any, message: Message) => {
 	if (message.author.bot || message.channel.type === ChannelType.DM || message.system) return;
 
 	if (!message.member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
-		console.log('here1');
 		await swearCheck(bot, message);
 		await maliciousLinkCheck(bot, message);
 		await inviteLinkCheck(bot, message);
