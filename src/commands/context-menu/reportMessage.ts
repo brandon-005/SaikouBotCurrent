@@ -1,6 +1,7 @@
 import { ApplicationCommandType, ContextMenu, EmbedBuilder, ActionRowBuilder, SelectMenuBuilder, ComponentType, SelectMenuInteraction, Message, TextChannel } from 'discord.js';
 import { generateFromMessages } from 'discord-html-transcripts';
 
+import reportData from '../../models/reports';
 import { EMBED_COLOURS, PROMPT_TIMEOUT } from '../../utils/constants';
 
 const cooldown = new Set();
@@ -88,13 +89,18 @@ const menu: ContextMenu = {
 						new EmbedBuilder() // prettier-ignore
 							.setTitle(`🛡 New report!`)
 							.setDescription(`**Platform:** Discord\n**Reported User:** ${selectedMessage.author.tag}\n**Reason**: Infringing Server Rules`)
-							.setThumbnail(bot.user.displayAvatarURL())
-							.setFooter({ text: `Anonymous Report`, iconURL: bot.user.displayAvatarURL() })
+							.setThumbnail(interaction.user.displayAvatarURL())
+							.setFooter({ text: `Reported by ${interaction.guild?.members.cache.get(interaction.user.id)?.displayName}`, iconURL: interaction.user.displayAvatarURL() })
 							.setColor(EMBED_COLOURS.blurple)
 							.setTimestamp(),
 					],
 				})
-				.then((reportMsg) => {
+				.then(async (reportMsg) => {
+					await reportData.create({
+						messageID: reportMsg.id,
+						userID: interaction.user.id,
+					});
+
 					reportMsg.channel.send({
 						files: [attachment],
 					});
