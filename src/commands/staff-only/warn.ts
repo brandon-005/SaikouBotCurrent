@@ -34,7 +34,7 @@ const command: Command = {
 		const member = interaction.options.getMember('user');
 		const reason = args[1];
 
-		if (!member) return noUser(message, false, interaction as CommandInteraction);
+		if (!member) return noUser(interaction, false);
 
 		const userWarns = await warnData.findOne({ userID: member.id });
 
@@ -50,7 +50,7 @@ const command: Command = {
 			reason,
 		};
 
-		if (member.permissions.has(PermissionFlagsBits.ManageMessages)) return equalPerms(message, 'Manage Messages', interaction as CommandInteraction);
+		if (member.permissions.has(PermissionFlagsBits.ManageMessages)) return equalPerms(interaction, 'Manage Messages');
 
 		if (!userWarns) {
 			await warnData.create({
@@ -114,12 +114,21 @@ const command: Command = {
 				const collector = buttonMsg.createMessageComponentCollector({ filter: (userInteraction: Interaction) => userInteraction.user.id === interaction.user.id, max: 1, time: 60000 });
 
 				collector.on('end', async (clickedButton: any) => {
-					if (!clickedButton.first()) return member.ban({ days: 7, reason });
+					if (!clickedButton.first()) {
+						return buttonMsg.edit({
+							embeds: [
+								new EmbedBuilder() // prettier-ignore
+									.setDescription("**⌛ Option wasn't inputted in time.**")
+									.setColor(EMBED_COLOURS.red),
+							],
+							components: [],
+						});
+					}
 
 					switch (clickedButton.first()!.customId) {
 						case 'Yes':
 							try {
-								member.ban({ days: 7, reason });
+								member.ban({ deleteMessageDays: 7, reason });
 							} catch (err) {
 								if (!message) {
 									interaction.guild?.members.ban(member);
