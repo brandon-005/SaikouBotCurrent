@@ -15,7 +15,7 @@ const command: Command = {
 		userPermissions: 'Administrator',
 		limitedChannel: 'None',
 	},
-	run: async ({ message, interaction }) => {
+	run: async ({ interaction }) => {
 		const menuOptions: any = [];
 
 		/* Fetching users with staff role and adding them to select menu */
@@ -240,7 +240,7 @@ const command: Command = {
 								});
 								activeInteraction.delete(interaction.user.id);
 								reasonSummary.stop();
-								collector.stop();
+								return collector.stop();
 							}
 
 							/* CONFIRMATION */
@@ -394,6 +394,13 @@ const command: Command = {
 									confirmCollector.stop();
 									reasonSummary.stop();
 								}
+							});
+
+							confirmCollector.on('end', () => {
+								setupEmbed.edit({ components: [] });
+								activeInteraction.delete(interaction.user.id);
+								reasonSummary.stop();
+								return collector.stop();
 							});
 						});
 
