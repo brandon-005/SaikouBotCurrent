@@ -131,33 +131,36 @@ export async function swearCheck(bot: any, message: Message) {
 
 	if (filteredContent === '') return;
 
-	google.discoverAPI('https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1').then(async (client: any) => {
-		const res = await client.comments.analyze({
-			key: process.env.PERSPECTIVE_API_KEY,
-			resource: {
-				comment: { text: filteredContent || message.content },
-				languages: ['en'],
-				requestedAttributes,
-			},
-		});
-
-		for (const key in res.data.attributeScores) {
-			data[key] = res.data.attributeScores[key].summaryScore.value > attributeThresholds[key];
-		}
-
-		if ((data.INSULT === true && data.PROFANITY !== true) || (data.TOXICITY === true && data.PROFANITY !== true)) {
-			message.channel.send({
-				embeds: [
-					new EmbedBuilder() // prettier-ignore
-						.setDescription("We've detected some behaviour that may be toxic or insulting.\n\n🔎 **Looking on how to quick report? Follow below.**")
-						.setImage('https://i.ibb.co/HFcn5k4/image.png')
-						.setColor(EMBED_COLOURS.red),
-				],
+	google
+		.discoverAPI('https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1')
+		.then(async (client: any) => {
+			const res = await client.comments.analyze({
+				key: process.env.PERSPECTIVE_API_KEY,
+				resource: {
+					comment: { text: filteredContent || message.content },
+					languages: ['en'],
+					requestedAttributes,
+				},
 			});
-		}
 
-		await autoPunish(data.PROFANITY === true || data.SEXUALLY_EXPLICIT === true, message, data.PROFANITY ? 'PROFANITY' : 'SEXUALLY_EXPLICIT', `\`1.3\` - Swearing, bypassing the bot filter in any way, and all NSFW content is strictly forbidden.`, bot);
-	});
+			for (const key in res.data.attributeScores) {
+				data[key] = res.data.attributeScores[key].summaryScore.value > attributeThresholds[key];
+			}
+
+			if ((data.INSULT === true && data.PROFANITY !== true) || (data.TOXICITY === true && data.PROFANITY !== true)) {
+				message.channel.send({
+					embeds: [
+						new EmbedBuilder() // prettier-ignore
+							.setDescription("We've detected some behaviour that may be toxic or insulting.\n\n🔎 **Looking on how to quick report? Follow below.**")
+							.setImage('https://i.ibb.co/HFcn5k4/image.png')
+							.setColor(EMBED_COLOURS.red),
+					],
+				});
+			}
+
+			await autoPunish(data.PROFANITY === true || data.SEXUALLY_EXPLICIT === true, message, data.PROFANITY ? 'PROFANITY' : 'SEXUALLY_EXPLICIT', `\`1.3\` - Swearing, bypassing the bot filter in any way, and all NSFW content is strictly forbidden.`, bot);
+		})
+		.catch(() => {});
 }
 
 /* Invite link filter */
@@ -273,44 +276,47 @@ export async function statusCheck(bot: any, message: Message) {
 
 			if (filteredContent === '') return;
 
-			google.discoverAPI('https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1').then(async (client: any) => {
-				const res = await client.comments.analyze({
-					key: process.env.PERSPECTIVE_API_KEY,
-					resource: {
-						comment: { text: filteredContent || status.state },
-						languages: ['en'],
-						requestedAttributes,
-					},
-				});
-
-				for (const key in res.data.attributeScores) {
-					data[key] = res.data.attributeScores[key].summaryScore.value > attributeThresholds[key];
-				}
-
-				if (data.PROFANITY === true || data.SEXUALLY_EXPLICIT === true) {
-					statusTimer.create({
-						userID: message.member?.id,
-						timestamp: new Date(),
-						duration: 43200000,
-						status: status.state,
+			google
+				.discoverAPI('https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1')
+				.then(async (client: any) => {
+					const res = await client.comments.analyze({
+						key: process.env.PERSPECTIVE_API_KEY,
+						resource: {
+							comment: { text: filteredContent || status.state },
+							languages: ['en'],
+							requestedAttributes,
+						},
 					});
 
-					bot.channels.cache
-						.find((channel: TextChannel) => channel.name === '🤖auto-mod')
-						.send({
-							embeds: [
-								new EmbedBuilder()
-									.setAuthor({ name: message.member ? message.member.displayName : message.author.username, iconURL: message.author.displayAvatarURL() })
-									.setDescription(`**${message.author.username} has triggered the auto moderation for INAPPROPRIATE_STATUS, they will be kicked in 12 hours if they don't change it**.`)
-									.addFields([{ name: 'Triggered Status', value: `${status.state}` }])
-									.setFooter({ text: `User ID: ${message.author.id}` })
-									.setTimestamp()
-									.setColor(EMBED_COLOURS.red),
-							],
+					for (const key in res.data.attributeScores) {
+						data[key] = res.data.attributeScores[key].summaryScore.value > attributeThresholds[key];
+					}
+
+					if (data.PROFANITY === true || data.SEXUALLY_EXPLICIT === true) {
+						statusTimer.create({
+							userID: message.member?.id,
+							timestamp: new Date(),
+							duration: 43200000,
+							status: status.state,
 						});
-					return message.channel.send({ content: `<@${message.author.id}>, please change your status to be in-line with Saikou's rules, failure to do so will result in an automated kick after 12 hours.\n\n**Infraction:** \`3.1\` - Inappropriate names, **game displays** and profile pictures will be asked to be removed and changed. Failure to change them will result in removal of the server.` });
-				}
-			});
+
+						bot.channels.cache
+							.find((channel: TextChannel) => channel.name === '🤖auto-mod')
+							.send({
+								embeds: [
+									new EmbedBuilder()
+										.setAuthor({ name: message.member ? message.member.displayName : message.author.username, iconURL: message.author.displayAvatarURL() })
+										.setDescription(`**${message.author.username} has triggered the auto moderation for INAPPROPRIATE_STATUS, they will be kicked in 12 hours if they don't change it**.`)
+										.addFields([{ name: 'Triggered Status', value: `${status.state}` }])
+										.setFooter({ text: `User ID: ${message.author.id}` })
+										.setTimestamp()
+										.setColor(EMBED_COLOURS.red),
+								],
+							});
+						return message.channel.send({ content: `<@${message.author.id}>, please change your status to be in-line with Saikou's rules, failure to do so will result in an automated kick after 12 hours.\n\n**Infraction:** \`3.1\` - Inappropriate names, **game displays** and profile pictures will be asked to be removed and changed. Failure to change them will result in removal of the server.` });
+					}
+				})
+				.catch(() => {});
 		}
 	}
 }
