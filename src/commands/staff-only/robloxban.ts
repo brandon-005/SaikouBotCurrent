@@ -1,4 +1,4 @@
-import { Command, ApplicationCommandOptionType, CommandInteraction, EmbedBuilder, TextChannel } from 'discord.js';
+import { Command, ApplicationCommandOptionType, EmbedBuilder, TextChannel } from 'discord.js';
 import axios from 'axios';
 import ms from 'ms';
 
@@ -10,6 +10,7 @@ const command: Command = {
 		commandName: 'robloxban',
 		commandAliases: ['gameban', 'game'],
 		commandDescription: 'Ban a Roblox user.',
+		commandUsage: '<game> <player> <reason> [duration]',
 		userPermissions: 'ManageMessages',
 		limitedChannel: '🤖staff-cmds',
 		COOLDOWN_TIME: 10,
@@ -50,7 +51,7 @@ const command: Command = {
 			},
 		],
 	},
-	run: async ({ bot, message, args, interaction }) => {
+	run: async ({ bot, interaction, args }) => {
 		let robloxName: any;
 		let robloxID: any;
 		let invalidUser = false;
@@ -68,12 +69,10 @@ const command: Command = {
 				robloxID = response.data.data.map((value: any) => value.id);
 				if (response.data.data.length === 0) invalidUser = true;
 			})
-			.catch((error) => {
-				console.error(error);
-			});
+			.catch(() => {});
 
 		if (invalidUser !== false) {
-			return noUser(message, false, interaction as CommandInteraction);
+			return noUser(interaction, false);
 		}
 
 		/* ADDING BAN */
@@ -146,6 +145,12 @@ const command: Command = {
 							embed.setTitle('🛡️ Invalid Staff Member');
 							embed.setDescription("Oh no! Looks like the name provided doesn't appear to be a Saikou staff member. Make sure...\n\n• Your nickname is set to your Roblox username\n• You have permission to do this action");
 							return interaction.followUp({ embeds: [embed] });
+
+						default:
+							console.error(err);
+							embed.setTitle('❌ Unknown Error!');
+							embed.setDescription("Uh oh! Looks like something's not working quite right. Please try re-running the command.");
+							return interaction.followUp({ embeds: [embed] });
 					}
 				});
 		}
@@ -214,7 +219,9 @@ const command: Command = {
 
 					default:
 						console.error(err);
-						break;
+						embed.setTitle('❌ Unknown Error!');
+						embed.setDescription("Uh oh! Looks like something's not working quite right. Please try re-running the command.");
+						return interaction.followUp({ embeds: [embed] });
 				}
 			});
 	},
