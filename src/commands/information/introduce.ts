@@ -1,5 +1,5 @@
 import { Command, EmbedBuilder, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, ButtonInteraction, ModalBuilder, ModalActionRowComponentBuilder, TextInputBuilder, TextInputStyle, Interaction } from 'discord.js';
-import { EMBED_COLOURS, MESSAGE_TIMEOUT } from '../../utils/constants';
+import { EMBED_COLOURS, MESSAGE_TIMEOUT, PROMPT_TIMEOUT } from '../../utils/constants';
 
 const openPrompt = new Set();
 
@@ -72,32 +72,42 @@ const command: Command = {
 			.then((msg: Message) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
 
 		const dmChannel = await interaction.user.createDM();
-		const collector = dmChannel.createMessageComponentCollector({ filter: (msgFilter: Interaction) => msgFilter.user.id === interaction.user.id, componentType: ComponentType.Button, time: 600000 });
+		const collector = dmChannel.createMessageComponentCollector({ filter: (msgFilter: Interaction) => msgFilter.user.id === interaction.user.id, componentType: ComponentType.Button, time: PROMPT_TIMEOUT });
 
 		collector.on('collect', async (button: ButtonInteraction) => {
 			if (button.customId === 'intro-menu') {
 				const modal = new ModalBuilder().setCustomId('intro-form').setTitle('Saikou Introduction 👋');
 
-				const aboutMeInput = new TextInputBuilder() // prettier-ignore
-					.setCustomId('aboutMe')
-					.setLabel("Something you'd like to tell about yourself?")
-					.setStyle(TextInputStyle.Paragraph);
+				modal.addComponents([
+					new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents([
+								new TextInputBuilder() // prettier-ignore
+									.setCustomId('aboutMe')
+									.setMinLength(10)
+									.setMaxLength(500)
+									.setPlaceholder('Ex: Nestiic, Community Manager for Saikou. ')
+									.setLabel("Something you'd like to tell about yourself?")
+									.setStyle(TextInputStyle.Paragraph)]), // prettier-ignore
 
-				const hobbiesInput = new TextInputBuilder() // prettier-ignore
-					.setCustomId('hobbiesInput')
-					.setLabel("What's some of your favorite hobbies?")
-					.setStyle(TextInputStyle.Paragraph);
+					new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents([
+						new TextInputBuilder() // prettier-ignore
+							.setCustomId('hobbiesInput')
+							.setMinLength(5)
+							.setMaxLength(500)
+							.setPlaceholder('Ex: Gaming, Coding, Football')
+							.setLabel("What's some of your favorite hobbies?")
+							.setStyle(TextInputStyle.Paragraph),
+					]),
 
-				const colourInput = new TextInputBuilder() // prettier-ignore
-					.setCustomId('colourInput')
-					.setLabel("What's your favourite colour?")
-					.setStyle(TextInputStyle.Short);
-
-				const firstActionRow = new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents([aboutMeInput]);
-				const secondActionRow = new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents([hobbiesInput]);
-				const thirdActionRow = new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents([colourInput]);
-
-				modal.addComponents([firstActionRow, secondActionRow, thirdActionRow]);
+					new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents([
+						new TextInputBuilder() // prettier-ignore
+							.setCustomId('colourInput')
+							.setMinLength(3)
+							.setMaxLength(20)
+							.setPlaceholder('Ex: Red')
+							.setLabel("What's your favourite colour?")
+							.setStyle(TextInputStyle.Short),
+					]),
+				]);
 
 				await button.showModal(modal);
 			}
@@ -106,6 +116,13 @@ const command: Command = {
 		collector.on('end', () => {
 			openPrompt.delete(interaction.user.id);
 			welcome.edit({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setTitle('❌ Cancelled!')
+						.setDescription("You didn't input in time, please try again.")
+						.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+						.setColor(EMBED_COLOURS.red),
+				],
 				components: [],
 			});
 		});
