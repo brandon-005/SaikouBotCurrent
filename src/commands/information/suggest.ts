@@ -1,15 +1,17 @@
 import { Command, ApplicationCommandOptionType, ComponentType, ActionRowBuilder, ButtonBuilder, ButtonStyle, ButtonInteraction, Message, EmbedBuilder } from 'discord.js';
 
-import { EMBED_COLOURS, MESSAGE_TIMEOUT } from '../../utils/constants';
+import { EMBED_COLOURS, MESSAGE_TIMEOUT, PROMPT_TIMEOUT } from '../../utils/constants';
 import suggestionData from '../../models/suggestions';
+
+const openPrompt = new Set();
 
 const command: Command = {
 	config: {
 		commandName: 'suggest',
 		commandAliases: ['suggestion'],
 		commandDescription: 'Pondering on that one idea for Saikou? Why wait!',
+		commandUsage: '<platform> <suggestion> <anonymous>',
 		limitedChannel: 'suggestions',
-		COOLDOWN_TIME: 120,
 		slashOptions: [
 			{
 				name: 'platform',
@@ -56,9 +58,25 @@ const command: Command = {
 		],
 	},
 	run: async ({ bot, interaction, args }) => {
+		/* IF USER HAS PROMPT OPEN */
+		if (openPrompt.has(interaction.user.id))
+			return interaction
+				.followUp({
+					embeds: [
+						new EmbedBuilder() // prettier-ignore
+							.setTitle('🗃️ Prompt already open!')
+							.setDescription('You already have an introduction form open, please finish the prompt!')
+							.setColor(EMBED_COLOURS.red)
+							.setFooter({ text: 'Already open prompt' }),
+					],
+				})
+				.then((msg: Message) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
+
 		/* CONFIRMATION PROMPT */
+		let confirmationEmbed: Message;
+
 		try {
-			await interaction.user.send({
+			confirmationEmbed = await interaction.user.send({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('Just to confirm...')
@@ -99,6 +117,8 @@ const command: Command = {
 				.then((msg: Message) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
 		}
 
+		openPrompt.add(interaction.user.id);
+
 		/* DM sent embed */
 		await interaction
 			.followUp({
@@ -111,11 +131,12 @@ const command: Command = {
 			.then((msg: any) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT))
 			.catch(() => {});
 
-		const collector = (await interaction.user.createDM())!.createMessageComponentCollector({ filter: (button: any) => button.user.id === interaction.user.id, componentType: ComponentType.Button, time: 30000 });
+		const collector = (await interaction.user.createDM())!.createMessageComponentCollector({ filter: (button: any) => button.user.id === interaction.user.id, componentType: ComponentType.Button, time: PROMPT_TIMEOUT });
 
 		collector.on('collect', async (button: ButtonInteraction): Promise<any> => {
 			switch (button.customId) {
 				case 'exit':
+					openPrompt.delete(interaction.user.id);
 					button.update({
 						embeds: [
 							new EmbedBuilder() // prettier-ignore
@@ -129,6 +150,7 @@ const command: Command = {
 					break;
 
 				case 'send':
+					openPrompt.delete(interaction.user.id);
 					button.update({
 						embeds: [
 							new EmbedBuilder() // prettier-ignore
@@ -164,6 +186,20 @@ const command: Command = {
 					});
 					break;
 			}
+		});
+
+		collector.on('end', () => {
+			openPrompt.delete(interaction.user.id);
+			confirmationEmbed.edit({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setTitle('❌ Cancelled!')
+						.setDescription("You didn't input in time, please try again.")
+						.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+						.setColor(EMBED_COLOURS.red),
+				],
+				components: [],
+			});
 		});
 	},
 };
