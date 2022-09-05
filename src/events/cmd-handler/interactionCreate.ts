@@ -20,7 +20,7 @@ export = async (bot: Client, interaction: Interaction) => {
 		const commandFile = bot.slashCommands.get(interaction.commandName);
 		const args: any = [];
 
-		if (!commandFile) return errorEmbed(true, undefined, interaction);
+		if (!commandFile) return errorEmbed(interaction);
 
 		/* GETTING ARGS */
 		interaction.options.data.map((argument: any) => args.push(argument.value.length > 1024 ? `${argument.value.substring(0, 1021)}...` : argument.value));
@@ -135,7 +135,7 @@ export = async (bot: Client, interaction: Interaction) => {
 
 		commandFile.run({ bot, args, interaction }).catch((errorMessage: Error) => {
 			console.error(errorMessage);
-			errorEmbed(true, undefined, interaction);
+			errorEmbed(interaction);
 
 			webhookClient.send({
 				embeds: [
@@ -157,7 +157,7 @@ export = async (bot: Client, interaction: Interaction) => {
 		const commandFile = bot.slashCommands.get(interaction.commandName);
 		const args: any = [];
 
-		if (!commandFile) return errorEmbed(true, undefined, interaction as CommandInteraction);
+		if (!commandFile) return errorEmbed(interaction);
 
 		/* GETTING ARGS */
 		interaction.options.data.map((argument) => args.push(argument.value));
