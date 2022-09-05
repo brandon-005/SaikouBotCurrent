@@ -1,4 +1,4 @@
-import { Command, ApplicationCommandOptionType, CommandInteraction, EmbedBuilder } from 'discord.js';
+import { Command, ApplicationCommandOptionType, EmbedBuilder } from 'discord.js';
 
 import { noUser } from '../../utils/embeds';
 import { EMBED_COLOURS } from '../../utils/constants';
@@ -8,6 +8,7 @@ const command: Command = {
 		commandName: 'unban',
 		commandAliases: ['removeban'],
 		commandDescription: 'Use this command to remove a ban from a specific user, handy for when mistakes are made!',
+		commandUsage: '<id>',
 		userPermissions: 'BanMembers',
 		limitedChannel: 'None',
 		slashOptions: [
@@ -19,9 +20,9 @@ const command: Command = {
 			},
 		],
 	},
-	run: async ({ message, interaction, args }) => {
+	run: async ({ interaction, args }) => {
 		await interaction.guild?.bans.fetch().then((bans: any) => {
-			if (bans.size === 0 || !bans.find((member: any) => member.user.id === args[0])) return noUser(message, false, interaction as CommandInteraction);
+			if (bans.size === 0 || !bans.find((member: any) => member.user.id === args[0])) return noUser(interaction, false);
 
 			const bannedUser = bans.find((member: any) => member.user.id === args[0]);
 

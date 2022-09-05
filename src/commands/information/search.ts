@@ -1,4 +1,4 @@
-import { Command, ApplicationCommandOptionType, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonInteraction, GuildMember, CommandInteraction, ButtonStyle, PermissionFlagsBits, ComponentType } from 'discord.js';
+import { Command, ApplicationCommandOptionType, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, PermissionFlagsBits, ComponentType } from 'discord.js';
 import axios from 'axios';
 import moment from 'moment';
 

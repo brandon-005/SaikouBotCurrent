@@ -1,4 +1,4 @@
-import { Command, ApplicationCommandOptionType, CommandInteraction, EmbedBuilder } from 'discord.js';
+import { Command, ApplicationCommandOptionType, EmbedBuilder } from 'discord.js';
 
 import { noUser } from '../../utils/embeds';
 import { EMBED_COLOURS } from '../../utils/constants';
@@ -20,9 +20,9 @@ const command: Command = {
 			},
 		],
 	},
-	run: async ({ message, interaction }) => {
+	run: async ({ interaction }) => {
 		const member = interaction.options.getMember('user');
-		if (!member) return noUser(message, false, interaction as CommandInteraction);
+		if (!member) return noUser(interaction, false);
 
 		if (member.isCommunicationDisabled() === false) {
 			const noDataEmbed = new EmbedBuilder() // prettier-ignore
@@ -35,7 +35,7 @@ const command: Command = {
 			return interaction.followUp({ embeds: [noDataEmbed] });
 		}
 
-		await member.timeout(0, `Removed by ${message ? message.author.username : interaction.user.username}`);
+		await member.timeout(0, `Removed by ${interaction.user.username}`);
 
 		return interaction.followUp({
 			embeds: [

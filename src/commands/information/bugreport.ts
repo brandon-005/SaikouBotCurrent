@@ -160,7 +160,7 @@ const command: Command = {
 
 						await button.showModal(modal);
 
-						const formResponse = await button.awaitModalSubmit({ time: PROMPT_TIMEOUT, filter: (menuUser) => menuUser.user.id === interaction.user.id }).catch((err) => null);
+						const formResponse = await button.awaitModalSubmit({ time: PROMPT_TIMEOUT, filter: (menuUser) => menuUser.user.id === interaction.user.id }).catch(() => null);
 
 						if (formResponse === null) {
 							openPrompt.delete(interaction.user.id);

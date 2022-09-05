@@ -192,6 +192,7 @@ const command: Command = {
 
 			collector.on('end', () => {
 				loadingMsg.edit({ components: [] });
+				activeInteraction.delete(interaction.user.id);
 			});
 		} else {
 			return loadingMsg.edit({ embeds: [statusEmbed] });

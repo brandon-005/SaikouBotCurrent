@@ -9,7 +9,6 @@ const command: Command = {
 		commandAliases: ['triviarank', 'triviastats', 'ts', 'stats'],
 		commandDescription: 'Get some more in depth stats about your correct trivia answers!',
 		commandUsage: '[user]',
-		slashCommand: true,
 		slashOptions: [
 			{
 				name: 'user',

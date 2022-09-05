@@ -146,7 +146,7 @@ setInterval(async () => {
 /* Automatic QOTD */
 cron.schedule('0 13 * * *', async () => {
 	const counter = await questionNumber.findOne({ id: 1 });
-	const qotdChannel = bot.channels.cache.find((channel) => channel.name === '❔question-of-the-day');
+	const qotdChannel = bot.channels.cache.find((channel: any) => (channel as TextChannel).name === '❔question-of-the-day');
 
 	if (!counter) {
 		questionNumber.create({

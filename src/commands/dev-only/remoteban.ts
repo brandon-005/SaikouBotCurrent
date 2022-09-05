@@ -1,4 +1,4 @@
-import { Command, ApplicationCommandOptionType, CommandInteraction, EmbedBuilder } from 'discord.js';
+import { Command, ApplicationCommandOptionType, EmbedBuilder } from 'discord.js';
 import axios from 'axios';
 import ms from 'ms';
 
@@ -11,7 +11,6 @@ const command: Command = {
 		commandAliases: ['addrbxban'],
 		commandDescription: 'DEVELOPER ONLY - Bypasses Modlog for rbxban',
 		limitedChannel: 'None',
-		slashCommand: true,
 		developerOnly: true,
 		slashOptions: [
 			{
@@ -72,7 +71,7 @@ const command: Command = {
 				.catch(() => {});
 
 			if (invalidUser !== false) {
-				return noUser(message, false, interaction as CommandInteraction);
+				return noUser(interaction, false);
 			}
 
 			/* ADDING BAN */

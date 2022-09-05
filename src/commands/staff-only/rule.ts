@@ -7,6 +7,7 @@ const command: Command = {
 		commandAliases: ['serverRule'],
 		commandDescription: 'Recites a rule within the server.',
 		userPermissions: 'ManageMessages',
+		commandUsage: '<rule-number> [user]',
 		limitedChannel: 'None',
 		slashOptions: [
 			{

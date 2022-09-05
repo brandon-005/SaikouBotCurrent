@@ -16,7 +16,7 @@ const command: Command = {
 			},
 		],
 	},
-	run: async ({ message, args, interaction }) => {
+	run: async ({ interaction, args }) => {
 		const role = interaction.guild?.roles.cache.find((serverRoles: Role) => serverRoles.name.toLowerCase() === args[0]?.toLowerCase());
 
 		if (!role) {

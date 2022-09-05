@@ -1,4 +1,4 @@
-import { Command, ApplicationCommandOptionType, CommandInteraction, EmbedBuilder, TextChannel } from 'discord.js';
+import { Command, ApplicationCommandOptionType, EmbedBuilder, TextChannel } from 'discord.js';
 import axios from 'axios';
 
 import { noUser } from '../../utils/embeds';
@@ -9,10 +9,10 @@ const command: Command = {
 		commandName: 'unrbxban',
 		commandAliases: ['removebanrbx'],
 		commandDescription: 'unban a Roblox user.',
+		commandUsage: '<player>',
 		userPermissions: 'ManageMessages',
 		limitedChannel: '🤖staff-cmds',
 		COOLDOWN_TIME: 30,
-		slashCommand: true,
 		slashOptions: [
 			{
 				name: 'roblox-user',
@@ -22,7 +22,7 @@ const command: Command = {
 			},
 		],
 	},
-	run: async ({ bot, message, args, interaction }) => {
+	run: async ({ bot, interaction, args }) => {
 		let robloxName: any;
 		let robloxID: any;
 		let invalidUser = false;
@@ -45,7 +45,7 @@ const command: Command = {
 			});
 
 		if (invalidUser !== false) {
-			return noUser(message, false, interaction as CommandInteraction);
+			return noUser(interaction, false);
 		}
 
 		return axios({

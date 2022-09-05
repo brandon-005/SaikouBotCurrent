@@ -9,7 +9,6 @@ const command: Command = {
 		commandAliases: ['prorate', 'skill', 'pro', 'rate', 'rating'],
 		commandDescription: 'See how skilled you truly are with a state of the art command, 100% accurate no questions asked.',
 		commandUsage: '[user]',
-		slashCommand: true,
 		slashOptions: [
 			{
 				name: 'user',

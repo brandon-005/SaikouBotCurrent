@@ -14,6 +14,7 @@ const command: Command = {
 		commandAliases: ['timedMute', 'nospeak'],
 		commandDescription: 'Mutes a user within the server.',
 		userPermissions: 'ManageMessages',
+		commandUsage: '<user> <time> <reason>',
 		limitedChannel: 'None',
 		slashOptions: [
 			{
@@ -45,7 +46,7 @@ const command: Command = {
 
 		const userWarns = await warnData.findOne({ userID: member.id });
 
-		if (member.permissions && member.permissions.has(PermissionFlagsBits.ManageMessages)) return equalPerms(message, 'Manage Messages');
+		if (member.permissions && member.permissions.has(PermissionFlagsBits.ManageMessages)) return equalPerms(interaction, 'Manage Messages');
 
 		if (member.isCommunicationDisabled() === true) {
 			return interaction.followUp({
@@ -91,7 +92,7 @@ const command: Command = {
 			await userWarns.save();
 		}
 
-		await moderationDmEmbed(member, `Mute`, `Hello **${member.user.username}**,\n\nWe noticed your account has recently broke Saikou's Community Rules again. Because of this, your account has received a **${ms(ms(time))} mute** on our Discord Server.\n\nIf you continue to break the rules, your account will receive further penalties. To learn more about our rules, visit <#397797150840324115>\n\nWe build our games and community for players to have fun. Creating a safe environment and enjoyable experience for everyone is a crucial part of what we're about, and our community rules in place is what we ask and expect players to abide by to achieve this.\n\nPlease check the attached moderator note below for more details.`, reason);
+		await moderationDmEmbed(member, `Mute`, `Hello **${member.user.username}**,\n\nWe noticed your account has recently broke Saikou's Community Rules again. Because of this, your account has received a **${ms(ms(time))} mute** on our Discord server.\n\nIf you continue to break the rules, your account will receive further penalties. To learn more about our rules, visit <#397797150840324115>.\n\nWe build our games and community for players to have fun. Creating a safe environment and enjoyable experience for everyone is a crucial part of what we're about, and our community rules in place is what we ask and expect players to abide by to achieve this.\n\nPlease check the attached moderator note below for more details.`, reason);
 		await moderationEmbed(message, bot, `${ms(ms(time))} Mute`, member, reason, false, interaction as CommandInteraction);
 	},
 };

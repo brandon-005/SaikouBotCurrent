@@ -8,8 +8,8 @@ const command: Command = {
 	config: {
 		commandName: 'trivialeaderboard',
 		commandAliases: ['tl', 'lbtrivia', 'lb', 'leaderboard'],
+		commandUsage: '[amount]',
 		commandDescription: 'Compete against your friends for that sweet number one spot in the most correct trivias.',
-		slashCommand: true,
 		slashOptions: [
 			{
 				name: 'amount',

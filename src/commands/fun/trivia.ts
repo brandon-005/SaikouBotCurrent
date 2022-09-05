@@ -16,6 +16,7 @@ const command: Command = {
 		const triviaUser = await triviaAnswerData.findOne({ userID: interaction.user.id });
 		const randomOrderedOptions = fetchedQuestion[0].options.sort(() => Math.random() - 0.5);
 		const optionsObj: any = {};
+		const allowedEmojis: string[] = [];
 
 		const triviaSent = await interaction.followUp({
 			embeds: [
@@ -30,11 +31,12 @@ const command: Command = {
 
 		randomOrderedOptions.forEach(async (option: string, count: number) => {
 			Object.assign(optionsObj, { [option]: LETTER_EMOJIS[count] });
+			allowedEmojis.push(LETTER_EMOJIS[count]);
 			await triviaSent.react(LETTER_EMOJIS[count]!);
 		});
 
 		try {
-			const collectingReaction = await triviaSent.awaitReactions({ filter: (reaction: any, user: any) => LETTER_EMOJIS.includes(reaction.emoji.name) && user.id === interaction.user.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
+			const collectingReaction = await triviaSent.awaitReactions({ filter: (reaction: any, user: any) => allowedEmojis.includes(reaction.emoji.name) && user.id === interaction.user.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
 			const inputtedReaction = collectingReaction.first()?.emoji.name;
 
 			const resultEmbed = new EmbedBuilder() // prettier-ignore

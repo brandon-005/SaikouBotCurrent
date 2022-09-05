@@ -14,8 +14,6 @@ const command: Command = {
 
 		if (!guild.available) return interaction.followUp('Unable to perform this action right now.');
 
-		console.log(guild);
-
 		return interaction.followUp({
 			embeds: [
 				new EmbedBuilder() //

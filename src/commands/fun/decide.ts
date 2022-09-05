@@ -1,7 +1,6 @@
 import { Command, ApplicationCommandOptionType, EmbedBuilder } from 'discord.js';
 
 import { choose } from '../../utils/functions';
-import { EMBED_COLOURS } from '../../utils/constants';
 
 const command: Command = {
 	config: {

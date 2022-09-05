@@ -8,6 +8,7 @@ const command: Command = {
 		commandName: 'anonymous',
 		commandAliases: ['reveal'],
 		commandDescription: 'Reveals the author behind an anonymous suggestion or report.',
+		commandUsage: '<id>',
 		userPermissions: 'ManageMessages',
 		limitedChannel: '🤖staff-cmds',
 		slashOptions: [

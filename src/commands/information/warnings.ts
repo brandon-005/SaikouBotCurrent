@@ -1,7 +1,6 @@
-import { Command, ApplicationCommandOptionType, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonInteraction, SelectMenuBuilder, SelectMenuInteraction, Message, GuildMember, PermissionFlagsBits, ButtonStyle, ComponentType } from 'discord.js';
+import { Command, ApplicationCommandOptionType, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonInteraction, SelectMenuBuilder, SelectMenuInteraction, Message, PermissionFlagsBits, ButtonStyle, ComponentType } from 'discord.js';
 import moment from 'moment';
 
-import { getMember } from '../../utils/functions';
 import { EMBED_COLOURS, PROMPT_TIMEOUT } from '../../utils/constants';
 import warnData from '../../models/warnings';
 
@@ -13,7 +12,6 @@ const command: Command = {
 		commandAliases: ['warns', 'viewwarns', 'checkwarns', 'delwarn', 'editwarn', 'deletewarn'],
 		commandDescription: "Be able to check a user's warnings through this command!",
 		commandUsage: '[user]',
-		slashCommand: true,
 		slashOptions: [
 			{
 				name: 'user',

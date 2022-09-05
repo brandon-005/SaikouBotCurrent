@@ -1,4 +1,4 @@
-import { Command, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ComponentType, Embed } from 'discord.js';
+import { Command, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ComponentType } from 'discord.js';
 
 import { EMBED_COLOURS, GAME_FACTS } from '../../utils/constants';
 import { choose } from '../../utils/functions';

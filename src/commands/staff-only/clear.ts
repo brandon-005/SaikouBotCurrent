@@ -8,6 +8,7 @@ const command: Command = {
 		commandAliases: ['purge'],
 		commandDescription: 'Used for removing a set amount of messages in a channel or from a user.',
 		userPermissions: 'ManageMessages',
+		commandUsage: '<delete-amount> [user]',
 		limitedChannel: 'None',
 		slashOptions: [
 			{
@@ -81,7 +82,7 @@ const command: Command = {
 			.filter((msg: Message) => msg.author.id === member.id)
 			.forEach((userMsg: Message) => {
 				if (deletedMessages > Number(deleteAmount)) return;
-				userMsg.delete();
+				userMsg.delete().catch(() => {});
 				deletedMessages += 1;
 			});
 
