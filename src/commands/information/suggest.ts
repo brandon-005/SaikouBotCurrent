@@ -137,16 +137,7 @@ const command: Command = {
 			switch (button.customId) {
 				case 'exit':
 					openPrompt.delete(interaction.user.id);
-					button.update({
-						embeds: [
-							new EmbedBuilder() // prettier-ignore
-								.setTitle('✅ Cancelled!')
-								.setDescription('The prompt has been cancelled successfully.')
-								.setThumbnail('https://i.ibb.co/kxJqM6F/mascot-Success.png')
-								.setColor(EMBED_COLOURS.green),
-						],
-						components: [],
-					});
+					collector.stop();
 					break;
 
 				case 'send':
@@ -184,6 +175,8 @@ const command: Command = {
 						messageID: suggestionEmbed.id,
 						userID: interaction.user.id,
 					});
+
+					collector.stop();
 					break;
 			}
 		});
@@ -191,13 +184,6 @@ const command: Command = {
 		collector.on('end', () => {
 			openPrompt.delete(interaction.user.id);
 			confirmationEmbed.edit({
-				embeds: [
-					new EmbedBuilder() // prettier-ignore
-						.setTitle('❌ Cancelled!')
-						.setDescription("You didn't input in time, please try again.")
-						.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
-						.setColor(EMBED_COLOURS.red),
-				],
 				components: [],
 			});
 		});
