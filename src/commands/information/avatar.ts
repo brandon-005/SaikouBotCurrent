@@ -19,6 +19,16 @@ const command: Command = {
 	run: async ({ interaction }) => {
 		const member: User = interaction.options.getUser('user')! || interaction.user;
 
+		if (!member.avatar) {
+			return interaction.followUp({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setDescription('ℹ️ This user has no avatar.')
+						.setColor(EMBED_COLOURS.blurple),
+				],
+			});
+		}
+
 		return interaction.followUp({
 			embeds: [
 				new EmbedBuilder() //
