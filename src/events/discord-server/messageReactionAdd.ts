@@ -6,7 +6,7 @@ import suggestData from '../../models/suggestions';
 
 const openPrompt = new Set();
 
-export = async (_bot: Client, reaction: any, user: User) => {
+export = async (bot: Client, reaction: any, user: User) => {
 	/* FEATURED SUGGESTIONS SYSTEM */
 	const { message } = reaction;
 
@@ -122,11 +122,25 @@ export = async (_bot: Client, reaction: any, user: User) => {
 			}
 		}
 
-		// /* If suggestion reaches 10 downvotes, delete */
-		// if (message.reactions.cache.get('⬇️').count - 1 >= 2) {
-		// 	await suggestData.deleteOne({ messageID: message.id });
-		// 	await message.delete();
-		// }
+		// /* If suggestion reaches 15 downvotes, delete */
+		if (reaction.emoji.name === '⬇️' && message.reactions.cache.get('⬇️').count - 1 >= 15) {
+			const suggester = await suggestData.findOne({ messageID: message.id });
+
+			bot.users
+				.send(suggester.userID, {
+					embeds: [
+						new EmbedBuilder() // prettier-ignore
+							.setTitle('ℹ️ Suggestion Removed!')
+							.setDescription("Your suggestion has been automatically removed due to reaching 15+ downvotes in the Saikou Discord.\n\n**🔎 Where did I go wrong?**\nWe filter suggestions that our community aren't interested in, we recommend ensuring that your suggestion fits in with our platform and that it's detailed.")
+							.setColor(EMBED_COLOURS.blurple)
+							.addFields({ name: 'Suggestion Content', value: `${suggester.suggestionMessage}` }),
+					],
+				})
+				.catch(() => {});
+
+			await suggestData.deleteOne({ messageID: message.id });
+			await message.delete();
+		}
 
 		/* Adding Suggestion to featured if it wasn't denied */
 		if (!suggestion.featured && message.reactions.cache.get('⬆️').count - 1 >= 15) {
