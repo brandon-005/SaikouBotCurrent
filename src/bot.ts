@@ -4,6 +4,7 @@ import axios from 'axios';
 import cron from 'node-cron';
 
 import statusTimer from './models/statusTimer';
+import weeklyTrivia from './models/weeklyTrivia';
 import { StatusTimerTypes } from './TS/interfaces';
 import { BIRTHDAY_GIFS, BIRTHDAY_MESSAGES, EMBED_COLOURS } from './utils/constants';
 import { devErrorEmbed, moderationDmEmbed } from './utils/embeds';
@@ -176,6 +177,11 @@ cron.schedule('0 1 * * *', async () => {
 			});
 		}
 	});
+});
+
+/* Weekly trivia deletion */
+cron.schedule('0 0 * * MON', async () => {
+	await weeklyTrivia.deleteMany({});
 });
 
 bot.login(process.env.TEST === 'true' ? process.env.DISCORD_TESTTOKEN : process.env.DISCORD_TOKEN);

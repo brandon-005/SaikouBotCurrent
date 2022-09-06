@@ -1,6 +1,7 @@
 import { Command, EmbedBuilder } from 'discord.js';
 
 import triviaData from '../../models/trivias';
+import weeklyTrivia from '../../models/weeklyTrivia';
 import triviaAnswerData from '../../models/correctTrivia';
 import { EMBED_COLOURS, LETTER_EMOJIS, PROMPT_TIMEOUT } from '../../utils/constants';
 
@@ -14,6 +15,7 @@ const command: Command = {
 	run: async ({ interaction }) => {
 		const fetchedQuestion = await triviaData.aggregate([{ $sample: { size: 1 } }]);
 		const triviaUser = await triviaAnswerData.findOne({ userID: interaction.user.id });
+		const weeklyTriviaUser = await weeklyTrivia.findOne({ userID: interaction.user.id });
 		const randomOrderedOptions = fetchedQuestion[0].options.sort(() => Math.random() - 0.5);
 		const optionsObj: any = {};
 		const allowedEmojis: string[] = [];
@@ -48,7 +50,13 @@ const command: Command = {
 			if (`${Object.keys(optionsObj)!.find((key: any) => optionsObj[key] === inputtedReaction)!}` === `${fetchedQuestion[0].answer}`) {
 				if (!triviaUser) {
 					await triviaAnswerData.create({ userID: interaction.user.id, answersCorrect: fetchedQuestion[0].points });
+				}
 
+				if (!weeklyTriviaUser) {
+					await weeklyTrivia.create({ userID: interaction.user.id, answersCorrect: fetchedQuestion[0].points });
+				}
+
+				if (!triviaUser || !weeklyTriviaUser) {
 					if (fetchedQuestion[0].points === 1) {
 						resultEmbed.setDescription(`You answered the trivia correctly and gained **${fetchedQuestion[0].points} point**!`);
 					} else {
@@ -65,17 +73,21 @@ const command: Command = {
 				}
 
 				triviaUser.answersCorrect += fetchedQuestion[0].points;
+				weeklyTriviaUser.answersCorrect += fetchedQuestion[0].points;
 				await triviaUser.save();
+				await weeklyTriviaUser.save();
 
 				return await interaction.followUp({ embeds: [resultEmbed] });
 			}
 
-			if (triviaUser && triviaUser.answersCorrect - 1 > 0) {
+			if ((triviaUser && triviaUser.answersCorrect - 1 > 0) || (weeklyTriviaUser && weeklyTriviaUser.answersCorrect - 1 > 0)) {
 				resultEmbed.setDescription(`You answered the trivia incorrectly and lost **1 point**!`);
 				resultEmbed.addFields([{ name: 'Correct Answer', value: `${Object.entries(optionsObj).find((key: any) => key[0] === fetchedQuestion[0].answer)![1]}`, inline: true }]);
 
 				triviaUser.answersCorrect -= 1;
+				weeklyTriviaUser.answersCorrect -= 1;
 				await triviaUser.save();
+				await weeklyTriviaUser.save();
 
 				return await interaction.followUp({ embeds: [resultEmbed] });
 			}
