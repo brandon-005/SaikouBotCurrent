@@ -1,4 +1,4 @@
-import { Command, ApplicationCommandOptionType, EmbedBuilder, TextChannel } from 'discord.js';
+import { Command, ApplicationCommandOptionType, EmbedBuilder, TextChannel, Message } from 'discord.js';
 
 import { EMBED_COLOURS } from '../../utils/constants';
 import reportData from '../../models/reports';
@@ -68,11 +68,11 @@ const command: Command = {
 		],
 	},
 	run: async ({ bot, args, interaction }) => {
-		let targetChannel;
-		let targetMsg;
+		let targetChannel: TextChannel;
+		let targetMsg: Message;
 
 		try {
-			targetChannel = await interaction.guild.channels.cache.find((channel: TextChannel) => channel.name.match(args[0]));
+			targetChannel = interaction.guild.channels.cache.find((channel: any) => channel.name.match(args[0])) as TextChannel;
 			targetMsg = await targetChannel.messages.fetch(args[1]);
 		} catch (err) {
 			return interaction.followUp({
@@ -126,13 +126,13 @@ const command: Command = {
 				dmEmbed.setTitle('❌ Report Denied!');
 				newReportEmbed.setColor(EMBED_COLOURS.red);
 				dmEmbed.setColor(EMBED_COLOURS.red);
-				newReportEmbed.setFooter({ text: `Denied - ${interaction.guild?.members.cache.get(reporter.userID)?.displayName}`, iconURL: oldEmbed.footer.icon_url });
+				newReportEmbed.setFooter({ text: `Denied - ${interaction.guild?.members.cache.get(reporter.userID)?.displayName}`, iconURL: oldEmbed.footer.iconURL });
 			} else {
 				newReportEmbed.setTitle('✅ Report Approved!');
 				dmEmbed.setTitle('✅ Report Approved!');
 				newReportEmbed.setColor(EMBED_COLOURS.green);
 				dmEmbed.setColor(EMBED_COLOURS.green);
-				newReportEmbed.setFooter({ text: `Approved - ${interaction.guild?.members.cache.get(reporter.userID)?.displayName}`, iconURL: oldEmbed.footer.icon_url });
+				newReportEmbed.setFooter({ text: `Approved - ${interaction.guild?.members.cache.get(reporter.userID)?.displayName}`, iconURL: oldEmbed.footer.iconURL });
 			}
 
 			bot.users.send(reporter.userID, { embeds: [dmEmbed] }).catch(() => {});

@@ -1,4 +1,4 @@
-import { Command, EmbedBuilder, Message, ActionRowBuilder, SelectMenuBuilder, SelectMenuInteraction, PermissionFlagsBits, ComponentType, Interaction } from 'discord.js';
+import { Command, EmbedBuilder, Message, ActionRowBuilder, SelectMenuBuilder, SelectMenuInteraction, PermissionFlagsBits, ComponentType, Interaction, GuildMember } from 'discord.js';
 import { readdirSync } from 'fs';
 import { resolve } from 'path';
 
@@ -44,7 +44,7 @@ const command: Command = {
 			});
 		}
 
-		if (interaction.member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
+		if ((interaction.member as GuildMember).permissions.has(PermissionFlagsBits.ManageMessages)) {
 			menuOptions.push({
 				label: 'Moderation Commands',
 				value: 'moderation',

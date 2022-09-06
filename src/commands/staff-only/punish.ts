@@ -57,7 +57,7 @@ const command: Command = {
 					.setColor(EMBED_COLOURS.blurple),
 			],
 			components: [
-				new ActionRowBuilder().addComponents([
+				new ActionRowBuilder<ButtonBuilder>().addComponents([
 					// prettier-ignore
 					new ButtonBuilder().setLabel('Punish 📝').setStyle(ButtonStyle.Danger).setCustomId('punishStaff'),
 					new ButtonBuilder().setLabel('View Strikes 🔍').setStyle(ButtonStyle.Primary).setCustomId('viewStrikes'),
@@ -171,11 +171,11 @@ const command: Command = {
 						const reasonSummary = interaction.channel!.createMessageComponentCollector({ filter: (reasonOptionsMenu: any) => reasonOptionsMenu.user.id === interaction.user.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT });
 
 						reasonSummary.on('collect', async (options: SelectMenuInteraction) => {
-							let reasonOptions: string = '';
-							let detailedReason: any;
-							let correctiveAction: any;
-							let reviewDate: any;
-							let strikeCount: any;
+							let reasonOptions: string,
+								detailedReason: string,
+								correctiveAction: string,
+								reviewDate: string,
+								strikeCount: string = '';
 
 							options.values.forEach((value) => {
 								reasonOptions += `${value}\n`;
@@ -273,7 +273,7 @@ const command: Command = {
 							setupEmbed.edit({
 								embeds: [confirmEmbed],
 								components: [
-									new ActionRowBuilder().addComponents([
+									new ActionRowBuilder<ButtonBuilder>().addComponents([
 										// prettier-ignore
 										new ButtonBuilder().setLabel('Confirm').setStyle(ButtonStyle.Danger).setCustomId('confirm'),
 										new ButtonBuilder().setLabel('Exit').setStyle(ButtonStyle.Success).setCustomId('exit'),
@@ -329,7 +329,7 @@ const command: Command = {
 										staffMember.send({
 											embeds: [dmEmbed],
 											components: [
-												new ActionRowBuilder().addComponents([
+												new ActionRowBuilder<ButtonBuilder>().addComponents([
 													// prettier-ignore
 													new ButtonBuilder().setLabel('Acknowledged').setStyle(ButtonStyle.Success).setCustomId('receivedNotice'),
 												]),
@@ -370,7 +370,7 @@ const command: Command = {
 													.setFooter({ text: 'Saikou Development • Sent by Management' }),
 											],
 											components: [
-												new ActionRowBuilder().addComponents([
+												new ActionRowBuilder<ButtonBuilder>().addComponents([
 													// prettier-ignore
 													new ButtonBuilder().setLabel('Acknowledged').setStyle(ButtonStyle.Success).setCustomId('receivedNotice'),
 												]),

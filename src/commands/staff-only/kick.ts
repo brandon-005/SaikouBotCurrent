@@ -31,6 +31,9 @@ const command: Command = {
 		],
 	},
 	run: async ({ bot, message, args, interaction }) => {
+		/* If user can't be found in cache */
+		if (!interaction.inCachedGuild()) return noUser(interaction, false);
+
 		const member = interaction.options.getMember('user');
 		const reason = args[1];
 
@@ -44,7 +47,7 @@ const command: Command = {
 		interaction.followUp({
 			embeds: [
 				new EmbedBuilder() // prettier-ignore
-					.setDescription(`✅ **${member.displayName ? member.displayName : member.username} has been kicked.**`)
+					.setDescription(`✅ **${member.displayName ? member.displayName : member.user.username} has been kicked.**`)
 					.setColor(EMBED_COLOURS.green),
 			],
 		});

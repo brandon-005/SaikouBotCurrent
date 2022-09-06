@@ -1,6 +1,7 @@
 import { Command, ApplicationCommandOptionType, Message, EmbedBuilder } from 'discord.js';
 
 import { EMBED_COLOURS, MESSAGE_TIMEOUT } from '../../utils/constants';
+import { noUser } from '../../utils/embeds';
 
 const command: Command = {
 	config: {
@@ -26,8 +27,12 @@ const command: Command = {
 		],
 	},
 	run: async ({ args, interaction }) => {
+		/* If user can't be found in cache */
+		if (!interaction.inCachedGuild()) return noUser(interaction, false);
+
 		const deleteAmount = args[0];
 		const member = interaction.options.getMember('user');
+		if (!member) return noUser(interaction, false);
 
 		if (isNaN(Number(deleteAmount)) || parseInt(String(deleteAmount), 10) <= 0) {
 			return interaction.followUp({

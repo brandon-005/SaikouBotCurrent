@@ -2,6 +2,8 @@ import { Command, ApplicationCommandOptionType, EmbedBuilder, ActionRowBuilder, 
 import moment from 'moment';
 
 import { EMBED_COLOURS, PROMPT_TIMEOUT } from '../../utils/constants';
+import { WarningTypes } from '../../TS/interfaces';
+import { noUser } from '../../utils/embeds';
 import warnData from '../../models/warnings';
 
 const activeInteraction = new Set();
@@ -22,9 +24,12 @@ const command: Command = {
 		],
 	},
 	run: async ({ interaction }) => {
+		/* If user can't be found in cache */
+		if (!interaction.inCachedGuild()) return noUser(interaction, false);
+
 		const member = interaction.options.getMember('user') || interaction.member;
 
-		const userWarns = await warnData.findOne({ userID: member.id });
+		const userWarns: WarningTypes = await warnData.findOne({ userID: member.id });
 		const noWarnsEmbed = new EmbedBuilder() // prettier-ignore
 			.setDescription('ℹ️ This user has no warnings.')
 			.setColor(EMBED_COLOURS.blurple);
@@ -35,7 +40,7 @@ const command: Command = {
 		const warningsEmbed = new EmbedBuilder() // prettier-ignore
 			.setColor(EMBED_COLOURS.blurple);
 
-		warningsEmbed.setAuthor({ name: `${member.displayName ? member.displayName : member.username} has ${userWarns.warnings.length} warnings in ${interaction.guild!.name}`, iconURL: member.displayAvatarURL() });
+		warningsEmbed.setAuthor({ name: `${member.displayName ? member.displayName : member.user.username} has ${userWarns.warnings.length} warnings in ${interaction.guild!.name}`, iconURL: member.displayAvatarURL() });
 
 		userWarns.warnings.forEach((warn: any, count: number) => {
 			const moderator = interaction.guild!.members.cache.get(warn.moderator);
@@ -64,7 +69,7 @@ const command: Command = {
 			const warningSentEmbed: any = await interaction.followUp({
 				embeds: [warningsEmbed],
 				components: [
-					new ActionRowBuilder().addComponents([
+					new ActionRowBuilder<ButtonBuilder>().addComponents([
 						// prettier-ignore
 						new ButtonBuilder().setLabel('Edit 📝').setStyle(ButtonStyle.Success).setCustomId('editWarn'),
 						new ButtonBuilder().setLabel('Remove 🗑️').setStyle(ButtonStyle.Danger).setCustomId('removeWarn'),
@@ -124,7 +129,7 @@ const command: Command = {
 									warningSentEmbed.edit({
 										embeds: [
 											new EmbedBuilder() // prettier-ignore
-												.setDescription(`✅ **${member.displayName ? member.displayName : member.username}'s warning was edited.**`)
+												.setDescription(`✅ **${member.displayName ? member.displayName : member.user.username}'s warning was edited.**`)
 												.setColor(EMBED_COLOURS.green),
 										],
 										components: [],
@@ -174,7 +179,7 @@ const command: Command = {
 							await warningSentEmbed.edit({
 								embeds: [
 									new EmbedBuilder() // prettier-ignore
-										.setDescription(`✅ **${member.displayName ? member.displayName : member.username}'s warnings were deleted.**`)
+										.setDescription(`✅ **${member.displayName ? member.displayName : member.user.username}'s warnings were deleted.**`)
 										.setColor(EMBED_COLOURS.green),
 								],
 								components: [],

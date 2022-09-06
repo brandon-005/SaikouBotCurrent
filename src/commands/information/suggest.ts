@@ -90,7 +90,7 @@ const command: Command = {
 						.setFooter({ text: 'Indicate your response below.' }),
 				],
 				components: [
-					new ActionRowBuilder().addComponents([
+					new ActionRowBuilder<ButtonBuilder>().addComponents([
 						new ButtonBuilder() // prettier-ignore
 							.setLabel('Send')
 							.setStyle(ButtonStyle.Success)

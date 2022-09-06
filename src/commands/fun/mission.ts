@@ -31,7 +31,7 @@ const command: Command = {
 		const sentEmbed = await interaction.followUp({
 			embeds: [missionEmbed],
 			components: [
-				new ActionRowBuilder().addComponents([
+				new ActionRowBuilder<ButtonBuilder>().addComponents([
 					// prettier-ignore
 					new ButtonBuilder().setLabel('New Mission 🎮').setStyle(ButtonStyle.Primary).setCustomId('newMission'),
 				]),
@@ -48,9 +48,10 @@ const command: Command = {
 				if ((missionEmbed as unknown as Embed).description === newMission) newMission = `${choose(MWT_MISSIONS)}`;
 
 				missionEmbed.setDescription(newMission);
-				return button.update({
+				button.update({
 					embeds: [missionEmbed],
 				});
+				return;
 			}
 		});
 

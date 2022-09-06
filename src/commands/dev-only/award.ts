@@ -3,6 +3,7 @@ import { Command, ApplicationCommandOptionType, EmbedBuilder } from 'discord.js'
 import triviaData from '../../models/correctTrivia';
 import tokenData from '../../models/weaponTokens';
 import { EMBED_COLOURS } from '../../utils/constants';
+import { noUser } from '../../utils/embeds';
 
 const command: Command = {
 	config: {
@@ -43,7 +44,13 @@ const command: Command = {
 		],
 	},
 	run: async ({ interaction, args }) => {
+		/* If user can't be found in cache */
+		if (!interaction.inCachedGuild()) return noUser(interaction, false);
+
 		const member = interaction.options.getMember('user');
+
+		if (!member) return noUser(interaction, false);
+
 		const successEmbed = new EmbedBuilder() // prettier-ignore
 			.setTitle('✅ Successfully Updated!')
 			.setDescription(`The **${args[0]}** for **${member.user.username}** has been updated successfully.`)

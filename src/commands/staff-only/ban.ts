@@ -28,6 +28,9 @@ const command: Command = {
 		],
 	},
 	run: async ({ bot, interaction, args }) => {
+		/* If user can't be found in cache */
+		if (!interaction.inCachedGuild()) return noUser(interaction, false);
+
 		const member = interaction.options.getMember('user');
 		const reason = args[1];
 
@@ -42,7 +45,7 @@ const command: Command = {
 					.setColor(EMBED_COLOURS.red),
 			],
 			components: [
-				new ActionRowBuilder().addComponents([
+				new ActionRowBuilder<ButtonBuilder>().addComponents([
 					// prettier-ignore
 					new ButtonBuilder().setLabel('Yes').setStyle(ButtonStyle.Success).setCustomId('Yes'),
 					new ButtonBuilder().setLabel('No').setStyle(ButtonStyle.Danger).setCustomId('No'),
@@ -54,12 +57,12 @@ const command: Command = {
 		const collector = buttonMsg.createMessageComponentCollector({ filter: (userInteraction: Interaction) => userInteraction.user.id === interaction.user.id, max: 1, time: 30000 });
 
 		const successEmbed = new EmbedBuilder() // prettier-ignore
-			.setDescription(`✅ **${member.displayName ? member.displayName : member.username} has been banned.**`)
+			.setDescription(`✅ **${member.displayName ? member.displayName : member.user.username} has been banned.**`)
 			.setColor(EMBED_COLOURS.green);
 
 		collector.on('end', async (buttonInteraction: any) => {
 			if (!buttonInteraction.first()) {
-				return buttonMsg.edit({
+				buttonMsg.edit({
 					embeds: [
 						new EmbedBuilder() // prettier-ignore
 							.setDescription("**⌛ Option wasn't inputted in time.**")
@@ -67,11 +70,13 @@ const command: Command = {
 					],
 					components: [],
 				});
+
+				return;
 			}
 
 			switch (buttonInteraction.first()!.customId) {
 				case 'Yes':
-					await moderationDmEmbed(member, 'Ban', `Hello **${member.user ? member.user.username : member.username}**,\n\nWe noticed your account has recently broke Saikou's Community Rules for the final time. Because of this, your account has been permanently banned from the Saikou Discord.\n\nIf you believe this is a mistake, submit an appeal by visiting:\nhttps://forms.gle/L98zfzbC8fuAz5We6\n\nWe build our games and community for players to have fun. Creating a safe environment and enjoyable experience for everyone is a crucial part of what we're about, and our community rules in place is what we ask and expect players to abide by to achieve this.\n\nPlease check the attached moderator note below for more details.`, reason);
+					await moderationDmEmbed(member, 'Ban', `Hello **${member.user.username}**,\n\nWe noticed your account has recently broke Saikou's Community Rules for the final time. Because of this, your account has been permanently banned from the Saikou Discord.\n\nIf you believe this is a mistake, submit an appeal by visiting:\nhttps://forms.gle/L98zfzbC8fuAz5We6\n\nWe build our games and community for players to have fun. Creating a safe environment and enjoyable experience for everyone is a crucial part of what we're about, and our community rules in place is what we ask and expect players to abide by to achieve this.\n\nPlease check the attached moderator note below for more details.`, reason);
 
 					try {
 						member.ban({ deleteMessageDays: 7, reason });
@@ -81,7 +86,7 @@ const command: Command = {
 					break;
 
 				case 'No':
-					await moderationDmEmbed(member, 'Ban', `Hello **${member.user ? member.user.username : member.username}**,\n\nWe noticed your account has recently broke Saikou's Community Rules for the final time. Because of this, your account has been permanently banned from the Saikou Discord.\n\nIf you believe this is a mistake, submit an appeal by visiting\nhttps://forms.gle/L98zfzbC8fuAz5We6\n\nWe build our games and community for players to have fun. Creating a safe environment and enjoyable experience for everyone is a crucial part of what we're about, and our community rules in place is what we ask and expect players to abide by to achieve this.\n\nPlease check the attached moderator note below for more details.`, reason);
+					await moderationDmEmbed(member, 'Ban', `Hello **${member.user.username}**,\n\nWe noticed your account has recently broke Saikou's Community Rules for the final time. Because of this, your account has been permanently banned from the Saikou Discord.\n\nIf you believe this is a mistake, submit an appeal by visiting\nhttps://forms.gle/L98zfzbC8fuAz5We6\n\nWe build our games and community for players to have fun. Creating a safe environment and enjoyable experience for everyone is a crucial part of what we're about, and our community rules in place is what we ask and expect players to abide by to achieve this.\n\nPlease check the attached moderator note below for more details.`, reason);
 
 					try {
 						member.ban({ reason });

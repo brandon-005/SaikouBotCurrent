@@ -31,7 +31,7 @@ const command: Command = {
 		const sentEmbed = await interaction.followUp({
 			embeds: [gamefactEmbed],
 			components: [
-				new ActionRowBuilder().addComponents([
+				new ActionRowBuilder<ButtonBuilder>().addComponents([
 					// prettier-ignore
 					new ButtonBuilder().setLabel('New Fact 🗃️').setStyle(ButtonStyle.Primary).setCustomId('newFact'),
 				]),
@@ -48,9 +48,11 @@ const command: Command = {
 				if (gamefactEmbed.data.description === newFact) newFact = `**Fact:** ${choose(GAME_FACTS)}`;
 
 				gamefactEmbed.setDescription(newFact);
-				return button.update({
+				button.update({
 					embeds: [gamefactEmbed],
 				});
+
+				return;
 			}
 		});
 

@@ -38,15 +38,17 @@ const command: Command = {
 		],
 	},
 	run: async ({ bot, message, args, interaction }) => {
+		/* If user can't be found in cache */
+		if (!interaction.inCachedGuild()) return noUser(interaction, false);
+
 		const member = interaction.options.getMember('user');
 		const time = args[1];
 		const reason = args[2];
 
 		if (!member) return noUser(interaction, false);
+		if (member.permissions && member.permissions.has(PermissionFlagsBits.ManageMessages)) return equalPerms(interaction, 'Manage Messages');
 
 		const userWarns = await warnData.findOne({ userID: member.id });
-
-		if (member.permissions && member.permissions.has(PermissionFlagsBits.ManageMessages)) return equalPerms(interaction, 'Manage Messages');
 
 		if (member.isCommunicationDisabled() === true) {
 			return interaction.followUp({

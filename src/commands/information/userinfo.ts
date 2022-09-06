@@ -2,6 +2,7 @@ import { Command, ApplicationCommandOptionType, EmbedBuilder, Role, PermissionFl
 
 import moment from 'moment';
 import { EMBED_COLOURS } from '../../utils/constants';
+import { noUser } from '../../utils/embeds';
 
 const command: Command = {
 	config: {
@@ -19,6 +20,9 @@ const command: Command = {
 		],
 	},
 	run: async ({ interaction }) => {
+		/* If user can't be found in cache */
+		if (!interaction.inCachedGuild()) return noUser(interaction, false);
+
 		const member = interaction.options.getMember('user') || interaction.member;
 
 		const userinfoEmbed = new EmbedBuilder() // prettier-ignore

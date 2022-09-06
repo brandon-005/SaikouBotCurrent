@@ -55,7 +55,7 @@ const command: Command = {
 						resultEmbed.setDescription(`You answered the trivia correctly and gained **${fetchedQuestion[0].points} points**!`);
 					}
 
-					return interaction.followUp({ embeds: [resultEmbed] });
+					return await interaction.followUp({ embeds: [resultEmbed] });
 				}
 
 				if (fetchedQuestion[0].points === 1) {
@@ -67,7 +67,7 @@ const command: Command = {
 				triviaUser.answersCorrect += fetchedQuestion[0].points;
 				await triviaUser.save();
 
-				return interaction.followUp({ embeds: [resultEmbed] });
+				return await interaction.followUp({ embeds: [resultEmbed] });
 			}
 
 			if (triviaUser && triviaUser.answersCorrect - 1 > 0) {
@@ -77,13 +77,13 @@ const command: Command = {
 				triviaUser.answersCorrect -= 1;
 				await triviaUser.save();
 
-				return interaction.followUp({ embeds: [resultEmbed] });
+				return await interaction.followUp({ embeds: [resultEmbed] });
 			}
 
 			resultEmbed.setDescription(`You answered the trivia incorrectly, good try!`);
 			resultEmbed.addFields([{ name: 'Correct Answer', value: `${Object.entries(optionsObj).find((key: any) => key[0] === fetchedQuestion[0].answer)![1]}`, inline: true }]);
 
-			return interaction.followUp({ embeds: [resultEmbed] });
+			return await interaction.followUp({ embeds: [resultEmbed] });
 		} catch (err) {
 			return interaction.followUp({
 				embeds: [

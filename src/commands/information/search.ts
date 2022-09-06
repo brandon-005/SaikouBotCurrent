@@ -1,4 +1,4 @@
-import { Command, ApplicationCommandOptionType, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, PermissionFlagsBits, ComponentType } from 'discord.js';
+import { Command, ApplicationCommandOptionType, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, PermissionFlagsBits, ComponentType, GuildMember } from 'discord.js';
 import axios from 'axios';
 import moment from 'moment';
 
@@ -88,7 +88,7 @@ const command: Command = {
 			infoEmbed.setFooter({ text: `User ID: ${robloxID} • Join Date: ${moment(response.data.created).format('ll')}` });
 		});
 
-		if (interaction.member.permissions.has(PermissionFlagsBits.ManageMessages)) {
+		if ((interaction.member as GuildMember).permissions.has(PermissionFlagsBits.ManageMessages)) {
 			/* IF USER HAS PROMPT OPEN */
 			if (activeInteraction.has(interaction.user.id)) {
 				infoEmbed.setFooter({ text: 'Exit previous search prompt to receive the option to scan.' });
@@ -99,7 +99,7 @@ const command: Command = {
 
 			const info: any = await interaction.followUp({
 				embeds: [infoEmbed],
-				components: [new ActionRowBuilder().addComponents([new ButtonBuilder().setLabel('Scan Account 📊').setStyle(ButtonStyle.Primary).setCustomId('scanAcc'), new ButtonBuilder().setLabel('Exit 🚪').setStyle(ButtonStyle.Primary).setCustomId('exit')])],
+				components: [new ActionRowBuilder<ButtonBuilder>().addComponents([new ButtonBuilder().setLabel('Scan Account 📊').setStyle(ButtonStyle.Primary).setCustomId('scanAcc'), new ButtonBuilder().setLabel('Exit 🚪').setStyle(ButtonStyle.Primary).setCustomId('exit')])],
 			});
 
 			const collector = interaction.channel!.createMessageComponentCollector({ filter: (menu: any) => menu.user.id === interaction.user.id, componentType: ComponentType.Button, time: 30000 });

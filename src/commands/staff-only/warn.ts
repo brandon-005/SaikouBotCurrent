@@ -31,6 +31,9 @@ const command: Command = {
 		],
 	},
 	run: async ({ bot, message, args, interaction }) => {
+		/* If user can't be found in cache */
+		if (!interaction.inCachedGuild()) return noUser(interaction, false);
+
 		const member = interaction.options.getMember('user');
 		const reason = args[1];
 
@@ -102,7 +105,7 @@ const command: Command = {
 							.setColor(EMBED_COLOURS.red),
 					],
 					components: [
-						new ActionRowBuilder().addComponents([
+						new ActionRowBuilder<ButtonBuilder>().addComponents([
 							// prettier-ignore
 							new ButtonBuilder().setLabel('Yes').setStyle(ButtonStyle.Success).setCustomId('Yes'),
 							new ButtonBuilder().setLabel('No').setStyle(ButtonStyle.Danger).setCustomId('No'),

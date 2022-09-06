@@ -21,6 +21,9 @@ const command: Command = {
 		],
 	},
 	run: async ({ interaction }) => {
+		/* If user can't be found in cache */
+		if (!interaction.inCachedGuild()) return noUser(interaction, false);
+
 		const member = interaction.options.getMember('user');
 		if (!member) return noUser(interaction, false);
 
