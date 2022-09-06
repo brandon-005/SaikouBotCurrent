@@ -48,28 +48,20 @@ const command: Command = {
 				.setThumbnail(interaction.user.displayAvatarURL());
 
 			if (`${Object.keys(optionsObj)!.find((key: any) => optionsObj[key] === inputtedReaction)!}` === `${fetchedQuestion[0].answer}`) {
-				if (!triviaUser) {
-					await triviaAnswerData.create({ userID: interaction.user.id, answersCorrect: fetchedQuestion[0].points });
-				}
-
-				if (!weeklyTriviaUser) {
-					await weeklyTrivia.create({ userID: interaction.user.id, answersCorrect: fetchedQuestion[0].points });
-				}
-
-				if (!triviaUser || !weeklyTriviaUser) {
-					if (fetchedQuestion[0].points === 1) {
-						resultEmbed.setDescription(`You answered the trivia correctly and gained **${fetchedQuestion[0].points} point**!`);
-					} else {
-						resultEmbed.setDescription(`You answered the trivia correctly and gained **${fetchedQuestion[0].points} points**!`);
-					}
-
-					return await interaction.followUp({ embeds: [resultEmbed] });
-				}
-
 				if (fetchedQuestion[0].points === 1) {
 					resultEmbed.setDescription(`You answered the trivia correctly and gained **${fetchedQuestion[0].points} point**!`);
 				} else {
 					resultEmbed.setDescription(`You answered the trivia correctly and gained **${fetchedQuestion[0].points} points**!`);
+				}
+
+				if (!triviaUser) {
+					await triviaAnswerData.create({ userID: interaction.user.id, answersCorrect: fetchedQuestion[0].points });
+					return await interaction.followUp({ embeds: [resultEmbed] });
+				}
+
+				if (!weeklyTriviaUser) {
+					await weeklyTrivia.create({ userID: interaction.user.id, answersCorrect: fetchedQuestion[0].points });
+					return await interaction.followUp({ embeds: [resultEmbed] });
 				}
 
 				triviaUser.answersCorrect += fetchedQuestion[0].points;
