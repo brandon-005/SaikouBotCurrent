@@ -205,9 +205,31 @@ const command: Command = {
 								return attachmentCollector.stop('Prompt Cancelled');
 							}
 
-							if (collectedMsg.content.toLowerCase() === 'done' && !fetchedAttachments.length) return interaction.user.send('You **MUST** provide at least one video, link or photo of the offence before you can submit the report.');
+							if (collectedMsg.content.toLowerCase() === 'done' && !fetchedAttachments.length) {
+								return interaction.user.send({
+									embeds: [
+										new EmbedBuilder() // prettier-ignore
+											.setTitle('📎 Provide Attachment!')
+											.setDescription('You must provide at least **one** attachment or link before submitting this report.')
+											.setColor(EMBED_COLOURS.red)
+											.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png'),
+									],
+								});
+							}
+
+							if (collectedMsg.attachments.size > 5 || fetchedAttachments.length === 5) {
+								return interaction.user.send({
+									embeds: [
+										new EmbedBuilder() // prettier-ignore
+											.setTitle('🗃️ Maximum Uploads!')
+											.setDescription("You have reached the maximum upload limit for this report (5 attachments).\n\n**🔎 Looking where to go next?**\nYou'll need to either `cancel` this report to upload different attachments, or say `done` to submit.")
+											.setColor(EMBED_COLOURS.red)
+											.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png'),
+									],
+								});
+							}
+
 							if (collectedMsg.content.toLowerCase() === 'done') return attachmentCollector.stop();
-							if (collectedMsg.attachments.size > 5 || fetchedAttachments.length === 5) return interaction.user.send('You can only provide 5 photos/videos, please either say **done** to submit the report, or cancel to submit different proof.');
 
 							if (collectedMsg.attachments.size > 0) {
 								collectedMsg.attachments.forEach((attachment) => {
