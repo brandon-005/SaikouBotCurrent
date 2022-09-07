@@ -1,7 +1,6 @@
 import { Command, ApplicationCommandOptionType, CommandInteraction, Interaction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, PermissionFlagsBits, ButtonStyle } from 'discord.js';
 import { Types } from 'mongoose';
 
-import { getMember } from '../../utils/functions';
 import { equalPerms, moderationDmEmbed, moderationEmbed, noUser } from '../../utils/embeds';
 import { EMBED_COLOURS } from '../../utils/constants';
 
@@ -16,7 +15,6 @@ const command: Command = {
 		commandUsage: '<user> <reason>',
 		COOLDOWN_TIME: 1,
 		limitedChannel: 'None',
-		slashCommand: true,
 		slashOptions: [
 			{
 				name: 'user',
@@ -33,20 +31,13 @@ const command: Command = {
 		],
 	},
 	run: async ({ bot, message, args, interaction }) => {
-		let member: any;
-		let reason: any;
+		/* If user can't be found in cache */
+		if (!interaction.inCachedGuild()) return noUser(interaction, false);
 
-		if (!message) {
-			member = interaction.options.getMember('user');
-			// eslint-disable-next-line prefer-destructuring
-			reason = args[1];
-			if (!member) return noUser(message, false, interaction as CommandInteraction);
-		} else {
-			member = getMember(message, String(args[0]), true);
-			reason = args.slice(1).join(' ');
+		const member = interaction.options.getMember('user');
+		const reason = args[1];
 
-			if (!member) return noUser(message);
-		}
+		if (!member) return noUser(interaction, false);
 
 		const userWarns = await warnData.findOne({ userID: member.id });
 
@@ -62,7 +53,7 @@ const command: Command = {
 			reason,
 		};
 
-		if (member.permissions.has(PermissionFlagsBits.ManageMessages)) return equalPerms(message, 'Manage Messages', interaction as CommandInteraction);
+		if (member.permissions.has(PermissionFlagsBits.ManageMessages)) return equalPerms(interaction, 'Manage Messages');
 
 		if (!userWarns) {
 			await warnData.create({
@@ -72,8 +63,8 @@ const command: Command = {
 
 			await moderationDmEmbed(member, 'Warning', `Hello **${member.user.username}**,\n\nYour account has recently been flagged by a staff member for breaching Saikou's Community Rules.\n\nTo learn more about our server rules, visit <#397797150840324115>\n\nWe take these actions seriously. If you continue to break the rules, we may need to take additional action against your account, which could result in a permanent ban from the Saikou Discord.\n\nPlease check the attached moderator note below for more details.`, reason);
 			warnEmbed.addFields([{ name: 'Auto Punishment:', value: 'None', inline: true }]);
-			if (!message) return interaction.followUp({ embeds: [warnEmbed] });
-			return message.channel.send({ embeds: [warnEmbed] });
+
+			return interaction.followUp({ embeds: [warnEmbed] });
 		}
 
 		userWarns.warnings.push(warningObj);
@@ -87,8 +78,7 @@ const command: Command = {
 				await member.timeout(7200000, reason);
 
 				warnEmbed.addFields([{ name: 'Auto Punishment:', value: '2h Mute', inline: true }]);
-				if (!message) return interaction.followUp({ embeds: [warnEmbed] });
-				return message.channel.send({ embeds: [warnEmbed] });
+				return interaction.followUp({ embeds: [warnEmbed] });
 
 			case 4:
 				await moderationDmEmbed(member, `Mute`, `Hello **${member.user.username}**,\n\nWe noticed your account has recently broke Saikou's Community Rules again. Because of this, your account has received a **1 day mute** on our Discord Server.\n\nIf you continue to break the rules, your account will receive further penalties. To learn more about our rules, visit <#397797150840324115>\n\nWe build our games and community for players to have fun. Creating a safe environment and enjoyable experience for everyone is a crucial part of what we're about, and our community rules in place is what we ask and expect players to abide by to achieve this.\n\nPlease check the attached moderator note below for more details.`, reason);
@@ -97,8 +87,7 @@ const command: Command = {
 				await member.timeout(86400000, reason);
 
 				warnEmbed.addFields([{ name: 'Auto Punishment:', value: '1d Mute', inline: true }]);
-				if (!message) return interaction.followUp({ embeds: [warnEmbed] });
-				return message.channel.send({ embeds: [warnEmbed] });
+				return interaction.followUp({ embeds: [warnEmbed] });
 
 			case 5:
 				await moderationDmEmbed(member, 'Kick', `Hello **${member.user.username}**,\n\nWe noticed your account has recently broke Saikou's Community Rules again. Because of this, your account has received a kick from our Discord Server.\n\nIf you continue to break the rules, your account will be permanently banned from accessing the Discord Server. To learn more about our rules, visit <#397797150840324115>\n\nWe build our games and community for players to have fun. Creating a safe environment and enjoyable experience for everyone is a crucial part of what we're about, and our community rules in place is what we ask and expect players to abide by to achieve this.\n\nPlease check the attached moderator note below for more details.`, reason);
@@ -106,50 +95,43 @@ const command: Command = {
 				member.kick(reason);
 
 				warnEmbed.addFields([{ name: 'Auto Punishment:', value: 'Server Kick', inline: true }]);
-				if (!message) return interaction.followUp({ embeds: [warnEmbed] });
-				return message.channel.send({ embeds: [warnEmbed] });
+				return interaction.followUp({ embeds: [warnEmbed] });
 
 			case 6:
-				const buttonMsg: any = message
-					? await message.channel.send({
-							embeds: [
-								new EmbedBuilder() // prettier-ignore
-									.setDescription("**🗑️ Do you want to delete the user's message history?**")
-									.setColor(EMBED_COLOURS.red),
-							],
-							components: [
-								new ActionRowBuilder<ButtonBuilder>().addComponents([
-									// prettier-ignore
-									new ButtonBuilder().setLabel('Yes').setStyle(ButtonStyle.Success).setCustomId('Yes'),
-									new ButtonBuilder().setLabel('No').setStyle(ButtonStyle.Danger).setCustomId('No'),
-								]),
-							],
-					  })
-					: await interaction.followUp({
-							embeds: [
-								new EmbedBuilder() // prettier-ignore
-									.setDescription("**🗑️ Do you want to delete the user's message history?**")
-									.setColor(EMBED_COLOURS.red),
-							],
-							components: [
-								new ActionRowBuilder().addComponents([
-									// prettier-ignore
-									new ButtonBuilder().setLabel('Yes').setStyle(ButtonStyle.Success).setCustomId('Yes'),
-									new ButtonBuilder().setLabel('No').setStyle(ButtonStyle.Danger).setCustomId('No'),
-								]),
-							],
-							fetchReply: true,
-					  });
+				const buttonMsg: any = await interaction.followUp({
+					embeds: [
+						new EmbedBuilder() // prettier-ignore
+							.setDescription("**🗑️ Do you want to delete the user's message history?**")
+							.setColor(EMBED_COLOURS.red),
+					],
+					components: [
+						new ActionRowBuilder<ButtonBuilder>().addComponents([
+							// prettier-ignore
+							new ButtonBuilder().setLabel('Yes').setStyle(ButtonStyle.Success).setCustomId('Yes'),
+							new ButtonBuilder().setLabel('No').setStyle(ButtonStyle.Danger).setCustomId('No'),
+						]),
+					],
+					fetchReply: true,
+				});
 
-				const collector = buttonMsg.createMessageComponentCollector({ filter: (userInteraction: Interaction) => userInteraction.user.id === (message ? message.author.id : interaction.user.id), max: 1, time: 60000 });
+				const collector = buttonMsg.createMessageComponentCollector({ filter: (userInteraction: Interaction) => userInteraction.user.id === interaction.user.id, max: 1, time: 60000 });
 
 				collector.on('end', async (clickedButton: any) => {
-					if (!clickedButton.first()) return member.ban({ days: 7, reason });
+					if (!clickedButton.first()) {
+						return buttonMsg.edit({
+							embeds: [
+								new EmbedBuilder() // prettier-ignore
+									.setDescription("**⌛ Option wasn't inputted in time.**")
+									.setColor(EMBED_COLOURS.red),
+							],
+							components: [],
+						});
+					}
 
 					switch (clickedButton.first()!.customId) {
 						case 'Yes':
 							try {
-								member.ban({ days: 7, reason });
+								member.ban({ deleteMessageDays: 7, reason });
 							} catch (err) {
 								if (!message) {
 									interaction.guild?.members.ban(member);
@@ -169,11 +151,7 @@ const command: Command = {
 							try {
 								member.ban({ reason });
 							} catch (err) {
-								if (!message) {
-									interaction.guild?.members.ban(member);
-								} else {
-									message.guild?.members.ban(member);
-								}
+								interaction.guild?.members.ban(member);
 							}
 
 							await moderationDmEmbed(member, 'Ban', `Hello **${member.user.username}**,\n\nWe noticed your account has recently broke Saikou's Community Rules for the final time. Because of this, your account has been permanently banned from the Saikou Discord.\n\nIf you believe this is a mistake, submit an appeal by visiting\nhttps://forms.gle/L98zfzbC8fuAz5We6\n\nWe build our games and community for players to have fun. Creating a safe environment and enjoyable experience for everyone is a crucial part of what we're about, and our community rules in place is what we ask and expect players to abide by to achieve this.\n\nPlease check the attached moderator note below for more details.`, reason);
@@ -192,8 +170,7 @@ const command: Command = {
 			default:
 				await moderationDmEmbed(member, 'Warning', `Hello **${member.user.username}**,\n\nYour account has recently been flagged by a staff member for breaching Saikou's Community Rules.\n\nTo learn more about our server rules, visit <#397797150840324115>\n\nWe take these actions seriously. If you continue to break the rules, we may need to take additional action against your account, which could result in a permanent ban from the Saikou Discord.\n\nPlease check the attached moderator note below for more details.`, reason);
 				warnEmbed.addFields([{ name: 'Auto Punishment:', value: 'None', inline: true }]);
-				if (!message) return interaction.followUp({ embeds: [warnEmbed] });
-				return message.channel.send({ embeds: [warnEmbed] });
+				return interaction.followUp({ embeds: [warnEmbed] });
 		}
 	},
 };

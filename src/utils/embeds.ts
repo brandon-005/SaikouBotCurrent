@@ -2,68 +2,39 @@ import { EmbedBuilder, Message, Client, CommandInteraction, WebhookClient } from
 
 import { EMBED_COLOURS } from './constants';
 
-export function interactiveSetup(message: Message, bot: Client, dm: Boolean, stepNumber: string, description: any, reaction?: Boolean) {
-	const embed = new EmbedBuilder() // prettier-ignore
-		.setTitle(`Prompt [${stepNumber}]`)
-		.setFooter({ text: `Setup by ${message.author.tag} | Prompt will timeout in 5 mins`, iconURL: message.author.displayAvatarURL() })
-		.setColor(EMBED_COLOURS.blurple)
-		.setThumbnail(bot.user!.displayAvatarURL());
-
-	if (stepNumber.includes('1')) {
-		embed.setDescription(`Hello **${message.author.username}**,\n\n${description}\n\n${reaction ? 'Input the 🚪 reaction to cancel the prompt.' : 'Input **cancel** to cancel the prompt.'}`);
-	} else {
-		embed.setDescription(`Please continue to follow the prompt instructions.\n\n${description}\n\n${reaction ? 'Input the 🚪 reaction to cancel the prompt.' : 'Input **cancel** to cancel the prompt.'}`);
-	}
-
-	if (dm === true) return message.author.send({ embeds: [embed] });
-	return message.channel.send({ embeds: [embed] });
-}
-
-export function confirmationPrompt(message: Message, bot: Client, dm: Boolean, description: any) {
-	const embed = new EmbedBuilder() // prettier-ignore
-		.setTitle('Are you sure?')
-		.setDescription(`Please confirm this final prompt to complete the setup.\n\n**❓ Are the following fields correct?**\n\n${description}\n\nIf these fields are correct, you can complete the setup by adding the ✅ reaction or cancel by adding the ❌ reaction.`)
-		.setFooter({ text: `Setup by ${message.author.tag} | Prompt will timeout in 5 mins`, iconURL: message.author.displayAvatarURL() })
-		.setColor(EMBED_COLOURS.red)
-		.setThumbnail(bot.user!.displayAvatarURL());
-
-	if (dm === true) return message.author.send({ embeds: [embed] });
-	return message.channel.send({ embeds: [embed] });
-}
-
-export function cancel(message: Message, dm: Boolean) {
+export function cancel(interaction: CommandInteraction, dm: Boolean) {
 	const embed = new EmbedBuilder() // prettier-ignore
 		.setTitle('✅ Cancelled!')
 		.setDescription('The prompt has been cancelled successfully.')
 		.setThumbnail('https://i.ibb.co/kxJqM6F/mascot-Success.png')
 		.setColor(EMBED_COLOURS.green);
 
-	if (dm === true) return message.author.send({ embeds: [embed] });
-	return message.channel.send({ embeds: [embed] });
+	if (dm === true) return interaction.user.send({ embeds: [embed] });
+	return interaction.followUp({ embeds: [embed] });
 }
 
-export function noContent(message: Message) {
+export function noContent(interaction: CommandInteraction) {
 	const embed = new EmbedBuilder() // prettier-ignore
 		.setTitle('❌ No Content!')
 		.setDescription("You didn't input any message content for this prompt. Please ensure you're not submitting videos or images and re-run the prompt again.")
 		.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
 		.setColor(EMBED_COLOURS.red);
 
-	return message.author.send({ embeds: [embed] });
+	return interaction.user.send({ embeds: [embed] });
 }
 
-export function timeout(message: Message, dm: Boolean) {
+export function timeout(interaction: CommandInteraction, dm: Boolean) {
 	const embed = new EmbedBuilder() // prettier-ignore
 		.setTitle('❌ Cancelled!')
 		.setDescription("You didn't input in time, please try again.")
 		.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
 		.setColor(EMBED_COLOURS.red);
 
-	if (dm === true) return message.author.send({ embeds: [embed] });
-	return message.channel.send({ embeds: [embed] });
+	if (dm === true) return interaction.user.send({ embeds: [embed] });
+	return interaction.channel.send({ embeds: [embed] });
 }
 
-export function noUser(message: Message, dm?: Boolean, interaction?: CommandInteraction): Promise<any | Message<boolean>> {
+export function noUser(interaction: CommandInteraction, dm?: Boolean): Promise<any | Message<boolean>> {
 	const embed = new EmbedBuilder() // prettier-ignore
 		.setTitle('🔍 Unable to find User!')
 		.setDescription(`Please provide a valid user to complete this action.`)
@@ -71,23 +42,18 @@ export function noUser(message: Message, dm?: Boolean, interaction?: CommandInte
 		.setFooter({ text: 'Invalid User' })
 		.setTimestamp();
 
-	if (dm === true) return message.author.send({ embeds: [embed] });
-	if (interaction) return interaction.followUp({ embeds: [embed] });
-	return message.channel.send({ embeds: [embed] });
+	if (dm === true) return interaction.user.send({ embeds: [embed] });
+	return interaction.followUp({ embeds: [embed] });
 }
 
-export function equalPerms(message: Message, perms: string, interaction?: CommandInteraction): Promise<any | Message<boolean>> {
+export function equalPerms(interaction: CommandInteraction, perms: string): Promise<any | Message<boolean>> {
 	const embed = new EmbedBuilder() // prettier-ignore
 		.setTitle('⚙️ Equal Permissions')
 		.setDescription("The user you are trying to perform this action on has equal permissions to you, consider..\n\n• Changing the user's permissions\n• Changing the user's roles")
 		.setColor(EMBED_COLOURS.red)
 		.setFooter({ text: `Equal Permission(s): ${perms}` });
 
-	if (!message) {
-		return interaction?.followUp({ embeds: [embed] });
-	}
-
-	return message.channel.send({ embeds: [embed] });
+	return interaction?.followUp({ embeds: [embed] });
 }
 
 export function moderationDmEmbed(member: any, punishment: string, description: string, reason: string) {
@@ -149,18 +115,14 @@ export function moderationEmbed(message: any, bot: any, punishment: string, memb
 	});
 }
 
-export function errorEmbed(slash: Boolean, message?: Message, interaction?: CommandInteraction) {
+export function errorEmbed(interaction?: CommandInteraction) {
 	const embed = new EmbedBuilder() // prettier-ignore
 		.setTitle('❌ Something went wrong!') // prettier-ignore
 		.setDescription(`Uh oh! Looks like Kaiou has hit some of the wrong buttons, causing an error. You can try... \n\n• Coming back later and trying again\n• Checking out Saikou's social medias whilst you wait 😏`)
 		.setThumbnail('https://i.ibb.co/C5YvkJg/4-128.png')
 		.setColor(EMBED_COLOURS.red);
 
-	if (slash === true) {
-		return interaction?.followUp({ embeds: [embed] });
-	}
-
-	return message?.channel.send({ embeds: [embed] });
+	return interaction?.followUp({ embeds: [embed] });
 }
 
 export function devErrorEmbed(bot: Client, title: string, errorMessage: string) {

@@ -1,4 +1,4 @@
-import { Command, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ComponentType } from 'discord.js';
+import { Command, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ComponentType, Embed } from 'discord.js';
 
 import { EMBED_COLOURS, MWT_MISSIONS } from '../../utils/constants';
 import { choose } from '../../utils/functions';
@@ -10,59 +10,48 @@ const command: Command = {
 		commandName: 'mission',
 		commandAliases: ['mwtmission'],
 		commandDescription: 'Looking for a new challenge? Let the mission command decide your next adventure.',
-		slashCommand: true,
-		serverOnly: false,
 	},
-	run: async ({ message, interaction }) => {
+	run: async ({ interaction }) => {
 		const missionEmbed = new EmbedBuilder() // prettier-ignore
 			.setTitle('🪖 Your Mission!')
 			.setThumbnail('https://i.ibb.co/FqgT3fp/Group-1.png')
 			.setColor(EMBED_COLOURS.blurple)
-			.setFooter({ text: `Requested by: ${message ? message.author.username : interaction.user.username}`, iconURL: message ? message.author.displayAvatarURL() : interaction.user.displayAvatarURL() });
+			.setFooter({ text: `Requested by: ${interaction.user.username}`, iconURL: interaction.user.displayAvatarURL() });
 
 		/* IF USER HAS PROMPT OPEN */
-		if (activeInteraction.has(message ? message.author.id : interaction.user.id)) {
+		if (activeInteraction.has(interaction.user.id)) {
 			missionEmbed.setFooter({ text: 'To get buttons to change missions, wait for timeout (60s).' });
 			missionEmbed.setDescription(`${choose(MWT_MISSIONS)}`);
-			return message ? message.channel.send({ embeds: [missionEmbed] }) : interaction.followUp({ embeds: [missionEmbed] });
+			return interaction.followUp({ embeds: [missionEmbed] });
 		}
 
-		activeInteraction.add(message ? message.author.id : interaction.user.id);
+		activeInteraction.add(interaction.user.id);
 
 		missionEmbed.setDescription(`${choose(MWT_MISSIONS)}`);
-		const sentEmbed = message
-			? await message.channel.send({
-					embeds: [missionEmbed],
-					components: [
-						new ActionRowBuilder<ButtonBuilder>().addComponents([
-							// prettier-ignore
-							new ButtonBuilder().setLabel('New Mission 🎮').setStyle(ButtonStyle.Primary).setCustomId('newMission'),
-						]),
-					],
-			  })
-			: await interaction.followUp({
-					embeds: [missionEmbed],
-					components: [
-						new ActionRowBuilder().addComponents([
-							// prettier-ignore
-							new ButtonBuilder().setLabel('New Mission 🎮').setStyle(ButtonStyle.Primary).setCustomId('newMission'),
-						]),
-					],
-			  });
+		const sentEmbed = await interaction.followUp({
+			embeds: [missionEmbed],
+			components: [
+				new ActionRowBuilder<ButtonBuilder>().addComponents([
+					// prettier-ignore
+					new ButtonBuilder().setLabel('New Mission 🎮').setStyle(ButtonStyle.Primary).setCustomId('newMission'),
+				]),
+			],
+		});
 
-		const collector = message ? message.channel.createMessageComponentCollector({ filter: (msgFilter) => msgFilter.user.id === message.author.id, componentType: ComponentType.Button, time: 60000 }) : interaction.channel!.createMessageComponentCollector({ filter: (menu: any) => menu.user.id === interaction.user.id, componentType: ComponentType.Button, time: 60000 });
+		const collector = interaction.channel!.createMessageComponentCollector({ filter: (menu: any) => menu.user.id === interaction.user.id, componentType: ComponentType.Button, time: 60000 });
 
 		collector.on('collect', async (button: ButtonInteraction) => {
 			let newMission = `${choose(MWT_MISSIONS)}`;
 
 			if (button.customId === 'newMission') {
 				/* get new fact if its the same as the old one */
-				if (missionEmbed.description === newMission) newMission = `${choose(MWT_MISSIONS)}`;
+				if ((missionEmbed as unknown as Embed).description === newMission) newMission = `${choose(MWT_MISSIONS)}`;
 
 				missionEmbed.setDescription(newMission);
-				return button.update({
+				button.update({
 					embeds: [missionEmbed],
 				});
+				return;
 			}
 		});
 
@@ -72,7 +61,7 @@ const command: Command = {
 				components: [],
 			});
 
-			activeInteraction.delete(message ? message.author.id : interaction.user.id);
+			activeInteraction.delete(interaction.user.id);
 		});
 	},
 };

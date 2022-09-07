@@ -14,88 +14,59 @@ const command: Command = {
 		commandDescription: 'Punish a staff member through a strike system.',
 		userPermissions: 'Administrator',
 		limitedChannel: 'None',
-		slashCommand: true,
 	},
-	run: async ({ message, interaction }) => {
+	run: async ({ interaction }) => {
 		const menuOptions: any = [];
 
 		/* Fetching users with staff role and adding them to select menu */
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		message
-			? message.guild?.roles.cache
-					.find((role) => role.name === 'Staff')
-					?.members.forEach((fetchedStaff) => {
-						/* Ignoring staff with ADMINISTRATOR permissions */
-						if (message.guild?.members.cache.get(fetchedStaff.user.id)?.permissions.has(PermissionFlagsBits.Administrator)) return;
 
-						menuOptions.push({
-							label: `${message.guild?.members.cache.get(fetchedStaff.user.id)?.displayName || fetchedStaff.user.username}`,
-							value: `${fetchedStaff.user.id}`,
-							emoji: '🛡️',
-						});
-					})
-			: interaction.guild?.roles.cache
-					.find((role: Role) => role.name === 'Staff')
-					?.members.forEach((fetchedStaff: GuildMember) => {
-						/* Ignoring staff with ADMINISTRATOR permissions */
-						if (interaction.guild?.members.cache.get(fetchedStaff.user.id)?.permissions.has(PermissionFlagsBits.Administrator)) return;
+		interaction.guild?.roles.cache
+			.find((role: Role) => role.name === 'Staff')
+			?.members.forEach((fetchedStaff: GuildMember) => {
+				/* Ignoring staff with ADMINISTRATOR permissions */
+				if (interaction.guild?.members.cache.get(fetchedStaff.user.id)?.permissions.has(PermissionFlagsBits.Administrator)) return;
 
-						menuOptions.push({
-							label: `${interaction.guild?.members.cache.get(fetchedStaff.user.id)?.displayName || fetchedStaff.user.username}`,
-							value: `${fetchedStaff.user.id}`,
-							emoji: '🛡️',
-						});
-					});
+				menuOptions.push({
+					label: `${interaction.guild?.members.cache.get(fetchedStaff.user.id)?.displayName || fetchedStaff.user.username}`,
+					value: `${fetchedStaff.user.id}`,
+					emoji: '🛡️',
+				});
+			});
 
 		/* IF USER HAS PROMPT OPEN */
-		if (activeInteraction.has(message ? message.author.id : interaction.user.id)) {
-			const openPrompt = new EmbedBuilder() // prettier-ignore
-				.setTitle('Prompt Open! 📂')
-				.setDescription('You already have an active prompt, please exit to gain options.')
-				.setColor(EMBED_COLOURS.red)
-				.setThumbnail('https://i.ibb.co/C5YvkJg/4-128.png');
-
-			return message ? message.channel.send({ embeds: [openPrompt] }) : interaction.followUp({ embeds: [openPrompt] });
+		if (activeInteraction.has(interaction.user.id)) {
+			return interaction.followUp({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setTitle('Prompt Open! 📂')
+						.setDescription('You already have an active prompt, please exit to gain options.')
+						.setColor(EMBED_COLOURS.red)
+						.setThumbnail('https://i.ibb.co/C5YvkJg/4-128.png'),
+				],
+			});
 		}
 
-		activeInteraction.add(message ? message.author.id : interaction.user.id);
+		activeInteraction.add(interaction.user.id);
 
 		/* Select option */
-		const setupEmbed: any = message
-			? await message.channel.send({
-					embeds: [
-						new EmbedBuilder() // prettier-ignore
-							.setTitle('Select Option 🗃️')
-							.setDescription('Please use the corresponding buttons below to select your option.')
-							.setColor(EMBED_COLOURS.blurple),
-					],
-					components: [
-						new ActionRowBuilder<ButtonBuilder>().addComponents([
-							// prettier-ignore
-							new ButtonBuilder().setLabel('Punish 📝').setStyle(ButtonStyle.Danger).setCustomId('punishStaff'),
-							new ButtonBuilder().setLabel('View Strikes 🔍').setStyle(ButtonStyle.Primary).setCustomId('viewStrikes'),
-							new ButtonBuilder().setLabel('Exit 🚪').setStyle(ButtonStyle.Success).setCustomId('exit'),
-						]),
-					],
-			  })
-			: await interaction.followUp({
-					embeds: [
-						new EmbedBuilder() // prettier-ignore
-							.setTitle('Select Option 🗃️')
-							.setDescription('Please use the corresponding buttons below to select your option.')
-							.setColor(EMBED_COLOURS.blurple),
-					],
-					components: [
-						new ActionRowBuilder().addComponents([
-							// prettier-ignore
-							new ButtonBuilder().setLabel('Punish 📝').setStyle(ButtonStyle.Danger).setCustomId('punishStaff'),
-							new ButtonBuilder().setLabel('View Strikes 🔍').setStyle(ButtonStyle.Primary).setCustomId('viewStrikes'),
-							new ButtonBuilder().setLabel('Exit 🚪').setStyle(ButtonStyle.Success).setCustomId('exit'),
-						]),
-					],
-			  });
+		const setupEmbed = await interaction.followUp({
+			embeds: [
+				new EmbedBuilder() // prettier-ignore
+					.setTitle('Select Option 🗃️')
+					.setDescription('Please use the corresponding buttons below to select your option.')
+					.setColor(EMBED_COLOURS.blurple),
+			],
+			components: [
+				new ActionRowBuilder<ButtonBuilder>().addComponents([
+					// prettier-ignore
+					new ButtonBuilder().setLabel('Punish 📝').setStyle(ButtonStyle.Danger).setCustomId('punishStaff'),
+					new ButtonBuilder().setLabel('View Strikes 🔍').setStyle(ButtonStyle.Primary).setCustomId('viewStrikes'),
+					new ButtonBuilder().setLabel('Exit 🚪').setStyle(ButtonStyle.Success).setCustomId('exit'),
+				]),
+			],
+		});
 
-		const collector = message ? message.channel.createMessageComponentCollector({ filter: (msgFilter) => msgFilter.user.id === message.author.id, componentType: ComponentType.Button, time: PROMPT_TIMEOUT }) : interaction.channel!.createMessageComponentCollector({ filter: (msgFilter: any) => msgFilter.user.id === interaction.user.id, componentType: ComponentType.Button, time: PROMPT_TIMEOUT });
+		const collector = interaction.channel!.createMessageComponentCollector({ filter: (msgFilter: any) => msgFilter.user.id === interaction.user.id, componentType: ComponentType.Button, time: PROMPT_TIMEOUT });
 
 		collector.on('collect', async (button: ButtonInteraction) => {
 			switch (button.customId) {
@@ -105,7 +76,7 @@ const command: Command = {
 					});
 
 					collector.stop();
-					activeInteraction.delete(message ? message.author.id : interaction.user.id);
+					activeInteraction.delete(interaction.user.id);
 					break;
 
 				case 'viewStrikes':
@@ -122,11 +93,11 @@ const command: Command = {
 						],
 					});
 
-					const chosenStaff = message ? message.channel.createMessageComponentCollector({ filter: (interactionFilter) => interactionFilter.user.id === message.author.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT }) : interaction.channel!.createMessageComponentCollector({ filter: (interactionFilter: any) => interactionFilter.user.id === interaction.user.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT });
+					const chosenStaff = interaction.channel!.createMessageComponentCollector({ filter: (interactionFilter: any) => interactionFilter.user.id === interaction.user.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT });
 
 					chosenStaff.on('collect', async (staffMember: any) => {
 						const [userID] = staffMember.values;
-						const staffUser = message ? await message.guild?.members.fetch(`${userID}`)! : await interaction.guild?.members.fetch(`${userID}`)!;
+						const staffUser = await interaction.guild?.members.fetch(`${userID}`)!;
 						const staffData = await staffStrikes.findOne({ userID });
 
 						if (!staffData || !staffData.strikeInfo.length) {
@@ -140,7 +111,7 @@ const command: Command = {
 							});
 							chosenStaff.stop();
 							collector.stop();
-							activeInteraction.delete(message ? message.author.id : interaction.user.id);
+							activeInteraction.delete(interaction.user.id);
 						} else {
 							const strikesEmbed = new EmbedBuilder() // prettier-ignore
 								.setColor(EMBED_COLOURS.blurple);
@@ -157,7 +128,7 @@ const command: Command = {
 							});
 							chosenStaff.stop();
 							collector.stop();
-							activeInteraction.delete(message ? message.author.id : interaction.user.id);
+							activeInteraction.delete(interaction.user.id);
 						}
 					});
 					break;
@@ -176,11 +147,11 @@ const command: Command = {
 						],
 					});
 
-					const punishStaffCollector = message ? message.channel.createMessageComponentCollector({ filter: (interactionFilter) => interactionFilter.user.id === message.author.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT }) : interaction.channel!.createMessageComponentCollector({ filter: (interactionFilter: any) => interactionFilter.user.id === interaction.user.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT });
+					const punishStaffCollector = interaction.channel!.createMessageComponentCollector({ filter: (interactionFilter: any) => interactionFilter.user.id === interaction.user.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT });
 
 					punishStaffCollector.on('collect', async (selectedStaff: SelectMenuInteraction) => {
 						const [userID] = selectedStaff.values;
-						const staffMember = message ? await message.guild?.members.fetch(`${userID}`)! : await interaction.guild?.members.fetch(`${userID}`)!;
+						const staffMember = await interaction.guild?.members.fetch(`${userID}`)!;
 						const strikes = await staffStrikes.findOne({ userID });
 
 						/* REASON SUMMARY PROMPT */
@@ -197,14 +168,14 @@ const command: Command = {
 							],
 						});
 
-						const reasonSummary = message ? message.channel.createMessageComponentCollector({ filter: (reasonOptionsMenu) => reasonOptionsMenu.user.id === message.author.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT }) : interaction.channel!.createMessageComponentCollector({ filter: (reasonOptionsMenu: any) => reasonOptionsMenu.user.id === interaction.user.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT });
+						const reasonSummary = interaction.channel!.createMessageComponentCollector({ filter: (reasonOptionsMenu: any) => reasonOptionsMenu.user.id === interaction.user.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT });
 
 						reasonSummary.on('collect', async (options: SelectMenuInteraction) => {
-							let reasonOptions: string = '';
-							let detailedReason: any;
-							let correctiveAction: any;
-							let reviewDate: any;
-							let strikeCount: any;
+							let reasonOptions: string,
+								detailedReason: string,
+								correctiveAction: string,
+								reviewDate: string,
+								strikeCount: string = '';
 
 							options.values.forEach((value) => {
 								reasonOptions += `${value}\n`;
@@ -222,7 +193,7 @@ const command: Command = {
 									components: [],
 								});
 
-								const collectedDetailedReason = message ? await message.channel.awaitMessages({ filter: (sentMsg: Message) => sentMsg.author.id === message.author.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] }) : await interaction.channel!.awaitMessages({ filter: (sentMsg: Message) => sentMsg.author.id === interaction.user.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
+								const collectedDetailedReason = await interaction.channel!.awaitMessages({ filter: (sentMsg: Message) => sentMsg.author.id === interaction.user.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
 								detailedReason = collectedDetailedReason.first()!.content;
 
 								collectedDetailedReason.first()!.delete();
@@ -238,7 +209,7 @@ const command: Command = {
 									components: [],
 								});
 
-								const collectedAction = message ? await message.channel.awaitMessages({ filter: (sentMsg: Message) => sentMsg.author.id === message.author.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] }) : await interaction.channel!.awaitMessages({ filter: (sentMsg: Message) => sentMsg.author.id === interaction.user.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
+								const collectedAction = await interaction.channel!.awaitMessages({ filter: (sentMsg: Message) => sentMsg.author.id === interaction.user.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
 								correctiveAction = collectedAction.first()!.content;
 
 								collectedAction.first()!.delete();
@@ -254,7 +225,7 @@ const command: Command = {
 									components: [],
 								});
 
-								const collectedDate = message ? await message.channel.awaitMessages({ filter: (sentMsg: Message) => sentMsg.author.id === message.author.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] }) : await interaction.channel!.awaitMessages({ filter: (sentMsg: Message) => sentMsg.author.id === interaction.user.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
+								const collectedDate = await interaction.channel!.awaitMessages({ filter: (sentMsg: Message) => sentMsg.author.id === interaction.user.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
 								reviewDate = collectedDate.first()!.content;
 
 								collectedDate.first()!.delete();
@@ -267,9 +238,9 @@ const command: Command = {
 									],
 									components: [],
 								});
-								activeInteraction.delete(message ? message.author.id : interaction.user.id);
+								activeInteraction.delete(interaction.user.id);
 								reasonSummary.stop();
-								collector.stop();
+								return collector.stop();
 							}
 
 							/* CONFIRMATION */
@@ -302,7 +273,7 @@ const command: Command = {
 							setupEmbed.edit({
 								embeds: [confirmEmbed],
 								components: [
-									new ActionRowBuilder().addComponents([
+									new ActionRowBuilder<ButtonBuilder>().addComponents([
 										// prettier-ignore
 										new ButtonBuilder().setLabel('Confirm').setStyle(ButtonStyle.Danger).setCustomId('confirm'),
 										new ButtonBuilder().setLabel('Exit').setStyle(ButtonStyle.Success).setCustomId('exit'),
@@ -310,7 +281,7 @@ const command: Command = {
 								],
 							});
 
-							const confirmCollector = message ? message.channel.createMessageComponentCollector({ filter: (msgFilter) => msgFilter.user.id === message.author.id, componentType: ComponentType.Button, time: PROMPT_TIMEOUT }) : interaction.channel!.createMessageComponentCollector({ filter: (menu: any) => menu.user.id === interaction.user.id, componentType: ComponentType.Button, time: PROMPT_TIMEOUT });
+							const confirmCollector = interaction.channel!.createMessageComponentCollector({ filter: (menu: any) => menu.user.id === interaction.user.id, componentType: ComponentType.Button, time: PROMPT_TIMEOUT });
 
 							confirmCollector.on('collect', async (confirmBtn: ButtonInteraction) => {
 								if (confirmBtn.customId === 'confirm') {
@@ -358,7 +329,7 @@ const command: Command = {
 										staffMember.send({
 											embeds: [dmEmbed],
 											components: [
-												new ActionRowBuilder().addComponents([
+												new ActionRowBuilder<ButtonBuilder>().addComponents([
 													// prettier-ignore
 													new ButtonBuilder().setLabel('Acknowledged').setStyle(ButtonStyle.Success).setCustomId('receivedNotice'),
 												]),
@@ -399,7 +370,7 @@ const command: Command = {
 													.setFooter({ text: 'Saikou Development • Sent by Management' }),
 											],
 											components: [
-												new ActionRowBuilder().addComponents([
+												new ActionRowBuilder<ButtonBuilder>().addComponents([
 													// prettier-ignore
 													new ButtonBuilder().setLabel('Acknowledged').setStyle(ButtonStyle.Success).setCustomId('receivedNotice'),
 												]),
@@ -410,19 +381,26 @@ const command: Command = {
 										staffMember.roles.set([]);
 
 										/* Give omega follower */
-										staffMember.roles.add(message ? message.guild!.roles.cache.find((role) => role.name === 'Omega Follower')! : interaction.guild!.roles.cache.find((role: Role) => role.name === 'Omega Follower')!);
+										staffMember.roles.add(interaction.guild!.roles.cache.find((role: Role) => role.name === 'Omega Follower')!);
 									}
 
-									activeInteraction.delete(message ? message.author.id : interaction.user.id);
+									activeInteraction.delete(interaction.user.id);
 									confirmCollector.stop();
 									reasonSummary.stop();
 									collector.stop();
 								} else {
-									activeInteraction.delete(message ? message.author.id : interaction.user.id);
+									activeInteraction.delete(interaction.user.id);
 									collector.stop();
 									confirmCollector.stop();
 									reasonSummary.stop();
 								}
+							});
+
+							confirmCollector.on('end', () => {
+								setupEmbed.edit({ components: [] });
+								activeInteraction.delete(interaction.user.id);
+								reasonSummary.stop();
+								return collector.stop();
 							});
 						});
 
@@ -436,7 +414,7 @@ const command: Command = {
 			setupEmbed.edit({
 				components: [],
 			});
-			activeInteraction.delete(message ? message.author.id : interaction.user.id);
+			activeInteraction.delete(interaction.user.id);
 		});
 	},
 };

@@ -1,4 +1,4 @@
-import { Client, Role, EmbedBuilder, TextChannel, InteractionType, Interaction } from 'discord.js';
+import { Client, Role, EmbedBuilder, TextChannel, InteractionType, Interaction, GuildMember } from 'discord.js';
 
 import { EMBED_COLOURS } from '../../utils/constants';
 
@@ -7,7 +7,7 @@ export = async (bot: Client, interaction: Interaction) => {
 		/* Ping Role buttons */
 		switch (interaction.customId) {
 			case 'GetRole':
-				if (interaction.member?.roles.cache.some((role: Role) => role.name === 'Ping')) {
+				if ((interaction.member as GuildMember).roles.cache.some((role: Role) => role.name === 'Ping')) {
 					return interaction.reply({
 						embeds: [
 							new EmbedBuilder() // prettier-ignore
@@ -18,7 +18,7 @@ export = async (bot: Client, interaction: Interaction) => {
 					});
 				}
 
-				interaction.member?.roles.add(interaction.guild!.roles.cache.find((role: Role) => role.name === 'Ping')!);
+				(interaction.member as GuildMember).roles.add(interaction.guild!.roles.cache.find((role: Role) => role.name === 'Ping')!);
 
 				return interaction.reply({
 					embeds: [
@@ -30,7 +30,7 @@ export = async (bot: Client, interaction: Interaction) => {
 				});
 
 			case 'RemoveRole':
-				if (!interaction.member?.roles.cache.some((role: Role) => role.name === 'Ping')) {
+				if (!(interaction.member as GuildMember).roles.cache.some((role: Role) => role.name === 'Ping')) {
 					return interaction.reply({
 						embeds: [
 							new EmbedBuilder() // prettier-ignore
@@ -41,7 +41,7 @@ export = async (bot: Client, interaction: Interaction) => {
 					});
 				}
 
-				interaction.member?.roles.remove(interaction.guild!.roles.cache.find((role: Role) => role.name === 'Ping')!);
+				(interaction.member as GuildMember).roles.remove(interaction.guild!.roles.cache.find((role: Role) => role.name === 'Ping')!);
 
 				return interaction.reply({
 					embeds: [
@@ -100,6 +100,7 @@ export = async (bot: Client, interaction: Interaction) => {
 
 			(await introMessage).react('👋');
 
+			// @ts-ignore
 			interaction.update({
 				components: [],
 				embeds: [

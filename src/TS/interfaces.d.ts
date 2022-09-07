@@ -85,3 +85,9 @@ export interface CountType extends Document {
 	id: number;
 	count: number;
 }
+
+// --- Tokens Schema ---
+export interface TokensTypes extends Document {
+	userID: string;
+	tokens: number;
+}

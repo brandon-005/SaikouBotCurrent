@@ -6,27 +6,18 @@ const command: Command = {
 		commandName: 'randomuser',
 		commandAliases: ['random', 'pickuser'],
 		commandDescription: "Wondering who to give that one boost to, or maybe you're wanting a random user to surpise? Then this command is for you!",
-		slashCommand: true,
 	},
-	run: async ({ message, interaction }) => {
-		let randomUser;
+	run: async ({ interaction }) => {
+		const randomUser = interaction.guild?.members.cache.random()!.user;
 
-		if (!message) {
-			randomUser = interaction.guild?.members.cache.random()!.user;
-		} else {
-			randomUser = message.guild!.members.cache.random()!.user;
-		}
-
-		const userEmbed = new EmbedBuilder() // prettier-ignore
-			.setAuthor({ name: '🎲 Random User', iconURL: randomUser?.displayAvatarURL() })
-			.setDescription(`**${message ? message.guild?.members.cache.get(randomUser!.id)?.displayName : interaction.guild?.members.cache.get(randomUser!.id)?.displayName}** was chosen! 🎉`)
-			.setColor(EMBED_COLOURS.blurple);
-
-		if (!message) {
-			return interaction.followUp({ embeds: [userEmbed] });
-		}
-
-		return message.channel.send({ embeds: [userEmbed] });
+		return interaction.followUp({
+			embeds: [
+				new EmbedBuilder() // prettier-ignore
+					.setAuthor({ name: '🎲 Random User', iconURL: randomUser?.displayAvatarURL() })
+					.setDescription(`**${interaction.guild?.members.cache.get(randomUser!.id)?.displayName}** was chosen! 🎉`)
+					.setColor(EMBED_COLOURS.blurple),
+			],
+		});
 	},
 };
 

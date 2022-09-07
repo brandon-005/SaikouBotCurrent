@@ -1,9 +1,8 @@
-import { Command, Message, AttachmentBuilder, MessageCollector, EmbedBuilder } from 'discord.js';
+import { Command, Message, ActionRowBuilder, SelectMenuBuilder, Interaction, ComponentType, SelectMenuInteraction, ButtonStyle, ButtonBuilder, EmbedBuilder, ButtonInteraction, ModalBuilder, TextInputBuilder, ModalActionRowComponentBuilder, TextInputStyle, MessageCollector, AttachmentBuilder } from 'discord.js';
 import axios from 'axios';
 import urlRegex from 'url-regex';
 
-import { interactiveSetup, cancel, noContent, timeout, noUser } from '../../utils/embeds';
-import { LETTER_EMOJIS, EMBED_COLOURS, PROMPT_TIMEOUT, MESSAGE_TIMEOUT, VIDEO_FILE_TYPES } from '../../utils/constants';
+import { EMBED_COLOURS, PROMPT_TIMEOUT, MESSAGE_TIMEOUT, VIDEO_FILE_TYPES } from '../../utils/constants';
 import reportData from '../../models/reports';
 
 const openPrompt = new Set();
@@ -15,37 +14,10 @@ const command: Command = {
 		commandDescription: "Report players who are in breach of Saikou's rules through this command, make sure you grab some proof to go with it!",
 		limitedChannel: 'report-abuse',
 	},
-	run: async ({ bot, message }) => {
-		const platformTypes: any = {
-			'Military Warfare Tycoon': '🇦',
-			Killstreak: '🇧',
-			Discord: '🇨',
-			'Saikou Group': '🇩',
-			Other: '🇪',
-		};
-
-		const anonymousReactions: String[] = ['✅', '❌', '🚪'];
-		let platformFinal: String = '';
-
-		let finalName: String = '';
-		let robloxID: Number = 0;
-		let robloxDisplayName: String = '';
-
-		let reportReason: String = '';
-		let anonymous: Boolean = false;
-
-		/* FUNCTIONS */
-		function sendCancel(reactionPrompt: Boolean, inputtedReaction?: any, userMessage?: Message) {
-			if (reactionPrompt === true && inputtedReaction === '🚪') {
-				openPrompt.delete(message.author.id);
-				return cancel(message, true);
-			}
-			if (userMessage?.content.toLowerCase() === 'cancel') {
-				openPrompt.delete(message.author.id);
-				return cancel(message, true);
-			}
-			return false;
-		}
+	run: async ({ interaction }) => {
+		let sentMenu: Message;
+		let robloxDisplayName = '';
+		let robloxID = '';
 
 		function sendNoContent(userMessage: Message) {
 			if (!userMessage.content) {
@@ -56,9 +28,9 @@ const command: Command = {
 		}
 
 		/* IF USER HAS PROMPT OPEN */
-		if (openPrompt.has(message.author.id))
-			return message.channel
-				.send({
+		if (openPrompt.has(interaction.user.id))
+			return interaction
+				.followUp({
 					embeds: [
 						new EmbedBuilder() // prettier-ignore
 							.setTitle('🗃️ Prompt already open!')
@@ -69,232 +41,354 @@ const command: Command = {
 				})
 				.then((msg: Message) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
 
-		openPrompt.add(message.author.id);
-
-		/* PLATFORM PROMPT */
-		try {
-			const platformEmbed = await interactiveSetup(
-				message,
-				bot,
-				true,
-				'1/4',
-				`❓ **Which platform below does your report come under?\n\n${Object.keys(platformTypes)
-					.map((option: string, number: number) => `${String.fromCharCode(97 + number).toUpperCase()}. ${option}\n`)
-					.join('')}**\n\nSubmit your answer by reacting with the corresponding reaction.`,
-				true
-			);
-
-			Object.values(platformTypes).forEach(async (_platform, count) => {
-				await platformEmbed!.react(String(LETTER_EMOJIS[count]));
-			});
-
-			await platformEmbed?.react('🚪');
-
-			/* DM SENT MESSAGE */
-			message.channel
-				.send({
-					embeds: [
-						new EmbedBuilder() // prettier-ignore
-							.setDescription(`📬 A message has been sent to your DM's <@${message.author.id}>`)
-							.setColor(EMBED_COLOURS.green),
-					],
-				})
-				.then((msg: any) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT))
-				.catch(() => {});
-
-			const collectingReaction = await platformEmbed!.awaitReactions({ filter: (reaction: any, user: any) => LETTER_EMOJIS.includes(reaction.emoji.name) && user.id === message.author.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
-			const inputtedReaction = collectingReaction.first()?.emoji.name;
-
-			if (sendCancel(true, inputtedReaction) !== false) return;
-
-			platformFinal = String(Object.keys(platformTypes).find((key: any) => platformTypes[key] === inputtedReaction));
-		} catch (err: any) {
-			openPrompt.delete(message.author.id);
-			if (err.status === 403) {
-				return message.channel
-					.send({
-						embeds: [
-							new EmbedBuilder() // prettier-ignore
-								.setTitle('❌ Unable to DM!')
-								.setDescription("Please ensure your DM's are enabled in order for the bot to message you the prompt.")
-								.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
-								.setColor(EMBED_COLOURS.red),
-						],
-					})
-					.then((msg: Message) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
-			}
-			return timeout(message, true);
-		}
-
-		/* REPORT USERNAME PROMPT */
-		const dmChannel = await message.author.createDM();
-		await interactiveSetup(message, bot, true, '1/4', '❓ **What is the username of the person you are reporting?**');
+		openPrompt.add(interaction.user.id);
 
 		try {
-			const collectingMessage = await dmChannel.awaitMessages({ filter: (sentMsg: Message) => sentMsg.author.id === message.author.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
-			const inputtedMessage = collectingMessage.first();
-
-			if (sendCancel(false, null, inputtedMessage) !== false || sendNoContent(inputtedMessage) !== false) return;
-
-			finalName = inputtedMessage!.content;
-
-			if (platformFinal !== 'Discord' && platformFinal !== 'Other') {
-				let invalidUser = false;
-				await axios({
-					method: 'post',
-					url: 'https://users.roblox.com/v1/usernames/users',
-					data: {
-						usernames: [finalName],
-					},
-				})
-					.then((response: any) => {
-						robloxDisplayName = response.data.data.map((value: any) => value.displayName);
-						robloxID = response.data.data.map((value: any) => value.id);
-						if (response.data.data.length === 0) invalidUser = true;
-					})
-					.catch((error) => {
-						console.error(error);
-					});
-
-				if (invalidUser !== false) {
-					openPrompt.delete(message.author.id);
-					return await noUser(message, true);
-				}
-			}
-		} catch (err) {
-			openPrompt.delete(message.author.id);
-			return timeout(message, true);
-		}
-
-		/* REPORT USERNAME PROMPT */
-		await interactiveSetup(message, bot, true, '2/4', `❓ **What is the reason for reporting ${finalName}?**`);
-
-		try {
-			const collectingMessage = await dmChannel.awaitMessages({ filter: (sentMsg: Message) => sentMsg.author.id === message.author.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
-			const inputtedMessage = collectingMessage.first();
-
-			if (sendCancel(false, null, inputtedMessage) !== false || sendNoContent(inputtedMessage) !== false) return;
-
-			reportReason = inputtedMessage!.content;
-		} catch (err) {
-			openPrompt.delete(message.author.id);
-			return timeout(message, true);
-		}
-
-		/* ANONYMOUS REPORT PROMPT */
-		const anonymousEmbed = await interactiveSetup(message, bot, true, '3/4', "❓ **Do you want to report anonymously?**\n\n**Note:** This will still make you visible to staff, however you won't be revealed publicly.", true);
-
-		anonymousReactions.forEach((reaction: any) => anonymousEmbed?.react(reaction));
-
-		try {
-			const collectingReaction = await anonymousEmbed!.awaitReactions({ filter: (reaction: any, user: any) => anonymousReactions.includes(reaction.emoji.name) && user.id === message.author.id, time: PROMPT_TIMEOUT, max: 1, errors: ['time'] });
-			const inputtedReaction = collectingReaction.first()?.emoji.name;
-
-			if (sendCancel(true, inputtedReaction) !== false) return;
-			if (inputtedReaction === '✅') anonymous = true;
-		} catch (err) {
-			openPrompt.delete(message.author.id);
-			return timeout(message, true);
-		}
-
-		/* REPORT PROOF PROMPT */
-		await interactiveSetup(message, bot, true, '4/4', `📸 **Please input a video/photo of the offence.**\n\n**Note:** If you don't have any proof you will have to cancel this report and gain some. Our staff cannot issue punishments without solid evidence of the offence.\n\nPlease say **done** once you have finished uploading the proof.`);
-
-		const attachmentCollector: MessageCollector = dmChannel.createMessageCollector({ filter: (msg: Message) => msg.author.id === message.author.id, idle: PROMPT_TIMEOUT, max: 10 });
-		const fetchedAttachments: any = [];
-
-		attachmentCollector.on('collect', (collectedMsg: Message): any => {
-			if (sendCancel(false, null, collectedMsg) !== false) return attachmentCollector.stop('Prompt Cancelled');
-			if (collectedMsg.content.toLowerCase() === 'done' && !fetchedAttachments.length) return message.author.send('You **MUST** provide at least one video, link or photo of the offence before you can submit the report.');
-			if (collectedMsg.content.toLowerCase() === 'done') return attachmentCollector.stop();
-			if (collectedMsg.attachments.size > 5 || fetchedAttachments.length === 5) return message.author.send('You can only provide 5 photos/videos, please either say **done** to submit the report, or cancel to submit different proof.');
-
-			if (collectedMsg.attachments.size > 0) {
-				collectedMsg.attachments.forEach((attachment) => {
-					fetchedAttachments.push({ content: collectedMsg.content ? collectedMsg.content : '', url: attachment.url });
-				});
-			}
-
-			/* LINK DETECTION */
-			if (urlRegex({ exact: true }).test(collectedMsg.content) === true) {
-				fetchedAttachments.push({ linkContent: collectedMsg.content });
-			}
-
-			if (collectedMsg.attachments.size === 0 && urlRegex({ exact: true }).test(collectedMsg.content) === false) {
-				return message.author.send('Please input a link, photo or video of the offence. If this is incorrect, please inform us!');
-			}
-		});
-
-		attachmentCollector.on('end', async (_collected: any, response: any) => {
-			if (response === 'Prompt Cancelled') return;
-			if (response === 'idle') {
-				openPrompt.delete(message.author.id);
-				await timeout(message, true);
-			}
-
-			message.author.send({
+			sentMenu = await interaction.user.send({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
-						.setTitle('✅ Success!')
-						.setDescription('Your report has been posted.')
-						.setColor(EMBED_COLOURS.green)
-						.setTimestamp(),
+						.setTitle('[1/3] Select Platform 🔎')
+						.setDescription('Please select the platform the offence occurred on below.')
+						.setColor(EMBED_COLOURS.blurple),
+				],
+				components: [
+					new ActionRowBuilder<SelectMenuBuilder>() // prettier-ignore
+						.addComponents([
+							new SelectMenuBuilder()
+								.setCustomId('platform-menu')
+								.setPlaceholder('Please select a platform')
+								.addOptions([
+									{
+										label: 'Military Warfare Tycoon',
+										value: 'Military Warfare Tycoon',
+										emoji: '🔫',
+									},
+									{
+										label: 'Discord',
+										value: 'Discord',
+										emoji: '💬',
+									},
+									{
+										label: 'Saikou Group',
+										value: 'Saikou Group',
+										emoji: '🏟️',
+									},
+									{
+										label: 'Killstreak',
+										value: 'Killstreak',
+										emoji: '⚔️',
+									},
+								]),
+						]),
+				],
+			});
+		} catch (err) {
+			openPrompt.delete(interaction.user.id);
+			return interaction
+				.followUp({
+					embeds: [
+						new EmbedBuilder() // prettier-ignore
+							.setTitle('❌ Unable to DM!')
+							.setDescription("Please ensure your DM's are enabled in order for the bot to message you the prompt.")
+							.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+							.setColor(EMBED_COLOURS.red),
+					],
+				})
+				.then((msg: Message) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
+		}
+
+		/* DM Sent Embed */
+		await interaction
+			.followUp({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setDescription(`📬 A message has been sent to your DM's <@${interaction.user.id}>`)
+						.setColor(EMBED_COLOURS.green),
+				],
+			})
+			.then((msg: any) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT))
+			.catch(() => {});
+
+		/* Menu Collector */
+		const dmChannel = await interaction.user.createDM();
+		const menuCollector = dmChannel.createMessageComponentCollector({ filter: (msgInteraction: Interaction) => msgInteraction.user.id === interaction.user.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT });
+
+		menuCollector.on('collect', (selectMenu: SelectMenuInteraction) => {
+			const platform = selectMenu.values;
+
+			selectMenu.update({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setTitle('[2/3] Additional Details 🕵️')
+						.setDescription('Ensure you have the correct name and reason before proceeding!')
+						.setColor(EMBED_COLOURS.blurple),
+				],
+				components: [
+					new ActionRowBuilder<ButtonBuilder>().addComponents([
+						// prettier-ignore
+						new ButtonBuilder().setLabel('Begin Details 📑').setStyle(ButtonStyle.Primary).setCustomId('details-menu'),
+						new ButtonBuilder().setLabel('Exit Prompt 👋').setStyle(ButtonStyle.Danger).setCustomId('exit'),
+					]),
 				],
 			});
 
-			const embed = new EmbedBuilder() // prettier-ignore
-				.setTitle(`🛡 New report!`)
-				.setDescription(`**Platform:** ${platformFinal}\n**Reported User:** ${finalName}\n**Reason**: ${reportReason}`)
-				.setThumbnail(message.author.displayAvatarURL())
-				.setFooter({ text: `Reported by ${message.guild?.members.cache.get(message.author.id)?.displayName}`, iconURL: message.author.displayAvatarURL() })
-				.setColor(EMBED_COLOURS.blurple)
-				.setTimestamp();
+			const detailsCollector = dmChannel.createMessageComponentCollector({ filter: (msgFilter: Interaction) => msgFilter.user.id === interaction.user.id, componentType: ComponentType.Button, time: PROMPT_TIMEOUT });
 
-			if (robloxDisplayName !== '') embed.setDescription(`**Platform:** ${platformFinal}\n**Reported User:** [${finalName}](https://www.roblox.com/users/${robloxID}/profile) [${robloxDisplayName}]\n**Reason**: ${reportReason}`);
+			detailsCollector.on('collect', async (button: ButtonInteraction) => {
+				switch (button.customId) {
+					case 'exit':
+						button.update({
+							embeds: [
+								new EmbedBuilder() // prettier-ignore
+									.setTitle('✅ Cancelled!')
+									.setDescription('The prompt has been cancelled successfully.')
+									.setThumbnail('https://i.ibb.co/kxJqM6F/mascot-Success.png')
+									.setColor(EMBED_COLOURS.green),
+							],
+							components: [],
+						});
 
-			const reportEmbed = await message.channel.send({ embeds: [embed] });
+						openPrompt.delete(interaction.user.id);
+						menuCollector.stop();
+						detailsCollector.stop();
+						break;
 
-			if (anonymous === true) {
-				reportEmbed.edit({ embeds: [embed.setFooter({ text: `Report ID: ${reportEmbed.id}`, iconURL: bot.user?.displayAvatarURL() }).setThumbnail(bot.user?.displayAvatarURL()!)] });
+					case 'details-menu':
+						const modal = new ModalBuilder().setCustomId('report-form').setTitle('Saikou Report 🛡️');
 
-				await reportData.create({
-					messageID: reportEmbed.id,
-					userID: message.author.id,
-				});
-			}
+						modal.addComponents([
+							new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents([
+								new TextInputBuilder() // prettier-ignore
+									.setCustomId('username')
+									.setMinLength(5)
+									.setMaxLength(50)
+									.setPlaceholder('Username')
+									.setLabel('What is the username of the offender?')
+									.setStyle(TextInputStyle.Short)]), // prettier-ignore
 
-			fetchedAttachments.forEach(async (attachment: any) => {
-				const attachmentEmbed = new EmbedBuilder() // prettier-ignore
-					.setImage(attachment.url)
-					.setColor(EMBED_COLOURS.blurple)
-					.setFooter({ text: `Reported by ${message.guild?.members.cache.get(message.author.id)?.displayName}`, iconURL: message.author.displayAvatarURL() });
+							new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents([
+								new TextInputBuilder() // prettier-ignore
+									.setCustomId('reason')
+									.setMaxLength(200)
+									.setPlaceholder('Reason')
+									.setLabel('Why are you reporting this user?')
+									.setStyle(TextInputStyle.Paragraph),
+							]),
+						]);
 
-				if (attachment.content !== '') attachmentEmbed.setTitle(String(attachment.content));
-				if (anonymous === true) attachmentEmbed.setFooter({ text: `Report ID: ${reportEmbed.id}`, iconURL: bot.user?.displayAvatarURL() });
+						await button.showModal(modal);
 
-				/* POSTING LINKS */
-				if (attachment.linkContent)
-					return message.channel.send({
-						embeds: [
-							new EmbedBuilder() // prettier-ignore
-								.setDescription(attachment.linkContent)
-								.setColor(EMBED_COLOURS.blurple),
-						],
-					});
+						const formResponse = await button.awaitModalSubmit({ time: PROMPT_TIMEOUT, filter: (menuUser) => menuUser.user.id === interaction.user.id }).catch(() => null);
 
-				/* IF VIDEO POST WITHOUT EMBED */
-				for (const fileType of VIDEO_FILE_TYPES) {
-					if (attachment.url.includes(fileType)) {
-						if (attachment.content !== '') return message.channel.send({ content: attachment.content, files: [new AttachmentBuilder(attachment.url)] });
-						return message.channel.send({ files: [new AttachmentBuilder(attachment.url)] });
-					}
+						if (formResponse === null) {
+							openPrompt.delete(interaction.user.id);
+							menuCollector.stop();
+							return detailsCollector.stop();
+						}
+
+						const username = formResponse.fields.getTextInputValue('username');
+						const reason = formResponse.fields.getTextInputValue('reason');
+
+						/* Checking if user provided is a valid Roblox player */
+						if (String(platform) !== 'Discord' && String(platform) !== 'Other') {
+							let invalidUser = false;
+							await axios({
+								method: 'post',
+								url: 'https://users.roblox.com/v1/usernames/users',
+								data: {
+									usernames: [username],
+								},
+							})
+								.then((response: any) => {
+									robloxDisplayName = response.data.data.map((value: any) => value.displayName);
+									robloxID = response.data.data.map((value: any) => value.id);
+									if (response.data.data.length === 0) invalidUser = true;
+								})
+								.catch((error) => {
+									console.error(error);
+								});
+
+							if (invalidUser !== false) {
+								formResponse.update({
+									embeds: [
+										new EmbedBuilder() // prettier-ignore
+											.setTitle('Unable to find Roblox User! 🔎')
+											.setDescription("Please ensure you're providing a valid Roblox player to proceed.")
+											.setColor(EMBED_COLOURS.red)
+											.setTimestamp(),
+									],
+									components: [],
+								});
+
+								openPrompt.delete(interaction.user.id);
+								menuCollector.stop();
+								return detailsCollector.stop();
+							}
+						}
+
+						await formResponse.update({
+							embeds: [
+								new EmbedBuilder() // prettier-ignore
+									.setTitle('[3/3] Evidence 🧾')
+									.setDescription('Please input a video/photo of the offence in action.\n\nSay **done** once complete to submit your report.')
+									.setColor(EMBED_COLOURS.blurple)
+									.setFooter({ text: 'Input cancel to exit the prompt.' }),
+							],
+							components: [],
+						});
+
+						/* Gathering Attachments */
+						const attachmentCollector: MessageCollector = dmChannel.createMessageCollector({ filter: (msg: Message) => msg.author.id === interaction.user.id, idle: PROMPT_TIMEOUT, max: 10 });
+						const fetchedAttachments: any = [];
+
+						attachmentCollector.on('collect', (collectedMsg: Message): any => {
+							/* Cancelling */
+							if (collectedMsg.content.toLowerCase() === 'cancel') {
+								interaction.user.send({
+									embeds: [
+										new EmbedBuilder() // prettier-ignore
+											.setTitle('✅ Cancelled!')
+											.setDescription('The prompt has been cancelled successfully.')
+											.setThumbnail('https://i.ibb.co/kxJqM6F/mascot-Success.png')
+											.setColor(EMBED_COLOURS.green),
+									],
+								});
+
+								openPrompt.delete(interaction.user.id);
+								menuCollector.stop();
+								detailsCollector.stop();
+								return attachmentCollector.stop('Prompt Cancelled');
+							}
+
+							if (collectedMsg.content.toLowerCase() === 'done' && !fetchedAttachments.length) {
+								return interaction.user.send({
+									embeds: [
+										new EmbedBuilder() // prettier-ignore
+											.setTitle('📎 Provide Attachment!')
+											.setDescription('You must provide at least **one** attachment or link before submitting this report.')
+											.setColor(EMBED_COLOURS.red)
+											.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png'),
+									],
+								});
+							}
+
+							if (collectedMsg.attachments.size > 5 || fetchedAttachments.length === 5) {
+								return interaction.user.send({
+									embeds: [
+										new EmbedBuilder() // prettier-ignore
+											.setTitle('🗃️ Maximum Uploads!')
+											.setDescription("You have reached the maximum upload limit for this report (5 attachments).\n\n**🔎 Looking where to go next?**\nYou'll need to either `cancel` this report to upload different attachments, or say `done` to submit.")
+											.setColor(EMBED_COLOURS.red)
+											.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png'),
+									],
+								});
+							}
+
+							if (collectedMsg.content.toLowerCase() === 'done') return attachmentCollector.stop();
+
+							if (collectedMsg.attachments.size > 0) {
+								collectedMsg.attachments.forEach((attachment) => {
+									fetchedAttachments.push({ content: collectedMsg.content ? collectedMsg.content : '', url: attachment.url });
+								});
+							}
+
+							/* LINK DETECTION */
+							if (urlRegex({ exact: true }).test(collectedMsg.content) === true) {
+								fetchedAttachments.push({ linkContent: collectedMsg.content });
+							}
+
+							if (collectedMsg.attachments.size === 0 && urlRegex({ exact: true }).test(collectedMsg.content) === false) {
+								return interaction.user.send('Please input a link, photo or video of the offence. If this is incorrect, please inform us!');
+							}
+						});
+
+						// @ts-ignore
+						attachmentCollector.on('end', async (_collected: any, response: any) => {
+							if (response === 'Prompt Cancelled') return;
+							if (response === 'idle') {
+								return openPrompt.delete(interaction.user.id);
+							}
+
+							interaction.user.send({
+								embeds: [
+									new EmbedBuilder() // prettier-ignore
+										.setTitle('✅ Success!')
+										.setDescription('Your report has been posted.')
+										.setColor(EMBED_COLOURS.green)
+										.setTimestamp(),
+								],
+							});
+
+							const embed = new EmbedBuilder() // prettier-ignore
+								.setTitle(`🛡 New report!`)
+								.setDescription(`**Platform:** ${platform}\n**Reported User:** ${username}\n**Reason**: ${reason}`)
+								.setThumbnail(interaction.user.displayAvatarURL())
+								.setFooter({ text: `Reported by ${interaction.guild?.members.cache.get(interaction.user.id)?.displayName}`, iconURL: interaction.user.displayAvatarURL() })
+								.setColor(EMBED_COLOURS.blurple)
+								.setTimestamp();
+
+							if (robloxDisplayName !== '') embed.setDescription(`**Platform:** ${platform}\n**Reported User:** [${username}](https://www.roblox.com/users/${robloxID}/profile) [${robloxDisplayName}]\n**Reason**: ${reason}`);
+
+							const reportEmbed = await interaction.channel.send({ embeds: [embed] });
+
+							await reportData.create({
+								messageID: reportEmbed.id,
+								userID: interaction.user.id,
+							});
+
+							fetchedAttachments.forEach(async (attachment: any) => {
+								const attachmentEmbed = new EmbedBuilder() // prettier-ignore
+									.setImage(attachment.url)
+									.setColor(EMBED_COLOURS.blurple)
+									.setFooter({ text: `Reported by ${interaction.guild?.members.cache.get(interaction.user.id)?.displayName}`, iconURL: interaction.user.displayAvatarURL() });
+
+								if (attachment.content !== '') attachmentEmbed.setTitle(String(attachment.content));
+
+								/* POSTING LINKS */
+								if (attachment.linkContent)
+									return interaction.channel.send({
+										embeds: [
+											new EmbedBuilder() // prettier-ignore
+												.setDescription(attachment.linkContent)
+												.setColor(EMBED_COLOURS.blurple),
+										],
+									});
+
+								/* IF VIDEO POST WITHOUT EMBED */
+								for (const fileType of VIDEO_FILE_TYPES) {
+									if (attachment.url.includes(fileType)) {
+										if (attachment.content !== '') return interaction.channel.send({ content: attachment.content, files: [new AttachmentBuilder(attachment.url)] });
+										return interaction.channel.send({ files: [new AttachmentBuilder(attachment.url)] });
+									}
+								}
+
+								/* POST IMAGE */
+								interaction.channel.send({ embeds: [attachmentEmbed] });
+							});
+
+							openPrompt.delete(interaction.user.id);
+							detailsCollector.stop();
+							menuCollector.stop();
+						});
+
+						break;
 				}
-
-				/* POST IMAGE */
-				message.channel.send({ embeds: [attachmentEmbed] });
 			});
+		});
 
-			openPrompt.delete(message.author.id);
+		/* Handling when collectors end */
+		menuCollector.on('end', () => {
+			sentMenu.edit({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setTitle('❌ Cancelled!')
+						.setDescription("You didn't input in time, please try again.")
+						.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+						.setColor(EMBED_COLOURS.red),
+				],
+				components: [],
+			});
+			openPrompt.delete(interaction.user.id);
 		});
 	},
 };

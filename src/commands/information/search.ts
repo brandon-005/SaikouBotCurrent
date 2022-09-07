@@ -1,4 +1,4 @@
-import { Command, ApplicationCommandOptionType, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonInteraction, GuildMember, CommandInteraction, ButtonStyle, PermissionFlagsBits, ComponentType } from 'discord.js';
+import { Command, ApplicationCommandOptionType, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, PermissionFlagsBits, ComponentType, GuildMember } from 'discord.js';
 import axios from 'axios';
 import moment from 'moment';
 
@@ -13,7 +13,6 @@ const command: Command = {
 		commandAliases: ['rbxsearch', 'rbx', 'roblox', 'accscan', 'accountscan'],
 		commandDescription: 'Gain information about a Roblox player.',
 		commandUsage: '<roblox_username>',
-		slashCommand: true,
 		slashOptions: [
 			{
 				name: 'roblox-user',
@@ -23,7 +22,7 @@ const command: Command = {
 			},
 		],
 	},
-	run: async ({ message, args, interaction }) => {
+	run: async ({ interaction, args }) => {
 		const oofdBanReason: string[] = [];
 		let robloxID: Number | null = 0;
 		let error: any = false;
@@ -45,8 +44,6 @@ const command: Command = {
 			}
 		}
 
-		if (message) message.channel.sendTyping();
-
 		/* Fetching Roblox ID */
 		await axios({
 			method: 'post',
@@ -65,8 +62,7 @@ const command: Command = {
 
 		/* If Player Doesn't Exist */
 		if (!robloxID) {
-			if (message) return noUser(message);
-			return noUser(message, false, interaction as CommandInteraction);
+			return noUser(interaction, false);
 		}
 
 		const infoEmbed = new EmbedBuilder() // prettier-ignore
@@ -92,26 +88,21 @@ const command: Command = {
 			infoEmbed.setFooter({ text: `User ID: ${robloxID} • Join Date: ${moment(response.data.created).format('ll')}` });
 		});
 
-		if (message ? message.member?.permissions.has(PermissionFlagsBits.ManageMessages) : (interaction.member as GuildMember).permissions.has(PermissionFlagsBits.ManageMessages)) {
+		if ((interaction.member as GuildMember).permissions.has(PermissionFlagsBits.ManageMessages)) {
 			/* IF USER HAS PROMPT OPEN */
-			if (activeInteraction.has(message ? message.author.id : interaction.user.id)) {
+			if (activeInteraction.has(interaction.user.id)) {
 				infoEmbed.setFooter({ text: 'Exit previous search prompt to receive the option to scan.' });
-				return message ? message.channel.send({ embeds: [infoEmbed] }) : interaction.followUp({ embeds: [infoEmbed] });
+				return interaction.followUp({ embeds: [infoEmbed] });
 			}
 
-			activeInteraction.add(message ? message.author.id : interaction.user.id);
+			activeInteraction.add(interaction.user.id);
 
-			const info: any = message
-				? await message.channel.send({
-						embeds: [infoEmbed],
-						components: [new ActionRowBuilder<ButtonBuilder>().addComponents([new ButtonBuilder().setLabel('Scan Account 📊').setStyle(ButtonStyle.Primary).setCustomId('scanAcc'), new ButtonBuilder().setLabel('Exit 🚪').setStyle(ButtonStyle.Primary).setCustomId('exit')])],
-				  })
-				: await interaction.followUp({
-						embeds: [infoEmbed],
-						components: [new ActionRowBuilder().addComponents([new ButtonBuilder().setLabel('Scan Account 📊').setStyle(ButtonStyle.Primary).setCustomId('scanAcc'), new ButtonBuilder().setLabel('Exit 🚪').setStyle(ButtonStyle.Primary).setCustomId('exit')])],
-				  });
+			const info: any = await interaction.followUp({
+				embeds: [infoEmbed],
+				components: [new ActionRowBuilder<ButtonBuilder>().addComponents([new ButtonBuilder().setLabel('Scan Account 📊').setStyle(ButtonStyle.Primary).setCustomId('scanAcc'), new ButtonBuilder().setLabel('Exit 🚪').setStyle(ButtonStyle.Primary).setCustomId('exit')])],
+			});
 
-			const collector = message ? message.channel.createMessageComponentCollector({ filter: (msgFilter) => msgFilter.user.id === message.author.id, componentType: ComponentType.Button, time: 30000 }) : interaction.channel!.createMessageComponentCollector({ filter: (menu: any) => menu.user.id === interaction.user.id, componentType: ComponentType.Button, time: 30000 });
+			const collector = interaction.channel!.createMessageComponentCollector({ filter: (menu: any) => menu.user.id === interaction.user.id, componentType: ComponentType.Button, time: 30000 });
 
 			collector.on('collect', async (button: ButtonInteraction): Promise<any> => {
 				switch (button.customId) {
@@ -203,7 +194,7 @@ const command: Command = {
 							});
 
 							collector.stop();
-							return activeInteraction.delete(message ? message.author.id : interaction.user.id);
+							return activeInteraction.delete(interaction.user.id);
 						}
 
 						/* SENDING THE EMBED WITH DATA */
@@ -219,7 +210,7 @@ const command: Command = {
 								],
 							});
 							collector.stop();
-							return activeInteraction.delete(message ? message.author.id : interaction.user.id);
+							return activeInteraction.delete(interaction.user.id);
 						}
 
 						const failedChecks = new EmbedBuilder() // prettier-ignore
@@ -268,7 +259,7 @@ const command: Command = {
 
 						info.edit({ embeds: [failedChecks] });
 						collector.stop();
-						return activeInteraction.delete(message ? message.author.id : interaction.user.id);
+						return activeInteraction.delete(interaction.user.id);
 
 					case 'exit':
 						await button.update({
@@ -276,18 +267,15 @@ const command: Command = {
 						});
 
 						collector.stop();
-						activeInteraction.delete(message ? message.author.id : interaction.user.id);
+						activeInteraction.delete(interaction.user.id);
 						break;
 				}
 			});
 
 			collector.on('end', () => {
 				info.edit({ components: [] });
-				activeInteraction.delete(message ? message.author.id : interaction.user.id);
+				activeInteraction.delete(interaction.user.id);
 			});
-		} else if (message) {
-			infoEmbed.setTimestamp();
-			message.channel.send({ embeds: [infoEmbed] });
 		} else {
 			infoEmbed.setTimestamp();
 			interaction.followUp({ embeds: [infoEmbed] });

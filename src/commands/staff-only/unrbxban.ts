@@ -1,4 +1,4 @@
-import { Command, ApplicationCommandOptionType, CommandInteraction, EmbedBuilder, TextChannel } from 'discord.js';
+import { Command, ApplicationCommandOptionType, EmbedBuilder, TextChannel } from 'discord.js';
 import axios from 'axios';
 
 import { noUser } from '../../utils/embeds';
@@ -9,10 +9,10 @@ const command: Command = {
 		commandName: 'unrbxban',
 		commandAliases: ['removebanrbx'],
 		commandDescription: 'unban a Roblox user.',
+		commandUsage: '<player>',
 		userPermissions: 'ManageMessages',
 		limitedChannel: '🤖staff-cmds',
 		COOLDOWN_TIME: 30,
-		slashCommand: true,
 		slashOptions: [
 			{
 				name: 'roblox-user',
@@ -22,76 +22,72 @@ const command: Command = {
 			},
 		],
 	},
-	run: async ({ bot, message, args, interaction }) => {
+	run: async ({ bot, interaction, args }) => {
 		let robloxName: any;
 		let robloxID: any;
 		let invalidUser = false;
 
-		if (!message) {
-			/* CHECKING IF ROBLOX NAME IS VALID */
-			await axios({
-				method: 'post',
-				url: 'https://users.roblox.com/v1/usernames/users',
-				data: {
-					usernames: [args[0]],
-				},
+		/* CHECKING IF ROBLOX NAME IS VALID */
+		await axios({
+			method: 'post',
+			url: 'https://users.roblox.com/v1/usernames/users',
+			data: {
+				usernames: [args[0]],
+			},
+		})
+			.then((response: any) => {
+				robloxName = response.data.data.map((value: any) => value.name);
+				robloxID = response.data.data.map((value: any) => value.id);
+				if (response.data.data.length === 0) invalidUser = true;
 			})
-				.then((response: any) => {
-					robloxName = response.data.data.map((value: any) => value.name);
-					robloxID = response.data.data.map((value: any) => value.id);
-					if (response.data.data.length === 0) invalidUser = true;
-				})
-				.catch((error: Error) => {
-					console.error(error);
-				});
+			.catch((error: Error) => {
+				console.error(error);
+			});
 
-			if (invalidUser !== false) {
-				return noUser(message, false, interaction as CommandInteraction);
-			}
-
-			return axios({
-				url: `https://bans.saikouapi.xyz/v1/bans/delete/${robloxID}`,
-				method: 'DELETE',
-				headers: {
-					'X-API-KEY': String(process.env.SAIKOU_BANS_TOKEN),
-				},
-			})
-				.then(async () => {
-					const modLog = new EmbedBuilder() //
-						.addFields([
-							// prettier-ignore
-							{ name: 'User:', value: `[${robloxName}](https://www.roblox.com/users/${robloxID}/profile)`, inline: true },
-							{ name: 'Moderator:', value: `${interaction.guild?.members.cache.get(interaction.user.id)?.displayName}`, inline: true },
-							{ name: 'Additional Info:', value: `Unbanned at <t:${Math.floor(Date.now() / 1000)}:F>` },
-						])
-						.setColor(EMBED_COLOURS.green)
-						.setFooter({ text: `${robloxName} • Unbanned` })
-						.setTimestamp();
-
-					await axios.get(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${robloxID}&size=720x720&format=png`).then((image: any) => {
-						modLog.setThumbnail(String(image.data.data.map((value: any) => value.imageUrl)));
-					});
-
-					await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${robloxID}&size=720x720&format=png`).then((image: any) => {
-						modLog.setAuthor({ name: `${robloxName} | Unbanned`, iconURL: String(image.data.data.map((value: any) => value.imageUrl)) });
-					});
-
-					await (bot.channels.cache.get(String(process.env.MODERATION_CHANNEL)) as TextChannel)!.send({
-						embeds: [modLog],
-					});
-
-					return interaction.followUp({
-						embeds: [
-							new EmbedBuilder() // prettier-ignore
-								.setColor(EMBED_COLOURS.green)
-								.setDescription(`✅ Successfully removed the Roblox ban for **${robloxName}**!`),
-						],
-					});
-				})
-				.catch((err: Error) => interaction.followUp({ content: `❌ Error!\n\nLooks like the API request was unsucessful, please make sure they are banned and the correct name was provided.\n\n__Developer Info__\n${err}` }));
+		if (invalidUser !== false) {
+			return noUser(interaction, false);
 		}
 
-		return message.channel.send('❌ **Please Use Slash Commands**\n\nThis command relies on slash commands to work, please type /unrbxban to get started. Support for chat commands will come within the near future.');
+		return axios({
+			url: `https://bans.saikouapi.xyz/v1/bans/delete/${robloxID}`,
+			method: 'DELETE',
+			headers: {
+				'X-API-KEY': String(process.env.SAIKOU_BANS_TOKEN),
+			},
+		})
+			.then(async () => {
+				const modLog = new EmbedBuilder() //
+					.addFields([
+						// prettier-ignore
+						{ name: 'User:', value: `[${robloxName}](https://www.roblox.com/users/${robloxID}/profile)`, inline: true },
+						{ name: 'Moderator:', value: `${interaction.guild?.members.cache.get(interaction.user.id)?.displayName}`, inline: true },
+						{ name: 'Additional Info:', value: `Unbanned at <t:${Math.floor(Date.now() / 1000)}:F>` },
+					])
+					.setColor(EMBED_COLOURS.green)
+					.setFooter({ text: `${robloxName} • Unbanned` })
+					.setTimestamp();
+
+				await axios.get(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${robloxID}&size=720x720&format=png`).then((image: any) => {
+					modLog.setThumbnail(String(image.data.data.map((value: any) => value.imageUrl)));
+				});
+
+				await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${robloxID}&size=720x720&format=png`).then((image: any) => {
+					modLog.setAuthor({ name: `${robloxName} | Unbanned`, iconURL: String(image.data.data.map((value: any) => value.imageUrl)) });
+				});
+
+				await (bot.channels.cache.get(String(process.env.MODERATION_CHANNEL)) as TextChannel)!.send({
+					embeds: [modLog],
+				});
+
+				return interaction.followUp({
+					embeds: [
+						new EmbedBuilder() // prettier-ignore
+							.setColor(EMBED_COLOURS.green)
+							.setDescription(`✅ Successfully removed the Roblox ban for **${robloxName}**!`),
+					],
+				});
+			})
+			.catch((err: Error) => interaction.followUp({ content: `❌ Error!\n\nLooks like the API request was unsucessful, please make sure they are banned and the correct name was provided.\n\n__Developer Info__\n${err}` }));
 	},
 };
 

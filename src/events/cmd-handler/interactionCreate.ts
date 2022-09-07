@@ -20,7 +20,7 @@ export = async (bot: Client, interaction: Interaction) => {
 		const commandFile = bot.slashCommands.get(interaction.commandName);
 		const args: any = [];
 
-		if (!commandFile) return errorEmbed(true, undefined, interaction);
+		if (!commandFile) return errorEmbed(interaction);
 
 		/* GETTING ARGS */
 		interaction.options.data.map((argument: any) => args.push(argument.value.length > 1024 ? `${argument.value.substring(0, 1021)}...` : argument.value));
@@ -42,32 +42,6 @@ export = async (bot: Client, interaction: Interaction) => {
 				})
 				.then(() => setTimeout(() => interaction.deleteReply(), MESSAGE_TIMEOUT));
 		}
-
-		/* --- COOLDOWN CONFIGURATION --- */
-		let { COOLDOWN_TIME } = commandFile.config;
-
-		if (bot.cooldowns.has(`${interaction.user.id}-${commandName}`)) {
-			const titleOptions = ['🐌 Woah there, slow down!', '🦥 Way too fast there!'];
-
-			return interaction
-				.followUp({
-					embeds: [
-						new EmbedBuilder() // prettier-ignore
-							.setTitle(String(choose(titleOptions)))
-							.setDescription(`You must wait **${ms(bot.cooldowns.get(`${interaction.user.id}-${commandName}`)! - Date.now(), { long: true })}** before re-using the **${commandName}** command.\nThe default cooldown is \`${COOLDOWN_TIME || 5}s\`. `)
-							.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
-							.setColor(EMBED_COLOURS.red),
-					],
-				})
-				.then(() => setTimeout(() => interaction.deleteReply(), MESSAGE_TIMEOUT));
-		}
-
-		if (!COOLDOWN_TIME) COOLDOWN_TIME = 5;
-
-		bot.cooldowns.set(`${interaction.user.id}-${commandName}`, Date.now() + COOLDOWN_TIME * 1000);
-		setTimeout((): void => {
-			bot.cooldowns.delete(`${interaction.user.id}-${commandName}`);
-		}, COOLDOWN_TIME * 1000);
 
 		/* --- LIMITED CHANNEL CONFIGURATION --- */
 		if (interaction.channel!.type === ChannelType.GuildText && limitedChannel && limitedChannel.toLowerCase() !== 'none') {
@@ -133,9 +107,35 @@ export = async (bot: Client, interaction: Interaction) => {
 				.then(() => setTimeout(() => interaction.deleteReply(), 15000));
 		}
 
+		/* --- COOLDOWN CONFIGURATION --- */
+		let { COOLDOWN_TIME } = commandFile.config;
+
+		if (bot.cooldowns.has(`${interaction.user.id}-${commandName}`)) {
+			const titleOptions = ['🐌 Woah there, slow down!', '🦥 Way too fast there!'];
+
+			return interaction
+				.followUp({
+					embeds: [
+						new EmbedBuilder() // prettier-ignore
+							.setTitle(String(choose(titleOptions)))
+							.setDescription(`You must wait **${ms(bot.cooldowns.get(`${interaction.user.id}-${commandName}`)! - Date.now(), { long: true })}** before re-using the **${commandName}** command.\nThe default cooldown is \`${COOLDOWN_TIME || 5}s\`. `)
+							.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+							.setColor(EMBED_COLOURS.red),
+					],
+				})
+				.then(() => setTimeout(() => interaction.deleteReply(), MESSAGE_TIMEOUT));
+		}
+
+		if (!COOLDOWN_TIME) COOLDOWN_TIME = 5;
+
+		bot.cooldowns.set(`${interaction.user.id}-${commandName}`, Date.now() + COOLDOWN_TIME * 1000);
+		setTimeout((): void => {
+			bot.cooldowns.delete(`${interaction.user.id}-${commandName}`);
+		}, COOLDOWN_TIME * 1000);
+
 		commandFile.run({ bot, args, interaction }).catch((errorMessage: Error) => {
 			console.error(errorMessage);
-			errorEmbed(true, undefined, interaction);
+			errorEmbed(interaction);
 
 			webhookClient.send({
 				embeds: [
@@ -157,7 +157,7 @@ export = async (bot: Client, interaction: Interaction) => {
 		const commandFile = bot.slashCommands.get(interaction.commandName);
 		const args: any = [];
 
-		if (!commandFile) return errorEmbed(true, undefined, interaction as CommandInteraction);
+		if (!commandFile) return errorEmbed(interaction);
 
 		/* GETTING ARGS */
 		interaction.options.data.map((argument) => args.push(argument.value));

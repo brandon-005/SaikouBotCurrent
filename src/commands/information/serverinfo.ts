@@ -9,12 +9,12 @@ const command: Command = {
 		commandAliases: ['server', 'infoserver'],
 		commandDescription: 'Get all the information you could ever want about the server, right here nested within this command!',
 	},
-	run: async ({ message }) => {
-		const guild: Guild = await message.guild!.fetch();
+	run: async ({ interaction }) => {
+		const guild: Guild = await interaction.guild!.fetch();
 
-		if (!guild.available) return message.channel.send('Unable to perform this action right now.');
+		if (!guild.available) return interaction.followUp('Unable to perform this action right now.');
 
-		return message.channel.send({
+		return interaction.followUp({
 			embeds: [
 				new EmbedBuilder() //
 					.setAuthor({ name: guild.name, iconURL: `${guild.iconURL() ? guild.iconURL() : 'https://i.ibb.co/mGBw946/image.png'}` })
@@ -36,7 +36,7 @@ const command: Command = {
 						{ name: 'Offline', value: `${guild.approximateMemberCount! - guild.approximatePresenceCount!}`.toLocaleLowerCase(), inline: true },
 						{ name: 'Bots', value: `${guild.members.cache.filter((member: GuildMember) => member.user.bot === true).size}`, inline: true },
 						{ name: 'Max Members', value: `${guild.maximumMembers?.toLocaleString()}`, inline: true },
-						{ name: 'Max Online', value: `${guild.maximumPresences?.toLocaleString()}`, inline: true },
+						{ name: 'AFK Timeout', value: `${moment.duration(300, 'seconds').asMinutes()} Minutes`, inline: true },
 						{ name: '\u200b', value: '\u200b' },
 						{
 							name: `Role List (${guild.roles.cache.filter((role: Role) => role.managed !== true).size - 1})`,

@@ -27,11 +27,11 @@ export = (bot: Client) => {
 					type: command.config.type,
 					options: command.config.slashOptions,
 				});
-			}
-
-			/* SLASH COMMAND HANDLER */
-			if (command.config.slashCommand === true) {
+			} else {
+				/* SLASH COMMAND HANDLER */
 				bot.slashCommands.set(command.config.commandName, command);
+
+				if (!command.config.commandDescription) command.config.commandDescription = 'No Description Provided.';
 
 				arrayOfSlashCommands.push({
 					name: command.config.commandName,
@@ -40,8 +40,6 @@ export = (bot: Client) => {
 					type: command.config.type,
 				});
 			}
-			bot.commands.set(command.config.commandName, command);
-			if (command.config.commandAliases) command.config.commandAliases.forEach((alias: string) => bot.aliases.set(alias, command.config.commandName));
 		}
 	};
 	['fun', 'dev-only', 'staff-only', 'information', 'context-menu'].forEach((folder) => load(folder));

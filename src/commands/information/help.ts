@@ -1,4 +1,4 @@
-import { Command, EmbedBuilder, Message, ActionRowBuilder, SelectMenuBuilder, SelectMenuInteraction, PermissionFlagsBits, ComponentType } from 'discord.js';
+import { Command, EmbedBuilder, Message, ActionRowBuilder, SelectMenuBuilder, SelectMenuInteraction, PermissionFlagsBits, ComponentType, Interaction, GuildMember } from 'discord.js';
 import { readdirSync } from 'fs';
 import { resolve } from 'path';
 
@@ -12,8 +12,8 @@ const command: Command = {
 		commandAliases: ['cmds', 'commands'],
 		commandDescription: "Hey this is the command you're using now! As you may of realised, this grabs all of SaikouBot's commands ready for your next powerful move.",
 	},
-	run: async ({ bot, message }) => {
-		const prefix = process.env.PREFIX;
+	run: async ({ bot, interaction }) => {
+		const prefix = '/';
 		let funCommands: string = '';
 		let infoCommands: string = '';
 		let modCommands: string = '';
@@ -35,7 +35,7 @@ const command: Command = {
 			},
 		];
 
-		if (message.author.id === '229142187382669312') {
+		if (interaction.user.id === '229142187382669312') {
 			menuOptions.push({
 				label: 'Development Commands',
 				value: 'development',
@@ -44,7 +44,7 @@ const command: Command = {
 			});
 		}
 
-		if (message.member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
+		if ((interaction.member as GuildMember).permissions.has(PermissionFlagsBits.ManageMessages)) {
 			menuOptions.push({
 				label: 'Moderation Commands',
 				value: 'moderation',
@@ -54,9 +54,9 @@ const command: Command = {
 		}
 
 		/* IF USER HAS PROMPT OPEN */
-		if (openPrompt.has(message.author.id))
-			return message.channel
-				.send({
+		if (openPrompt.has(interaction.user.id))
+			return interaction
+				.followUp({
 					embeds: [
 						new EmbedBuilder() // prettier-ignore
 							.setTitle('🗃️ Prompt already open!')
@@ -67,14 +67,14 @@ const command: Command = {
 				})
 				.then((msg: Message) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
 
-		openPrompt.add(message.author.id);
+		openPrompt.add(interaction.user.id);
 
 		try {
-			sentMsg = await message.author.send({
+			sentMsg = await interaction.user.send({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setTitle(`:book: ${bot.user!.username} Commands`)
-						.setDescription(`The prefix for ${bot.user!.username} is \`${process.env.PREFIX}\` \nCurrently featuring ${bot.commands.size} chat commands and ${bot.slashCommands.size} slash commands!`)
+						.setDescription(`The prefix for ${bot.user!.username} is \`/\` \nCurrently featuring ${bot.slashCommands.size} slash commands!`)
 						.setColor(EMBED_COLOURS.blurple),
 				],
 				components: [
@@ -83,8 +83,9 @@ const command: Command = {
 				],
 			});
 		} catch (err) {
-			openPrompt.delete(message.author.id);
-			return message.channel.send({
+			console.log(err);
+			openPrompt.delete(interaction.user.id);
+			return interaction.followUp({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setDescription("Unable to send DM, please make sure your DM's are enabled.")
@@ -93,28 +94,28 @@ const command: Command = {
 			});
 		}
 
-		message.channel.send({
+		interaction.followUp({
 			embeds: [
 				new EmbedBuilder() // prettier-ignore
-					.setDescription(`📬 A message has been sent to your DM's <@${message.author.id}>`)
+					.setDescription(`📬 A message has been sent to your DM's <@${interaction.user.id}>`)
 					.setColor(EMBED_COLOURS.green),
 			],
 		});
 
-		const collector = (await message.author.createDM()).createMessageComponentCollector({ filter: (interaction) => interaction.user.id === message.author.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT });
+		const collector = (await interaction.user.createDM()).createMessageComponentCollector({ filter: (msgInteraction: Interaction) => msgInteraction.user.id === interaction.user.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT });
 
-		collector.on('collect', (interaction: SelectMenuInteraction) => {
-			const [category] = interaction.values;
+		collector.on('collect', (selectMenu: SelectMenuInteraction) => {
+			const [category] = selectMenu.values;
 
 			switch (category) {
 				case `fun`:
 					readdirSync(resolve(__dirname, '../fun/')).forEach((file) => {
 						if (!file.endsWith('.js')) return;
-						const commandFile = bot.commands.get(file.replace('.js', ''));
-						funCommands += `**${prefix}${commandFile.config.commandName} ${commandFile.config.commandUsage ? commandFile.config.commandUsage : ''}** - [${commandFile.config.commandAliases.join(', ')}]\n${commandFile.config.commandDescription}\n\n`;
+						const commandFile = bot.slashCommands.get(file.replace('.js', ''));
+						funCommands += `**${prefix}${commandFile.config.commandName} ${commandFile.config.commandUsage ? commandFile.config.commandUsage : ''}**\n${commandFile.config.commandDescription}\n\n`;
 					});
 
-					interaction.update({
+					selectMenu.update({
 						embeds: [
 							new EmbedBuilder() // prettier-ignore
 								.setTitle('🎲 Fun Commands')
@@ -128,11 +129,11 @@ const command: Command = {
 				case `information`:
 					readdirSync(resolve(__dirname, '../information/')).forEach((file) => {
 						if (!file.endsWith('.js')) return;
-						const commandFile = bot.commands.get(file.replace('.js', ''));
-						infoCommands += `**${prefix}${commandFile.config.commandName} ${commandFile.config.commandUsage ? commandFile.config.commandUsage : ''}** - [${commandFile.config.commandAliases.join(', ')}]\n${commandFile.config.commandDescription}\n\n`;
+						const commandFile = bot.slashCommands.get(file.replace('.js', ''));
+						infoCommands += `**${prefix}${commandFile.config.commandName} ${commandFile.config.commandUsage ? commandFile.config.commandUsage : ''}**\n${commandFile.config.commandDescription}\n\n`;
 					});
 
-					interaction.update({
+					selectMenu.update({
 						embeds: [
 							new EmbedBuilder() // prettier-ignore
 								.setTitle('ℹ️ Information Commands')
@@ -146,11 +147,11 @@ const command: Command = {
 				case `moderation`:
 					readdirSync(resolve(__dirname, '../staff-only/')).forEach((file) => {
 						if (!file.endsWith('.js')) return;
-						const commandFile = bot.commands.get(file.replace('.js', ''));
-						modCommands += `**${prefix}${commandFile.config.commandName} ${commandFile.config.commandUsage ? commandFile.config.commandUsage : ''}** - [${commandFile.config.commandAliases.join(', ')}]\n${commandFile.config.commandDescription}\n\n`;
+						const commandFile = bot.slashCommands.get(file.replace('.js', ''));
+						modCommands += `**${prefix}${commandFile.config.commandName} ${commandFile.config.commandUsage ? commandFile.config.commandUsage : ''}**\n${commandFile.config.commandDescription}\n\n`;
 					});
 
-					interaction.update({
+					selectMenu.update({
 						embeds: [
 							new EmbedBuilder() // prettier-ignore
 								.setTitle('<:ban:701729757909352538> Moderation Commands')
@@ -164,11 +165,11 @@ const command: Command = {
 				case `development`:
 					readdirSync(resolve(__dirname, '../dev-only/')).forEach((file) => {
 						if (!file.endsWith('.js')) return;
-						const commandFile = bot.commands.get(file.replace('.js', ''));
-						devCommands += `**${prefix}${commandFile.config.commandName} ${commandFile.config.commandUsage ? commandFile.config.commandUsage : ''}** - [${commandFile.config.commandAliases.join(', ')}]\n${commandFile.config.commandDescription}\n\n`;
+						const commandFile = bot.slashCommands.get(file.replace('.js', ''));
+						devCommands += `**${prefix}${commandFile.config.commandName} ${commandFile.config.commandUsage ? commandFile.config.commandUsage : ''}**\n${commandFile.config.commandDescription}\n\n`;
 					});
 
-					interaction.update({
+					selectMenu.update({
 						embeds: [
 							new EmbedBuilder() // prettier-ignore
 								.setTitle('🔨 Development Commands')
@@ -185,7 +186,7 @@ const command: Command = {
 		});
 
 		collector.on('end', () => {
-			openPrompt.delete(message.author.id);
+			openPrompt.delete(interaction.user.id);
 			sentMsg.edit({ components: [] });
 		});
 	},

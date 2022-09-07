@@ -31,7 +31,7 @@ export = async (bot: any, oldMessage: Message, newMessage: Message) => {
 		const messageUpdateEmbed = new EmbedBuilder() // prettier-ignore
 			.setTitle(':warning: Warning!')
 			.setColor(EMBED_COLOURS.yellow)
-			.setDescription(`**<@!${newMessage.author.id}> edited an attachment [message](${newMessage.url}) posted <t:${parseInt(newMessage.createdTimestamp / 1000)}:R> in <#${newMessage.channel.id}>**`)
+			.setDescription(`**<@!${newMessage.author.id}> edited an attachment [message](${newMessage.url}) posted <t:${parseInt(String(newMessage.createdTimestamp / 1000))}:R> in <#${newMessage.channel.id}>**`)
 			.addFields([
 				// prettier-ignore
 				{ name: 'Previous Content', value: `> ${oldMessageShorten}` || '> None' },
@@ -42,13 +42,13 @@ export = async (bot: any, oldMessage: Message, newMessage: Message) => {
 
 		if (newMessage.attachments.size > 0) {
 			if (oldMessage.content.length === 0) {
-				messageUpdateEmbed.setDescription(`**<@!${newMessage.author.id}> edited an attachment [message](${newMessage.url}) posted <t:${parseInt(newMessage.createdTimestamp / 1000)}:R> in <#${newMessage.channel.id}>**`);
+				messageUpdateEmbed.setDescription(`**<@!${newMessage.author.id}> edited an attachment [message](${newMessage.url}) posted <t:${parseInt(String(newMessage.createdTimestamp / 1000))}:R> in <#${newMessage.channel.id}>**`);
 				return modLogs.send({ embeds: [messageUpdateEmbed] });
 			}
 			return modLogs.send({ embeds: [messageUpdateEmbed] });
 		}
 
-		messageUpdateEmbed.setDescription(`**<@!${newMessage.author.id}> edited their [message](${newMessage.url}) posted <t:${parseInt(newMessage.createdTimestamp / 1000)}:R> in <#${newMessage.channel.id}>**`);
+		messageUpdateEmbed.setDescription(`**<@!${newMessage.author.id}> edited their [message](${newMessage.url}) posted <t:${parseInt(String(newMessage.createdTimestamp / 1000))}:R> in <#${newMessage.channel.id}>**`);
 		modLogs.send({ embeds: [messageUpdateEmbed] });
 
 		/* AUTO MODERATION */

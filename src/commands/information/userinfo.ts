@@ -1,8 +1,8 @@
-import { Command, GuildMember, EmbedBuilder, Role, PermissionFlagsBits } from 'discord.js';
+import { Command, ApplicationCommandOptionType, EmbedBuilder, Role, PermissionFlagsBits } from 'discord.js';
 
 import moment from 'moment';
 import { EMBED_COLOURS } from '../../utils/constants';
-import { getMember } from '../../utils/functions';
+import { noUser } from '../../utils/embeds';
 
 const command: Command = {
 	config: {
@@ -10,9 +10,20 @@ const command: Command = {
 		commandAliases: ['user', 'user-info', 'playerinfo', 'player', 'whois'],
 		commandDescription: "If you're wondering when that one user joined, or just want some extra information about them, then the userinfo command is for you.",
 		commandUsage: '[user]',
+		slashOptions: [
+			{
+				name: 'user',
+				description: 'The user who you would like to view info of.',
+				type: ApplicationCommandOptionType.User,
+				required: false,
+			},
+		],
 	},
-	run: async ({ message, args }) => {
-		const member: GuildMember = getMember(message, args.join(' '));
+	run: async ({ interaction }) => {
+		/* If user can't be found in cache */
+		if (!interaction.inCachedGuild()) return noUser(interaction, false);
+
+		const member = interaction.options.getMember('user') || interaction.member;
 
 		const userinfoEmbed = new EmbedBuilder() // prettier-ignore
 			.setAuthor({ name: member.user.tag, iconURL: member.user.displayAvatarURL({ extension: 'webp', size: 64 }) })
@@ -36,7 +47,7 @@ const command: Command = {
 					member.roles.cache
 						.filter((role: Role) => role.id !== member.guild.id)
 						.sort((role1: Role, role2: Role) => role2.position - role1.position)
-						.map((role) => role.toString())
+						.map((role: Role) => role.toString())
 						.join(', ') || 'None',
 			},
 		]);
@@ -47,7 +58,7 @@ const command: Command = {
 		if (member.permissions.has(PermissionFlagsBits.Administrator)) userinfoEmbed.addFields([{ name: 'Acknowledgements', value: 'Server Admin' }]);
 		else if (member.permissions.has(PermissionFlagsBits.ManageMessages)) userinfoEmbed.addFields([{ name: 'Acknowledgements', value: 'Server Moderator' }]);
 
-		message.channel.send({ embeds: [userinfoEmbed] });
+		interaction.followUp({ embeds: [userinfoEmbed] });
 	},
 };
 

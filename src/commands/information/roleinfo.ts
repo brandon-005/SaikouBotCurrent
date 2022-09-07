@@ -7,7 +7,6 @@ const command: Command = {
 		commandAliases: ['roleinformation', 'inforole'],
 		commandDescription: 'Gain information about a specific role!',
 		commandUsage: '<role>',
-		slashCommand: true,
 		slashOptions: [
 			{
 				name: 'role',
@@ -17,35 +16,37 @@ const command: Command = {
 			},
 		],
 	},
-	run: async ({ message, args, interaction }) => {
-		const role = message ? message.guild?.roles.cache.find((serverRoles: Role) => serverRoles.name.toLowerCase() === args.join(' ')?.toLowerCase()) : interaction.guild?.roles.cache.find((serverRoles: Role) => serverRoles.name.toLowerCase() === args[0]?.toLowerCase());
+	run: async ({ interaction, args }) => {
+		const role = interaction.guild?.roles.cache.find((serverRoles: Role) => serverRoles.name.toLowerCase() === args[0]?.toLowerCase());
 
 		if (!role) {
-			const noRoleEmbed = new EmbedBuilder() // prettier-ignore
-				.setTitle('🗄️ Invalid Role!')
-				.setDescription('Unable to find the specified role.')
-				.setColor(EMBED_COLOURS.red);
-
-			if (!message) return interaction.followUp({ embeds: [noRoleEmbed] });
-			return message.channel.send({ embeds: [noRoleEmbed] });
+			return interaction.followUp({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setTitle('🗄️ Invalid Role!')
+						.setDescription('Unable to find the specified role.')
+						.setColor(EMBED_COLOURS.red),
+				],
+			});
 		}
 
-		const roleInfoEmbed = new EmbedBuilder() // prettier-ignore
-			.setTitle('ℹ️ Role Information')
-			.setFields([
-				// prettier-ignore
-				{ name: 'Name', value: `${role.name}`, inline: true },
-				{ name: 'Colour', value: `${role.color === 0 ? 'None' : role.color}`, inline: true },
-				{ name: 'Position', value: `${role.rawPosition}`, inline: true },
-				{ name: 'Hoisted', value: `${role.hoist ? 'Yes' : 'No'}`, inline: true },
-				{ name: 'Mentionable', value: `${role.mentionable ? 'Yes' : 'No'}`, inline: true },
-				{ name: 'Managed', value: `${role.managed ? 'Yes' : 'No'}`, inline: true },
-			])
-			.setColor(EMBED_COLOURS.blurple)
-			.setFooter({ text: `Role ID: ${role.id}` });
-
-		if (!message) return interaction.followUp({ embeds: [roleInfoEmbed] });
-		return message.channel.send({ embeds: [roleInfoEmbed] });
+		return interaction.followUp({
+			embeds: [
+				new EmbedBuilder() // prettier-ignore
+					.setTitle('ℹ️ Role Information')
+					.setFields([
+						// prettier-ignore
+						{ name: 'Name', value: `${role.name}`, inline: true },
+						{ name: 'Colour', value: `${role.color === 0 ? 'None' : role.color}`, inline: true },
+						{ name: 'Position', value: `${role.rawPosition}`, inline: true },
+						{ name: 'Hoisted', value: `${role.hoist ? 'Yes' : 'No'}`, inline: true },
+						{ name: 'Mentionable', value: `${role.mentionable ? 'Yes' : 'No'}`, inline: true },
+						{ name: 'Managed', value: `${role.managed ? 'Yes' : 'No'}`, inline: true },
+					])
+					.setColor(EMBED_COLOURS.blurple)
+					.setFooter({ text: `Role ID: ${role.id}` }),
+			],
+		});
 	},
 };
 

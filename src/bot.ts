@@ -4,6 +4,7 @@ import axios from 'axios';
 import cron from 'node-cron';
 
 import statusTimer from './models/statusTimer';
+import weeklyTrivia from './models/weeklyTrivia';
 import { StatusTimerTypes } from './TS/interfaces';
 import { BIRTHDAY_GIFS, BIRTHDAY_MESSAGES, EMBED_COLOURS } from './utils/constants';
 import { devErrorEmbed, moderationDmEmbed } from './utils/embeds';
@@ -32,14 +33,9 @@ const bot: Client = new Client({
 	presence: { activities: [{ name: '🤖 Starting up...' }] },
 });
 
-bot.commands = new Collection();
 bot.slashCommands = new Collection();
 bot.cooldowns = new Collection();
-bot.aliases = new Collection();
 
-['commands', 'aliases'].forEach((collection: string) => {
-	bot[collection] = new Collection();
-});
 ['load-commands', 'load-events'].forEach((handlerFile: string): string => require(`./handlers/${handlerFile}.js`)(bot));
 
 process.on('uncaughtException', (exceptionError: Error) => {
@@ -151,7 +147,7 @@ setInterval(async () => {
 /* Automatic QOTD */
 cron.schedule('0 13 * * *', async () => {
 	const counter = await questionNumber.findOne({ id: 1 });
-	const qotdChannel = bot.channels.cache.find((channel) => channel.name === '❔question-of-the-day');
+	const qotdChannel = bot.channels.cache.find((channel: any) => (channel as TextChannel).name === '❔question-of-the-day');
 
 	if (!counter) {
 		questionNumber.create({
@@ -181,6 +177,11 @@ cron.schedule('0 1 * * *', async () => {
 			});
 		}
 	});
+});
+
+/* Weekly trivia deletion */
+cron.schedule('0 0 * * MON', async () => {
+	await weeklyTrivia.deleteMany({});
 });
 
 bot.login(process.env.TEST === 'true' ? process.env.DISCORD_TESTTOKEN : process.env.DISCORD_TOKEN);

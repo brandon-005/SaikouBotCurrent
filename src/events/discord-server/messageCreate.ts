@@ -1,4 +1,5 @@
 import { Message, EmbedBuilder, ChannelType, PermissionFlagsBits } from 'discord.js';
+import urlRegex from 'url-regex';
 
 import { EMBED_COLOURS, MESSAGE_TIMEOUT } from '../../utils/constants';
 import { swearCheck, maliciousLinkCheck, inviteLinkCheck, statusCheck, massMentionCheck, everyoneMention, devMention } from '../../utils/autoMod';
@@ -16,35 +17,38 @@ export = async (bot: any, message: Message) => {
 		await devMention(bot, message);
 	}
 
-	/* Incorrect Usages */
-	const correctCommandEmbed = new EmbedBuilder() // prettier-ignore
-		.setTitle('❌ Incorrect usage!')
-		.setColor(EMBED_COLOURS.red)
-		.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png');
-
-	if (message.channel.name === '📝report-abuse' && message.content !== '.report') {
-		correctCommandEmbed.setDescription('To begin a prompt, please use the `.report` command. You will be DMed further instructions.');
-		return message.reply({ embeds: [correctCommandEmbed], failIfNotExists: false }).then((msg: any) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
+	/* If user @mentions bot */
+	if (message.content === `<@${bot.user!.id}>` || message.content === `<@!${bot.user!.id}>`) {
+		return message.channel
+			.send({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setDescription(`You can use **/help** to view all of Saikou's commands.`)
+						.setColor(EMBED_COLOURS.green),
+				],
+			})
+			.then((msg: any) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
 	}
 
-	if (message.channel.name === '💡suggestions' && message.content !== '.suggest') {
-		correctCommandEmbed.setDescription('To begin a prompt, please use the `.suggest` command. You will be DMed further instructions.');
-		return message.reply({ embeds: [correctCommandEmbed], failIfNotExists: false }).then((msg: any) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
+	/* Deleting messages in feedback and report channels */
+	if ((message.channel.type === ChannelType.GuildText && message.channel.parent!.name === '🔖 | Feedback & reports') || (message.channel.type === ChannelType.GuildText && message.channel.name === '👋introductions')) {
+		try {
+			setTimeout(() => message.delete(), 500);
+		} catch (err) {
+			return;
+		}
 	}
 
-	if (message.channel.name === '🔥suggestions-nitro' && message.content !== '.suggest') {
-		correctCommandEmbed.setDescription('To begin a prompt, please use the `.suggest` command. You will be DMed further instructions.');
-		return message.reply({ embeds: [correctCommandEmbed], failIfNotExists: false }).then((msg: any) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
-	}
+	/* Deleting content that isn't a discord attachment in memes and art */
+	if ((message.channel.type === ChannelType.GuildText && message.channel.name.match('memes')) || (message.channel.type === ChannelType.GuildText && message.channel.name.match('art'))) {
+		if (!(message.attachments.size > 0 || urlRegex({ exact: false }).test(message.content))) {
+			return message.delete().catch(() => {});
+		}
 
-	if (message.channel.name === '🐞bug-reports' && message.content !== '.bugreport') {
-		correctCommandEmbed.setDescription('To begin a prompt, please use the `.bugreport` command. You will be DMed further instructions.');
-		return message.reply({ embeds: [correctCommandEmbed], failIfNotExists: false }).then((msg: any) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
-	}
-
-	if (message.channel.name === '👋introductions' && message.content !== '.introduce') {
-		correctCommandEmbed.setDescription('To begin a prompt, please use the `.introduce` command. You will be DMed further instructions.');
-		return message.reply({ embeds: [correctCommandEmbed], failIfNotExists: false }).then((msg: any) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
+		/* Deleting attachments that are invisible with less than 5 pixel height and width */
+		if (message.attachments.size > 0 && message.attachments.first().height < 5 && message.attachments.first().width < 5) {
+			return message.delete().catch(() => {});
+		}
 	}
 
 	/* Story Corner Character limit */
@@ -64,4 +68,21 @@ export = async (bot: any, message: Message) => {
 	setTimeout(async () => {
 		await statusCheck(bot, message);
 	}, 5000);
+
+	/* TEMP - Checking if user is trying to use chat commands */
+	try {
+		if (message.content === `.${bot.slashCommands.get(message.content.substring(1)).config.commandName}`) {
+			return await message.channel
+				.send({
+					embeds: [
+						new EmbedBuilder() // prettier-ignore
+							.setDescription('**SaikouBot commands now rely on slash commands to function. To get started, use the /help command.**')
+							.setColor(EMBED_COLOURS.red),
+					],
+				})
+				.then((msg: any) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
+		}
+	} catch (err) {
+		return;
+	}
 };

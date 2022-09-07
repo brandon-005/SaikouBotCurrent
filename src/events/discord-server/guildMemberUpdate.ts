@@ -1,9 +1,32 @@
-import { GuildMember } from 'discord.js';
+import { GuildMember, TextChannel, EmbedBuilder } from 'discord.js';
+import { EMBED_COLOURS } from '../../utils/constants';
+import tokenData from '../../models/weaponTokens';
 
 export = async (bot: any, oldMember: GuildMember, newMember: GuildMember) => {
 	/* Booster Message + Posting Discord nickname in specified channel */
 	if (!oldMember.premiumSince && newMember.premiumSince) {
-		bot.channels.cache.get('397791696315875333').send({ content: `Thanks for the boost, <@!${newMember.id}>! Our team has been notified and will give you the weapons soon; please allow up to 12 hours to receive them. We appreciate your support!` });
-		return bot.channels.cache.get('773631885086556160').send({ content: `<@&818161643531796501>, <@&397792959766069249>\n__**New Boost!**__\nMention: <@!${newMember.id}>\n\`:boost ${newMember.displayName}\`` });
+		(bot.channels.cache.find((channel: any) => channel.name === '💬roblox-topic') as TextChannel).send({
+			content: `<@${newMember.id}>`,
+			embeds: [
+				new EmbedBuilder() // prettier-ignore
+					.setTitle('🎉 Token Received!')
+					.setDescription('Thanks for boosting! You have received a weapon token to receive the Military Warfare Tycoon booster weapons.\n\n**🔎 Looking for how to redeem?**\nWhen tokens are awarded, they can be used in conjunction with our </redeem:1016682656123080723> command to receive the in-game perks.')
+					.setColor(EMBED_COLOURS.blurple)
+					.setThumbnail('https://i.ibb.co/B6CQp1H/3-128.png')
+					.setTimestamp(),
+			],
+		});
+
+		const tokensUser = await tokenData.findOne({ userID: newMember.id });
+
+		if (!tokensUser) {
+			return tokenData.create({
+				userID: newMember.id,
+				tokens: 1,
+			});
+		}
+
+		tokensUser.tokens += 1;
+		return tokensUser.save();
 	}
 };

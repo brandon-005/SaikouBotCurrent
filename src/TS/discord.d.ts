@@ -15,11 +15,9 @@ declare module 'discord.js' {
 			userPermissions?: PermissionsString;
 			commandUsage?: string;
 			limitedChannel?: string;
-			serverOnly?: boolean;
-			slashCommand?: boolean;
 			slashOptions?: { name: string; description: string; type: ApplicationCommandOptionType; required: boolean; choices?: { name: string; value: string }[] }[];
 		};
-		run: ({ bot, message, args, interaction }: { bot: Client; message?: Message; args?: string[]; interaction?: CommandInteraction | ContextMenuInteraction }) => Promise<any>;
+		run: ({ bot, message, args, interaction }: { bot: Client; message?: Message; args?: string[]; interaction?: CommandInteraction }) => Promise<any>;
 	}
 
 	export interface ContextMenu {
@@ -27,16 +25,14 @@ declare module 'discord.js' {
 			commandName: string;
 			type: ApplicationCommandType;
 		};
-		run: ({ bot, args, interaction }: { bot: Client; args?: string[]; interaction?: CommandInteraction | ContextMenuInteraction }) => Promise<any>;
+		run: ({ bot, args, interaction }: { bot: Client; args?: string[]; interaction?: ContextMenuInteraction }) => Promise<any>;
 	}
 }
 
 declare module 'discord.js' {
 	export interface Client {
 		[key: string];
-		commands: Collection<string, Command>;
 		cooldowns: Collection<string, number>;
-		aliases: Collection<string, string>;
 		slashCommands: Collection<string, Command>;
 	}
 }

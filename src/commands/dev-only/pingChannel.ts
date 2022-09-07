@@ -1,4 +1,4 @@
-import { Command, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { Command, ActionRowBuilder, ButtonBuilder, ButtonStyle, Message } from 'discord.js';
 
 const command: Command = {
 	config: {
@@ -8,8 +8,10 @@ const command: Command = {
 		developerOnly: true,
 		limitedChannel: 'None',
 	},
-	run: async ({ message }) => {
-		message.channel.send({
+	run: async ({ interaction }) => {
+		interaction.followUp({ content: 'Success!' }).then((msg: Message) => msg.delete());
+
+		interaction.channel.send({
 			content: '►**Where can I get notified for community events?**\nYou can press the buttons below to receive or remove our ping role. This will allow you to be informed of any upcoming community events that aren’t addressed to everyone.',
 			components: [new ActionRowBuilder<ButtonBuilder>().addComponents([new ButtonBuilder().setLabel('Get Role').setStyle(ButtonStyle.Success).setCustomId('GetRole'), new ButtonBuilder().setLabel('Remove Role').setStyle(ButtonStyle.Danger).setCustomId('RemoveRole')])],
 		});
