@@ -72,7 +72,7 @@ const command: Command = {
 				return await interaction.followUp({ embeds: [resultEmbed] });
 			}
 
-			if ((triviaUser && triviaUser.answersCorrect - 1 > 0) || (weeklyTriviaUser && weeklyTriviaUser.answersCorrect - 1 > 0)) {
+			if (triviaUser && triviaUser.answersCorrect - 1 > 0 && weeklyTriviaUser && weeklyTriviaUser.answersCorrect - 1 > 0) {
 				resultEmbed.setDescription(`You answered the trivia incorrectly and lost **1 point**!`);
 				resultEmbed.addFields([{ name: 'Correct Answer', value: `${Object.entries(optionsObj).find((key: any) => key[0] === fetchedQuestion[0].answer)![1]}`, inline: true }]);
 
@@ -89,7 +89,7 @@ const command: Command = {
 
 			return await interaction.followUp({ embeds: [resultEmbed] });
 		} catch (err) {
-			return interaction.followUp({
+			return await interaction.followUp({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('⏱ Out of time!')
