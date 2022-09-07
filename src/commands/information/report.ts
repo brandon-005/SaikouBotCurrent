@@ -19,6 +19,14 @@ const command: Command = {
 		let robloxDisplayName = '';
 		let robloxID = '';
 
+		function sendNoContent(userMessage: Message) {
+			if (!userMessage.content) {
+				openPrompt.delete(message.author.id);
+				return noContent(message);
+			}
+			return false;
+		}
+
 		/* IF USER HAS PROMPT OPEN */
 		if (openPrompt.has(interaction.user.id))
 			return interaction

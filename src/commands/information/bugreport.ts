@@ -15,6 +15,14 @@ const command: Command = {
 	run: async ({ interaction }) => {
 		let sentMenu: Message;
 
+		function sendNoContent(userMessage: Message) {
+			if (!userMessage.content) {
+				openPrompt.delete(message.author.id);
+				return noContent(message);
+			}
+			return false;
+		}
+
 		/* IF USER HAS PROMPT OPEN */
 		if (openPrompt.has(interaction.user.id))
 			return interaction
@@ -77,7 +85,6 @@ const command: Command = {
 							.setColor(EMBED_COLOURS.red),
 					],
 				})
-				.then((msg: Message) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
 		}
 
 		/* DM Sent Embed */

@@ -116,7 +116,6 @@ const command: Command = {
 				})
 				.then((msg: Message) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
 		}
-
 		openPrompt.add(interaction.user.id);
 
 		/* DM sent embed */
