@@ -19,13 +19,15 @@ export = async (bot: any, message: Message) => {
 
 	/* If user @mentions bot */
 	if (message.content === `<@${bot.user!.id}>` || message.content === `<@!${bot.user!.id}>`) {
-		return message.channel.send({
-			embeds: [
-				new EmbedBuilder() // prettier-ignore
-					.setDescription(`You can use **/help** to view all of Saikou's commands.`)
-					.setColor(EMBED_COLOURS.green),
-			],
-		});
+		return message.channel
+			.send({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setDescription(`You can use **/help** to view all of Saikou's commands.`)
+						.setColor(EMBED_COLOURS.green),
+				],
+			})
+			.then((msg: any) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
 	}
 
 	/* Deleting messages in feedback and report channels */
@@ -70,13 +72,15 @@ export = async (bot: any, message: Message) => {
 	/* TEMP - Checking if user is trying to use chat commands */
 	try {
 		if (message.content === `.${bot.slashCommands.get(message.content.substring(1)).config.commandName}`) {
-			return await message.channel.send({
-				embeds: [
-					new EmbedBuilder() // prettier-ignore
-						.setDescription('**SaikouBot commands now rely on slash commands to function. To get started, use the /help command.**')
-						.setColor(EMBED_COLOURS.red),
-				],
-			});
+			return await message.channel
+				.send({
+					embeds: [
+						new EmbedBuilder() // prettier-ignore
+							.setDescription('**SaikouBot commands now rely on slash commands to function. To get started, use the /help command.**')
+							.setColor(EMBED_COLOURS.red),
+					],
+				})
+				.then((msg: any) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
 		}
 	} catch (err) {
 		return;
