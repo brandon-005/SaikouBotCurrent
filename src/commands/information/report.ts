@@ -201,8 +201,7 @@ const command: Command = {
 								});
 
 							if (invalidUser !== false) {
-								openPrompt.delete(interaction.user.id);
-								return formResponse.update({
+								formResponse.update({
 									embeds: [
 										new EmbedBuilder() // prettier-ignore
 											.setTitle('Unable to find Roblox User! 🔎')
@@ -212,6 +211,10 @@ const command: Command = {
 									],
 									components: [],
 								});
+
+								openPrompt.delete(interaction.user.id);
+								menuCollector.stop();
+								return detailsCollector.stop();
 							}
 						}
 
