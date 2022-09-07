@@ -21,7 +21,7 @@ const menu: ContextMenu = {
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('🐌 Whoah there! Slow down.')
-						.setDescription(`You can only report someone every 60 seconds, please try again later.`)
+						.setDescription(`You can only report someone every **5 minutes**, please try again later.`)
 						.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
 						.setColor(EMBED_COLOURS.red),
 				],
@@ -126,7 +126,7 @@ const menu: ContextMenu = {
 
 		setTimeout(() => {
 			cooldown.delete(interaction.user.id);
-		}, 60000);
+		}, 300000);
 	},
 };
 
