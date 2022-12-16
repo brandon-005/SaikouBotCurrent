@@ -1,4 +1,4 @@
-import { connect } from 'mongoose';
+import { connect, set } from 'mongoose';
 import { Client, ActivityType } from 'discord.js';
 import { green } from 'chalk';
 
@@ -12,6 +12,7 @@ export = async (bot: Client) => {
 		keepAlive: true,
 	};
 
+	set('strictQuery', false);
 	await connect(`${process.env.MONGO_PASSWORD}`, databaseOptions).then((): void => console.log(green(`[mongo_database]: Connected to MongoDB successfully.`)));
 
 	// -- Setting status
