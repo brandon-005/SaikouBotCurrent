@@ -1,4 +1,4 @@
-import { ButtonInteraction, Command, Message, ActionRowBuilder, ButtonBuilder, EmbedBuilder, SelectMenuBuilder, SelectMenuInteraction, ButtonStyle, PermissionFlagsBits, Role, GuildMember, ComponentType } from 'discord.js';
+import { ButtonInteraction, Command, Message, ActionRowBuilder, ButtonBuilder, EmbedBuilder, StringSelectMenuBuilder, StringSelectMenuInteraction, ButtonStyle, PermissionFlagsBits, Role, GuildMember, ComponentType } from 'discord.js';
 import { Types } from 'mongoose';
 import moment from 'moment';
 
@@ -88,12 +88,12 @@ const command: Command = {
 								.setColor(EMBED_COLOURS.blurple),
 						],
 						components: [
-							new ActionRowBuilder<SelectMenuBuilder>() // prettier-ignore
-								.addComponents([new SelectMenuBuilder().setCustomId('viewStrikes-menu').setPlaceholder('Please select a Staff Member').addOptions(menuOptions)]),
+							new ActionRowBuilder<StringSelectMenuBuilder>() // prettier-ignore
+								.addComponents([new StringSelectMenuBuilder().setCustomId('viewStrikes-menu').setPlaceholder('Please select a Staff Member').addOptions(menuOptions)]),
 						],
 					});
 
-					const chosenStaff = interaction.channel!.createMessageComponentCollector({ filter: (interactionFilter: any) => interactionFilter.user.id === interaction.user.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT });
+					const chosenStaff = interaction.channel!.createMessageComponentCollector({ filter: (interactionFilter: any) => interactionFilter.user.id === interaction.user.id, componentType: ComponentType.StringSelect, time: PROMPT_TIMEOUT });
 
 					chosenStaff.on('collect', async (staffMember: any) => {
 						const [userID] = staffMember.values;
@@ -142,14 +142,14 @@ const command: Command = {
 								.setColor(EMBED_COLOURS.blurple),
 						],
 						components: [
-							new ActionRowBuilder<SelectMenuBuilder>() // prettier-ignore
-								.addComponents([new SelectMenuBuilder().setCustomId('punishStaff-menu').setPlaceholder('Please select a Staff Member').addOptions(menuOptions)]),
+							new ActionRowBuilder<StringSelectMenuBuilder>() // prettier-ignore
+								.addComponents([new StringSelectMenuBuilder().setCustomId('punishStaff-menu').setPlaceholder('Please select a Staff Member').addOptions(menuOptions)]),
 						],
 					});
 
-					const punishStaffCollector = interaction.channel!.createMessageComponentCollector({ filter: (interactionFilter: any) => interactionFilter.user.id === interaction.user.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT });
+					const punishStaffCollector = interaction.channel!.createMessageComponentCollector({ filter: (interactionFilter: any) => interactionFilter.user.id === interaction.user.id, componentType: ComponentType.StringSelect, time: PROMPT_TIMEOUT });
 
-					punishStaffCollector.on('collect', async (selectedStaff: SelectMenuInteraction) => {
+					punishStaffCollector.on('collect', async (selectedStaff: StringSelectMenuInteraction) => {
 						const [userID] = selectedStaff.values;
 						const staffMember = await interaction.guild?.members.fetch(`${userID}`)!;
 						const strikes = await staffStrikes.findOne({ userID });
@@ -163,14 +163,14 @@ const command: Command = {
 									.setColor(EMBED_COLOURS.blurple),
 							],
 							components: [
-								new ActionRowBuilder<SelectMenuBuilder>() // prettier-ignore
-									.addComponents([new SelectMenuBuilder().setCustomId('reason-menu').setPlaceholder('Please select a reason').addOptions(PUNISHMENT_OPTIONS).setMinValues(1).setMaxValues(PUNISHMENT_OPTIONS.length)]),
+								new ActionRowBuilder<StringSelectMenuBuilder>() // prettier-ignore
+									.addComponents([new StringSelectMenuBuilder().setCustomId('reason-menu').setPlaceholder('Please select a reason').addOptions(PUNISHMENT_OPTIONS).setMinValues(1).setMaxValues(PUNISHMENT_OPTIONS.length)]),
 							],
 						});
 
-						const reasonSummary = interaction.channel!.createMessageComponentCollector({ filter: (reasonOptionsMenu: any) => reasonOptionsMenu.user.id === interaction.user.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT });
+						const reasonSummary = interaction.channel!.createMessageComponentCollector({ filter: (reasonOptionsMenu: any) => reasonOptionsMenu.user.id === interaction.user.id, componentType: ComponentType.StringSelect, time: PROMPT_TIMEOUT });
 
-						reasonSummary.on('collect', async (options: SelectMenuInteraction) => {
+						reasonSummary.on('collect', async (options: StringSelectMenuInteraction) => {
 							let reasonOptions: string,
 								detailedReason: string,
 								correctiveAction: string,

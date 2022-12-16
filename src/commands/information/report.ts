@@ -1,4 +1,4 @@
-import { Command, Message, ActionRowBuilder, SelectMenuBuilder, Interaction, ComponentType, SelectMenuInteraction, ButtonStyle, ButtonBuilder, EmbedBuilder, ButtonInteraction, ModalBuilder, TextInputBuilder, ModalActionRowComponentBuilder, TextInputStyle, MessageCollector, AttachmentBuilder } from 'discord.js';
+import { Command, Message, ActionRowBuilder, StringSelectMenuBuilder, Interaction, ComponentType, StringSelectMenuInteraction, ButtonStyle, ButtonBuilder, EmbedBuilder, ButtonInteraction, ModalBuilder, TextInputBuilder, ModalActionRowComponentBuilder, TextInputStyle, MessageCollector, AttachmentBuilder } from 'discord.js';
 import axios from 'axios';
 import urlRegex from 'url-regex';
 
@@ -18,14 +18,6 @@ const command: Command = {
 		let sentMenu: Message;
 		let robloxDisplayName = '';
 		let robloxID = '';
-
-		function sendNoContent(userMessage: Message) {
-			if (!userMessage.content) {
-				openPrompt.delete(message.author.id);
-				return noContent(message);
-			}
-			return false;
-		}
 
 		/* IF USER HAS PROMPT OPEN */
 		if (openPrompt.has(interaction.user.id))
@@ -52,9 +44,9 @@ const command: Command = {
 						.setColor(EMBED_COLOURS.blurple),
 				],
 				components: [
-					new ActionRowBuilder<SelectMenuBuilder>() // prettier-ignore
+					new ActionRowBuilder<StringSelectMenuBuilder>() // prettier-ignore
 						.addComponents([
-							new SelectMenuBuilder()
+							new StringSelectMenuBuilder()
 								.setCustomId('platform-menu')
 								.setPlaceholder('Please select a platform')
 								.addOptions([
@@ -111,9 +103,9 @@ const command: Command = {
 
 		/* Menu Collector */
 		const dmChannel = await interaction.user.createDM();
-		const menuCollector = dmChannel.createMessageComponentCollector({ filter: (msgInteraction: Interaction) => msgInteraction.user.id === interaction.user.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT });
+		const menuCollector = dmChannel.createMessageComponentCollector({ filter: (msgInteraction: Interaction) => msgInteraction.user.id === interaction.user.id, componentType: ComponentType.StringSelect, time: PROMPT_TIMEOUT });
 
-		menuCollector.on('collect', (selectMenu: SelectMenuInteraction) => {
+		menuCollector.on('collect', (selectMenu: StringSelectMenuInteraction) => {
 			const platform = selectMenu.values;
 
 			selectMenu.update({

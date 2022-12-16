@@ -1,4 +1,4 @@
-import { Command, EmbedBuilder, Message, ActionRowBuilder, SelectMenuBuilder, SelectMenuInteraction, PermissionFlagsBits, ComponentType, Interaction, GuildMember } from 'discord.js';
+import { Command, EmbedBuilder, Message, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuInteraction, PermissionFlagsBits, ComponentType, Interaction, GuildMember } from 'discord.js';
 import { readdirSync } from 'fs';
 import { resolve } from 'path';
 
@@ -78,8 +78,8 @@ const command: Command = {
 						.setColor(EMBED_COLOURS.blurple),
 				],
 				components: [
-					new ActionRowBuilder<SelectMenuBuilder>() // prettier-ignore
-						.addComponents([new SelectMenuBuilder().setCustomId('help-menu').setPlaceholder('Please select a category').addOptions(menuOptions)]),
+					new ActionRowBuilder<StringSelectMenuBuilder>() // prettier-ignore
+						.addComponents([new StringSelectMenuBuilder().setCustomId('help-menu').setPlaceholder('Please select a category').addOptions(menuOptions)]),
 				],
 			});
 		} catch (err) {
@@ -102,9 +102,9 @@ const command: Command = {
 			],
 		});
 
-		const collector = (await interaction.user.createDM()).createMessageComponentCollector({ filter: (msgInteraction: Interaction) => msgInteraction.user.id === interaction.user.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT });
+		const collector = (await interaction.user.createDM()).createMessageComponentCollector({ filter: (msgInteraction: Interaction) => msgInteraction.user.id === interaction.user.id, componentType: ComponentType.StringSelect, time: PROMPT_TIMEOUT });
 
-		collector.on('collect', (selectMenu: SelectMenuInteraction) => {
+		collector.on('collect', (selectMenu: StringSelectMenuInteraction) => {
 			const [category] = selectMenu.values;
 
 			switch (category) {
