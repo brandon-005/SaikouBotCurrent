@@ -4,7 +4,7 @@ import tokenData from '../../models/weaponTokens';
 
 export = async (bot: any, oldMember: GuildMember, newMember: GuildMember) => {
 	/* Booster Message + Posting Discord nickname in specified channel */
-	if (!oldMember.premiumSince && newMember.premiumSince) {
+	if (newMember.premiumSinceTimestamp !== oldMember.premiumSinceTimestamp) {
 		(bot.channels.cache.find((channel: any) => channel.name === '💬roblox-topic') as TextChannel).send({
 			content: `<@${newMember.id}>`,
 			embeds: [
