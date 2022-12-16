@@ -32,7 +32,7 @@ const command: Command = {
 			return returnedUsers;
 		}
 
-		return interaction.followUp({
+		return interaction.editReply({
 			embeds: [
 				new EmbedBuilder() // prettier-ignore
 					.setTitle('❤ SaikouBot Credits')

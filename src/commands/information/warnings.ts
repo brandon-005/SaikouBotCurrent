@@ -34,7 +34,7 @@ const command: Command = {
 			.setDescription('ℹ️ This user has no warnings.')
 			.setColor(EMBED_COLOURS.blurple);
 
-		if (!userWarns || !userWarns.warnings.length) return interaction.followUp({ embeds: [noWarnsEmbed] });
+		if (!userWarns || !userWarns.warnings.length) return interaction.editReply({ embeds: [noWarnsEmbed] });
 
 		const menuOptions: any = [];
 		const warningsEmbed = new EmbedBuilder() // prettier-ignore
@@ -61,12 +61,12 @@ const command: Command = {
 			/* IF USER HAS PROMPT OPEN */
 			if (activeInteraction.has(interaction.user.id)) {
 				warningsEmbed.setFooter({ text: 'Exit previous warning prompt to receive options to delete/edit warns.' });
-				return interaction.followUp({ embeds: [warningsEmbed] });
+				return interaction.editReply({ embeds: [warningsEmbed] });
 			}
 
 			activeInteraction.add(interaction.user.id);
 
-			const warningSentEmbed: any = await interaction.followUp({
+			const warningSentEmbed: any = await interaction.editReply({
 				embeds: [warningsEmbed],
 				components: [
 					new ActionRowBuilder<ButtonBuilder>().addComponents([
@@ -197,7 +197,7 @@ const command: Command = {
 				activeInteraction.delete(interaction.user.id);
 			});
 		} else {
-			return interaction.followUp({ embeds: [warningsEmbed] });
+			return interaction.editReply({ embeds: [warningsEmbed] });
 		}
 	},
 };

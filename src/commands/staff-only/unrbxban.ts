@@ -79,7 +79,7 @@ const command: Command = {
 					embeds: [modLog],
 				});
 
-				return interaction.followUp({
+				return interaction.editReply({
 					embeds: [
 						new EmbedBuilder() // prettier-ignore
 							.setColor(EMBED_COLOURS.green)
@@ -87,7 +87,7 @@ const command: Command = {
 					],
 				});
 			})
-			.catch((err: Error) => interaction.followUp({ content: `❌ Error!\n\nLooks like the API request was unsucessful, please make sure they are banned and the correct name was provided.\n\n__Developer Info__\n${err}` }));
+			.catch((err: Error) => interaction.editReply({ content: `❌ Error!\n\nLooks like the API request was unsucessful, please make sure they are banned and the correct name was provided.\n\n__Developer Info__\n${err}` }));
 	},
 };
 

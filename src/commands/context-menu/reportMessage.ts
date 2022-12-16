@@ -17,7 +17,7 @@ const menu: ContextMenu = {
 
 		/* IF USER HAS PROMPT OPEN */
 		if (cooldown.has(interaction.user.id)) {
-			return interaction.followUp({
+			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('🐌 Whoah there! Slow down.')
@@ -28,7 +28,7 @@ const menu: ContextMenu = {
 			});
 		}
 
-		const reportedMsgsEmbed = await interaction.followUp({
+		const reportedMsgsEmbed = await interaction.editReply({
 			embeds: [
 				new EmbedBuilder() // prettier-ignore
 					.setTitle('Reporting Messages 🔎')

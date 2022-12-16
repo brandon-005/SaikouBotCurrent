@@ -22,13 +22,13 @@ const command: Command = {
 		if (activeInteraction.has(interaction.user.id)) {
 			gamefactEmbed.setFooter({ text: 'To get buttons to change facts, wait for timeout (60s).' });
 			gamefactEmbed.setDescription(`**Fact:** ${choose(GAME_FACTS)}`);
-			return interaction.followUp({ embeds: [gamefactEmbed] });
+			return interaction.editReply({ embeds: [gamefactEmbed] });
 		}
 
 		activeInteraction.add(interaction.user.id);
 
 		gamefactEmbed.setDescription(`**Fact:** ${choose(GAME_FACTS)}`);
-		const sentEmbed = await interaction.followUp({
+		const sentEmbed = await interaction.editReply({
 			embeds: [gamefactEmbed],
 			components: [
 				new ActionRowBuilder<ButtonBuilder>().addComponents([

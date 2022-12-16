@@ -20,7 +20,7 @@ const command: Command = {
 		const member: User = interaction.options.getUser('user')! || interaction.user;
 
 		if (!member.avatar) {
-			return interaction.followUp({
+			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setDescription('ℹ️ This user has no avatar.')
@@ -29,7 +29,7 @@ const command: Command = {
 			});
 		}
 
-		return interaction.followUp({
+		return interaction.editReply({
 			embeds: [
 				new EmbedBuilder() //
 					.setAuthor({ name: member.tag, iconURL: member.displayAvatarURL({ size: 64 }) })

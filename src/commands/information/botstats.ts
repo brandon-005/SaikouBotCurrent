@@ -15,7 +15,7 @@ const command: Command = {
 	},
 	run: async ({ bot, interaction }) => {
 		// Loading Message
-		const loadingMsg = await interaction.followUp({
+		const loadingMsg = await interaction.editReply({
 			embeds: [
 				new EmbedBuilder() // prettier-ignore
 					.setTitle('Loading...')

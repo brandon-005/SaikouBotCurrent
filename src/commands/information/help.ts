@@ -10,7 +10,7 @@ const command: Command = {
 	config: {
 		commandName: 'help',
 		commandAliases: ['cmds', 'commands'],
-		commandDescription: "Hey this is the command you're using now! As you may of realised, this grabs all of SaikouBot's commands ready for your next powerful move.",
+		commandDescription: "The command that displays all of SaikouBot's commands ready for your next powerful move.",
 	},
 	run: async ({ bot, interaction }) => {
 		const prefix = '/';
@@ -56,7 +56,7 @@ const command: Command = {
 		/* IF USER HAS PROMPT OPEN */
 		if (openPrompt.has(interaction.user.id))
 			return interaction
-				.followUp({
+				.editReply({
 					embeds: [
 						new EmbedBuilder() // prettier-ignore
 							.setTitle('🗃️ Prompt already open!')
@@ -85,7 +85,7 @@ const command: Command = {
 		} catch (err) {
 			console.log(err);
 			openPrompt.delete(interaction.user.id);
-			return interaction.followUp({
+			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setDescription("Unable to send DM, please make sure your DM's are enabled.")
@@ -94,7 +94,7 @@ const command: Command = {
 			});
 		}
 
-		interaction.followUp({
+		interaction.editReply({
 			embeds: [
 				new EmbedBuilder() // prettier-ignore
 					.setDescription(`📬 A message has been sent to your DM's <@${interaction.user.id}>`)

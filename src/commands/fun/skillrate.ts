@@ -24,7 +24,7 @@ const command: Command = {
 		const interactionUser: User = interaction.options.getUser('user') || interaction.user;
 
 		if (getRandomInt(0, 100) < 98) {
-			return interaction.followUp({
+			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder() //
 						.setAuthor({ name: 'Skill Rating ✨', iconURL: interactionUser.displayAvatarURL() })
@@ -33,7 +33,7 @@ const command: Command = {
 				],
 			});
 		}
-		return interaction.followUp({
+		return interaction.editReply({
 			embeds: [
 				new EmbedBuilder() //
 					.setAuthor({ name: 'Skill Rating 🔥', iconURL: interactionUser.displayAvatarURL() })

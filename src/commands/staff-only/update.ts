@@ -75,7 +75,7 @@ const command: Command = {
 			targetChannel = interaction.guild.channels.cache.find((channel: any) => channel.name.match(args[0])) as TextChannel;
 			targetMsg = await targetChannel.messages.fetch(args[1]);
 		} catch (err) {
-			return interaction.followUp({
+			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('❌ Incorrect Message ID!')
@@ -91,7 +91,7 @@ const command: Command = {
 		const oldEmbed = targetMsg.embeds[0];
 
 		if (!suggester && !reporter)
-			return interaction.followUp({
+			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('❌ Unable to update!')
@@ -100,7 +100,7 @@ const command: Command = {
 				],
 			});
 
-		interaction.followUp({
+		interaction.editReply({
 			embeds: [
 				new EmbedBuilder() // prettier-ignore
 					.setTitle('✅ Successfully updated!')

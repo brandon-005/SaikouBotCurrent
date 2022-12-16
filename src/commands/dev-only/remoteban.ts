@@ -77,7 +77,7 @@ const command: Command = {
 			/* ADDING BAN */
 			if (args[3]) {
 				if (!ms(args[3])) {
-					return interaction.followUp({ content: 'Invalid time.' });
+					return interaction.editReply({ content: 'Invalid time.' });
 				}
 
 				return axios({
@@ -96,7 +96,7 @@ const command: Command = {
 					},
 				})
 					.then(async () =>
-						interaction.followUp({
+						interaction.editReply({
 							embeds: [
 								new EmbedBuilder() // prettier-ignore
 									.setColor(EMBED_COLOURS.green)
@@ -113,12 +113,12 @@ const command: Command = {
 							case 8:
 								embed.setTitle('🗄️ Player Already Banned');
 								embed.setDescription("Hmmm. It appears that this player is already in our database and banned. Make sure...\n\n• The player you're trying to ban is spelt correctly\n• The player doesn't already have a moderation log");
-								return interaction.followUp({ embeds: [embed] });
+								return interaction.editReply({ embeds: [embed] });
 
 							case 13:
 								embed.setTitle('🛡️ Invalid Staff Member');
 								embed.setDescription("Oh no! Looks like the name provided doesn't appear to be a Saikou staff member. Make sure...\n\n• Your nickname is set to your Roblox username\n• You have permission to do this action");
-								return interaction.followUp({ embeds: [embed] });
+								return interaction.editReply({ embeds: [embed] });
 						}
 					});
 			}
@@ -138,7 +138,7 @@ const command: Command = {
 				},
 			})
 				.then(async () =>
-					interaction.followUp({
+					interaction.editReply({
 						embeds: [
 							new EmbedBuilder() // prettier-ignore
 								.setColor(EMBED_COLOURS.green)
@@ -155,12 +155,12 @@ const command: Command = {
 						case 8:
 							embed.setTitle('🗄️ Player Already Banned');
 							embed.setDescription("Hmmm. It appears that this player is already in our database and banned. Make sure...\n\n• The player you're trying to ban is spelt correctly\n• The player doesn't already have a moderation log");
-							return interaction.followUp({ embeds: [embed] });
+							return interaction.editReply({ embeds: [embed] });
 
 						case 13:
 							embed.setTitle('🛡️ Invalid Staff Member');
 							embed.setDescription("Oh no! Looks like the name provided doesn't appear to be a Saikou staff member. Make sure...\n\n• Your nickname is set to your Roblox username\n• You have permission to do this action");
-							return interaction.followUp({ embeds: [embed] });
+							return interaction.editReply({ embeds: [embed] });
 					}
 				});
 		}

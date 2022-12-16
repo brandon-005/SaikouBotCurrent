@@ -10,7 +10,7 @@ const command: Command = {
 	run: async ({ interaction }) => {
 		const randomUser = interaction.guild?.members.cache.random()!.user;
 
-		return interaction.followUp({
+		return interaction.editReply({
 			embeds: [
 				new EmbedBuilder() // prettier-ignore
 					.setAuthor({ name: '🎲 Random User', iconURL: randomUser?.displayAvatarURL() })

@@ -20,7 +20,7 @@ const command: Command = {
 		const optionsObj: any = {};
 		const allowedEmojis: string[] = [];
 
-		const triviaSent = await interaction.followUp({
+		const triviaSent = await interaction.editReply({
 			embeds: [
 				new EmbedBuilder() // prettier-ignore
 					.setTitle('Trivia Question')
@@ -56,12 +56,16 @@ const command: Command = {
 
 				if (!triviaUser) {
 					await triviaAnswerData.create({ userID: interaction.user.id, answersCorrect: fetchedQuestion[0].points });
-					return await interaction.followUp({ embeds: [resultEmbed] });
+					return await interaction.editReply({ embeds: [resultEmbed] }).then((msg) => {
+						msg.reactions.removeAll();
+					});
 				}
 
 				if (!weeklyTriviaUser) {
 					await weeklyTrivia.create({ userID: interaction.user.id, answersCorrect: fetchedQuestion[0].points });
-					return await interaction.followUp({ embeds: [resultEmbed] });
+					return await interaction.editReply({ embeds: [resultEmbed] }).then((msg) => {
+						msg.reactions.removeAll();
+					});
 				}
 
 				triviaUser.answersCorrect += fetchedQuestion[0].points;
@@ -69,7 +73,9 @@ const command: Command = {
 				await triviaUser.save();
 				await weeklyTriviaUser.save();
 
-				return await interaction.followUp({ embeds: [resultEmbed] });
+				return await interaction.editReply({ embeds: [resultEmbed] }).then((msg) => {
+					msg.reactions.removeAll();
+				});
 			}
 
 			if (triviaUser && triviaUser.answersCorrect - 1 > 0 && weeklyTriviaUser && weeklyTriviaUser.answersCorrect - 1 > 0) {
@@ -81,23 +87,31 @@ const command: Command = {
 				await triviaUser.save();
 				await weeklyTriviaUser.save();
 
-				return await interaction.followUp({ embeds: [resultEmbed] });
+				return await interaction.editReply({ embeds: [resultEmbed] }).then((msg) => {
+					msg.reactions.removeAll();
+				});
 			}
 
 			resultEmbed.setDescription(`You answered the trivia incorrectly, good try!`);
 			resultEmbed.addFields([{ name: 'Correct Answer', value: `${Object.entries(optionsObj).find((key: any) => key[0] === fetchedQuestion[0].answer)![1]}`, inline: true }]);
 
-			return await interaction.followUp({ embeds: [resultEmbed] });
-		} catch (err) {
-			return await interaction.followUp({
-				embeds: [
-					new EmbedBuilder() // prettier-ignore
-						.setTitle('⏱ Out of time!')
-						.setDescription('You ran out of time to input an answer for the trivia question.')
-						.setColor(EMBED_COLOURS.red)
-						.setThumbnail(interaction.user.displayAvatarURL()),
-				],
+			return await interaction.editReply({ embeds: [resultEmbed] }).then((msg) => {
+				msg.reactions.removeAll();
 			});
+		} catch (err) {
+			return await interaction
+				.editReply({
+					embeds: [
+						new EmbedBuilder() // prettier-ignore
+							.setTitle('⏱ Out of time!')
+							.setDescription('You ran out of time to input an answer for the trivia question.')
+							.setColor(EMBED_COLOURS.red)
+							.setThumbnail(interaction.user.displayAvatarURL()),
+					],
+				})
+				.then((msg) => {
+					msg.reactions.removeAll();
+				});
 		}
 	},
 };

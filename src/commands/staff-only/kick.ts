@@ -44,7 +44,7 @@ const command: Command = {
 
 		member.kick(reason);
 
-		interaction.followUp({
+		interaction.editReply({
 			embeds: [
 				new EmbedBuilder() // prettier-ignore
 					.setDescription(`✅ **${member.displayName ? member.displayName : member.user.username} has been kicked.**`)

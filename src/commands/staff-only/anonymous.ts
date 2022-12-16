@@ -25,12 +25,12 @@ const command: Command = {
 		const data = await suggestData.findOne({ messageID: inputtedID });
 
 		if (!data) {
-			return interaction.followUp({ content: 'Inputted ID does not exist! ' });
+			return interaction.editReply({ content: 'Inputted ID does not exist! ' });
 		}
 
 		const fetchedUser = await bot.users.fetch(`${BigInt(data!.userID)}`);
 
-		return interaction.followUp({
+		return interaction.editReply({
 			embeds: [
 				new EmbedBuilder() // prettier-ignore
 					.setTitle('🔎 User Found!')

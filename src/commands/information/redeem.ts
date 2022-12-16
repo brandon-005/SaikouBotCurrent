@@ -25,7 +25,7 @@ const command: Command = {
 		/* IF USER HAS PROMPT OPEN */
 		if (openPrompt.has(interaction.user.id))
 			return interaction
-				.followUp({
+				.editReply({
 					embeds: [
 						new EmbedBuilder() // prettier-ignore
 							.setTitle('🗃️ Prompt already open!')
@@ -43,7 +43,7 @@ const command: Command = {
 		let robloxID = '';
 
 		if (!tokensUser) {
-			return interaction.followUp({
+			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('🔎 No Tokens!')
@@ -73,7 +73,7 @@ const command: Command = {
 
 		if (invalidUser !== false) {
 			openPrompt.delete(interaction.user.id);
-			return interaction.followUp({
+			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('Unable to find Roblox User! 🔎')
@@ -115,7 +115,7 @@ const command: Command = {
 			});
 		} catch (err) {
 			return interaction
-				.followUp({
+				.editReply({
 					embeds: [
 						new EmbedBuilder() // prettier-ignore
 							.setTitle('❌ Unable to DM!')
@@ -131,7 +131,7 @@ const command: Command = {
 
 		/* DM sent embed */
 		await interaction
-			.followUp({
+			.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setDescription(`📬 A message has been sent to your DM's <@${interaction.user.id}>`)
@@ -164,7 +164,7 @@ const command: Command = {
 
 					// @ts-ignore
 					(bot.channels.cache.find((channel: any) => channel.name === '⏰staff-reminders') as TextChannel).send({
-						content: `<@&818161643531796501>, <@&397792959766069249>`,
+						content: `<@&397792772083679232>, <@&818161643531796501>, <@&397792959766069249>`,
 						embeds: [
 							new EmbedBuilder() // prettier-ignore
 								.setTitle('📬 New Request!')

@@ -12,9 +12,9 @@ const command: Command = {
 	run: async ({ interaction }) => {
 		const guild: Guild = await interaction.guild!.fetch();
 
-		if (!guild.available) return interaction.followUp('Unable to perform this action right now.');
+		if (!guild.available) return interaction.editReply('Unable to perform this action right now.');
 
-		return interaction.followUp({
+		return interaction.editReply({
 			embeds: [
 				new EmbedBuilder() //
 					.setAuthor({ name: guild.name, iconURL: `${guild.iconURL() ? guild.iconURL() : 'https://i.ibb.co/mGBw946/image.png'}` })

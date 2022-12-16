@@ -36,12 +36,12 @@ const command: Command = {
 			weaponEmbed.setDescription(`We've picked **${args[0]} weapons** for you to roll out on the battlefield with.`);
 			weaponEmbed.addFields([{ name: 'Weapons', value: weaponList }]);
 
-			interaction.followUp({ embeds: [weaponEmbed] });
+			interaction.editReply({ embeds: [weaponEmbed] });
 		} else {
 			weaponEmbed.setDescription("We've picked **1 weapon** for you to roll out on the battlefield with.");
 			weaponEmbed.addFields([{ name: 'Weapon', value: `• ${choose(MWT_WEAPONS)}` }]);
 
-			interaction.followUp({ embeds: [weaponEmbed] });
+			interaction.editReply({ embeds: [weaponEmbed] });
 		}
 	},
 };

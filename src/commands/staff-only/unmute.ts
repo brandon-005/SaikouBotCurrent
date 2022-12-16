@@ -35,12 +35,12 @@ const command: Command = {
 				.setFooter({ text: 'No data' })
 				.setTimestamp();
 
-			return interaction.followUp({ embeds: [noDataEmbed] });
+			return interaction.editReply({ embeds: [noDataEmbed] });
 		}
 
 		await member.timeout(0, `Removed by ${interaction.user.username}`);
 
-		return interaction.followUp({
+		return interaction.editReply({
 			embeds: [
 				new EmbedBuilder() // prettier-ignore
 					.setDescription(`✅ **${member.displayName}'s mute was removed.**`)
