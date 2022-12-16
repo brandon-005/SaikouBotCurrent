@@ -76,11 +76,9 @@ const menu: ContextMenu = {
 			const userMessages = await interaction.channel?.messages.fetch();
 
 			const attachment = await generateFromMessages(userMessages.filter((msg: Message) => msg.author.id === selectedMessage.author.id).first(messageCount), interaction.channel, {
-				returnType: 'attachment',
-				fileName: 'Reported Messages.html',
-				minify: true,
+				filename: 'Reported Messages.html',
 				saveImages: false,
-				useCDN: true,
+				poweredBy: false,
 			});
 
 			(bot.channels.cache.find((channel: any) => channel.name === '📝report-abuse') as TextChannel)
