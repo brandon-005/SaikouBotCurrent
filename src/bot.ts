@@ -106,8 +106,8 @@ setInterval(async () => {
 	/* Fetching Universe ID from Place ID's provided */
 	for (const id of PLACE_ID) {
 		await axios
-			.get(`https://api.roblox.com/universes/get-universe-containing-place?placeid=${id}`)
-			.then((response: any) => UNIVERSE_ID.push(response.data.UniverseId))
+			.get(`https://apis.roblox.com/universes/v1/places/${id}/universe`)
+			.then((response: any) => UNIVERSE_ID.push(response.data.universeId))
 			.catch(() => {});
 	}
 
