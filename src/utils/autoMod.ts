@@ -167,11 +167,11 @@ export async function swearCheck(bot: any, message: Message) {
 export async function inviteLinkCheck(bot: any, message: Message) {
 	if (message.author.bot || message.system === true || message.channel.type === ChannelType.DM || message.content === '') return;
 
-	for (const invite of ['discord.gg/', 'discord.com/invite', 'discordapp.com/invite']) {
-		if (message.content.toLowerCase().includes(`${invite}/saikou`)) return;
+	const inviteLinkRegex = /(https?:\/\/)?(www\.)?(discord\.(gg|com|io|me|net)|discordapp\.com\/invite)\/.+[a-z]/i;
 
-		autoPunish(message.content.includes(invite), message, 'INVITE_LINK', `\`1.8\` - All forms of **advertising**, selling, scamming are forbidden.`, bot);
-	}
+	if (message.content.includes('discord.gg/saikou' || 'discord.com/saikou' || 'discordapp.com/invite/saikou')) return;
+
+	autoPunish(inviteLinkRegex.test(message.content), message, 'INVITE_LINK', `\`1.8\` - All forms of **advertising**, selling, scamming are forbidden.`, bot);
 }
 
 /* Banning users who post malicious links */
