@@ -2,7 +2,7 @@ import { Message, EmbedBuilder, ChannelType, PermissionFlagsBits } from 'discord
 import urlRegex from 'url-regex';
 
 import { EMBED_COLOURS, MESSAGE_TIMEOUT } from '../../utils/constants';
-import { swearCheck, maliciousLinkCheck, inviteLinkCheck, statusCheck, massMentionCheck, everyoneMention, devMention } from '../../utils/autoMod';
+import { swearCheck, maliciousLinkCheck, inviteLinkCheck, statusCheck, massMentionCheck, everyoneMention, devMention, personalInfoCheck } from '../../utils/autoMod';
 
 export = async (bot: any, message: Message) => {
 	/* Importing auto mod stuff */
@@ -15,6 +15,7 @@ export = async (bot: any, message: Message) => {
 		await massMentionCheck(bot, message);
 		await everyoneMention(bot, message);
 		await devMention(bot, message);
+		await personalInfoCheck(bot, message);
 	}
 
 	/* If user @mentions bot */
@@ -69,20 +70,5 @@ export = async (bot: any, message: Message) => {
 		await statusCheck(bot, message);
 	}, 5000);
 
-	/* TEMP - Checking if user is trying to use chat commands */
-	try {
-		if (message.content === `.${bot.slashCommands.get(message.content.substring(1)).config.commandName}`) {
-			return await message.channel
-				.send({
-					embeds: [
-						new EmbedBuilder() // prettier-ignore
-							.setDescription('**SaikouBot commands now rely on slash commands to function. To get started, use the /help command.**')
-							.setColor(EMBED_COLOURS.red),
-					],
-				})
-				.then((msg: any) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
-		}
-	} catch (err) {
-		return;
-	}
+	
 };
