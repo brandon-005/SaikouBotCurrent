@@ -14,7 +14,7 @@ import statusTimer from '../models/statusTimer';
 /* Auto Moderation */
 export async function autoPunish(ifStatement: any, message: Message, autoModEmbedReason: any, reason: any, bot: any, noDelete?: boolean) {
 	if (ifStatement) {
-		if (noDelete !== true) {
+		if (noDelete !== true && message.deletable) {
 			message.delete().catch(() => {});
 		}
 
@@ -337,4 +337,14 @@ export async function everyoneMention(bot: any, message: Message) {
 export async function devMention(bot: any, message: Message) {
 	if (message.author.bot || message.mentions.members!.size < 1) return;
 	await autoPunish(message.content.includes(`<@198545845287780352>`) || message.content.includes(`<@!198545845287780352>`), message, 'DEVELOPER_MENTION', `\`1.12\` - Do not ping developers for any reason.`, bot, true);
+}
+
+/* Warning users who post personal information */
+export async function personalInfoCheck(bot: any, message: Message) {
+	if (message.author.bot) return;
+
+	const phoneNumberRegex = /\b[+]?[(]?[0-9]{2,6}[)]?[-\s.]?[-\s/.0-9]{3,15}\b/m;
+	const emailRegex = /[\w.]+@[\w.]+\.[\w.]+/;
+
+	await autoPunish(phoneNumberRegex.test(message.content) || emailRegex.test(message.content), message, 'PERSONAL_INFORMATION', `\`1.15\` - Leaking any personal information about other members or staff is forbidden.`, bot);
 }
