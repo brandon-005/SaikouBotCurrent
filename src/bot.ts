@@ -166,9 +166,7 @@ cron.schedule('0 13 * * *', async () => {
 });
 
 /* Automatic Would You Rather */
-
-// 0 1 * * *
-cron.schedule('*/10 * * * * *', async () => {
+cron.schedule('0 1 * * *', async () => {
 	const counter = await questionNumber.findOne({ id: 2 });
 	const wyrChannel = bot.channels.cache.find((channel: any) => (channel as TextChannel).name === '🤔would-you-rather');
 
