@@ -1,7 +1,8 @@
 import { Message, EmbedBuilder, ChannelType, PermissionFlagsBits } from 'discord.js';
 import urlRegex from 'url-regex';
+import stringSimilarity from 'string-similarity';
 
-import { EMBED_COLOURS, MESSAGE_TIMEOUT } from '../../utils/constants';
+import { EMBED_COLOURS, MESSAGE_TIMEOUT, QUESTION_ANSWERS } from '../../utils/constants';
 import { swearCheck, maliciousLinkCheck, inviteLinkCheck, statusCheck, massMentionCheck, everyoneMention, devMention, personalInfoCheck } from '../../utils/autoMod';
 
 export = async (bot: any, message: Message) => {
@@ -70,5 +71,13 @@ export = async (bot: any, message: Message) => {
 		await statusCheck(bot, message);
 	}, 5000);
 
-	
+	/* Automatically answering frequently asked questions */
+	for (const { question, answer } of QUESTION_ANSWERS) {
+		const similarity = stringSimilarity.compareTwoStrings(message.content.toLowerCase(), question.toLowerCase());
+
+		// If the message is similar enough to the pre-defined question, send the pre-defined answer
+		if (similarity > 0.6) {
+			return message.channel.send(answer);
+		}
+	}
 };

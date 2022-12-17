@@ -348,3 +348,26 @@ export const BIRTHDAY_GIFS = [
 	'https://tenor.com/view/happy-birthday-special-to-someone-gif-21295542',
 	'https://tenor.com/view/sweet-cute-happy-birthday-happy-birthday-gif-24108327',
 ];
+
+export const QUESTION_ANSWERS = [
+	{
+		question: 'How do I join the staff team',
+		answer: 'Wait for staff applications to open. Those that stand out in the community will be selected and offered staff positions when needed.',
+	},
+	{
+		question: 'How do I become a Dedicated Follower',
+		answer: 'Earn xp and achieve a certain level, e.g. level 10 for Dedicated Follower. XP can be earned by chatting in any of the text channels or by participating in events. Check <#692066565327421442> for the full rewards table.',
+	},
+	{
+		question: 'How do you get the ping role',
+		answer: "You can press the buttons in <#692164713907486850> to receive or remove our ping role. This will allow you to be informed of any upcoming community events that aren't addressed to everyone.",
+	},
+	{
+		question: 'How do I report',
+		answer: 'You can report exploiters or rule breakers in <#675459553122451456>. Make sure to do /report so the bot can DM you further instructions.',
+	},
+	{
+		question: 'How do I get elite soldier',
+		answer: 'To gain the Elite Soldier badge, players must embark on an adventure to find and kill the owner of Military Warfare Tycoon, granting them with the legendary Golden Katana!',
+	},
+];
