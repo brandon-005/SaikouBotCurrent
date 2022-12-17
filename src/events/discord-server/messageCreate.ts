@@ -29,13 +29,19 @@ export = async (bot: any, message: Message) => {
 						.setColor(EMBED_COLOURS.green),
 				],
 			})
-			.then((msg: any) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
+			.then((msg: any) =>
+				setTimeout(() => {
+					if (msg.deletable) msg.delete();
+				}, MESSAGE_TIMEOUT)
+			);
 	}
 
 	/* Deleting messages in feedback and report channels */
 	if ((message.channel.type === ChannelType.GuildText && message.channel.parent!.name === '🔖 | Feedback & reports') || (message.channel.type === ChannelType.GuildText && message.channel.name === '👋introductions')) {
 		try {
-			setTimeout(() => message.delete(), 500);
+			setTimeout(() => {
+				if (message.deletable) message.delete();
+			}, 500);
 		} catch (err) {
 			return;
 		}
@@ -44,18 +50,20 @@ export = async (bot: any, message: Message) => {
 	/* Deleting content that isn't a discord attachment in memes and art */
 	if ((message.channel.type === ChannelType.GuildText && message.channel.name.match('memes')) || (message.channel.type === ChannelType.GuildText && message.channel.name.match('art'))) {
 		if (!(message.attachments.size > 0 || urlRegex({ exact: false }).test(message.content))) {
-			return message.delete().catch(() => {});
+			if (message.deletable) return message.delete();
+			return;
 		}
 
 		/* Deleting attachments that are invisible with less than 5 pixel height and width */
 		if (message.attachments.size > 0 && message.attachments.first().height < 5 && message.attachments.first().width < 5) {
-			return message.delete().catch(() => {});
+			if (message.deletable) return message.delete();
+			return;
 		}
 	}
 
 	/* Story Corner Character limit */
 	if (message.channel.name === '📚story-corner' && message.content.length < 150) {
-		message.delete();
+		if (message.deletable) message.delete();
 		return message.channel
 			.send({
 				embeds: [
@@ -64,7 +72,11 @@ export = async (bot: any, message: Message) => {
 						.setColor(EMBED_COLOURS.red),
 				],
 			})
-			.then((msg: any) => setTimeout(() => msg.delete(), MESSAGE_TIMEOUT));
+			.then((msg: any) =>
+				setTimeout(() => {
+					if (msg.deletable) msg.delete();
+				}, MESSAGE_TIMEOUT)
+			);
 	}
 
 	setTimeout(async () => {
