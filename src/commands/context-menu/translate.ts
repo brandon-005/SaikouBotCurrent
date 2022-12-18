@@ -10,14 +10,14 @@ const menu: ContextMenu = {
 	},
 	run: async ({ interaction }) => {
 		if (!(interaction.member as GuildMember)?.permissions.has(PermissionFlagsBits.ManageMessages)) {
-			return interaction.followUp({ content: 'Staff only feature.', ephemeral: true });
+			return interaction.editReply({ content: 'Staff only feature.', ephemeral: true });
 		}
 
 		// @ts-ignore
 		const messageContent = interaction.options.getMessage('message')!.content;
 		const result = await translate(messageContent, { to: 'en' });
 
-		interaction.followUp({
+		interaction.editReply({
 			embeds: [
 				new EmbedBuilder() // prettier-ignore
 					.addFields([

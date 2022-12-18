@@ -19,7 +19,7 @@ const command: Command = {
 		],
 	},
 	run: async ({ interaction, args }) =>
-		interaction.followUp({
+		interaction.editReply({
 			embeds: [
 				new EmbedBuilder() // prettier-ignore
 					.setTitle('🎱 8ball Results')

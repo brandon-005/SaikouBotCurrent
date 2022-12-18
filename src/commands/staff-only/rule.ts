@@ -27,12 +27,12 @@ const command: Command = {
 	},
 	run: async ({ args, interaction }) => {
 		/* If unable to get user */
-		if (!interaction.inCachedGuild()) return interaction.followUp({ content: `${args[0]}` });
+		if (!interaction.inCachedGuild()) return interaction.editReply({ content: `${args[0]}` });
 
 		let member = interaction.options.getMember('user');
 		if (!member) member = null;
 
-		return interaction.followUp({ content: `${member ? `<@${member.id}>,` : ''} ${args[0]}` });
+		return interaction.editReply({ content: `${member ? `<@${member.id}>,` : ''} ${args[0]}` });
 	},
 };
 

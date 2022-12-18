@@ -154,6 +154,8 @@ export = async (bot: Client, interaction: Interaction) => {
 	if (interaction.isContextMenuCommand()) {
 		await interaction.deferReply({ ephemeral: true }).catch(() => {});
 
+		if (!interaction.inGuild()) return (interaction as CommandInteraction).followUp({ content: 'Slash commands can only be ran in the server.' });
+
 		const commandFile = bot.slashCommands.get(interaction.commandName);
 		const args: any = [];
 

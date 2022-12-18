@@ -35,7 +35,7 @@ const command: Command = {
 	run: async ({ bot, interaction, args }) => {
 		bot.emit(args[0], interaction.options.getMember('user'));
 
-		return interaction.followUp({ content: `Successfully emitted the **${args[0]}** event.` });
+		return interaction.editReply({ content: `Successfully emitted the **${args[0]}** event.` });
 	},
 };
 

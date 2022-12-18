@@ -66,14 +66,14 @@ const command: Command = {
 					answersCorrect: args[2],
 				});
 
-				return interaction.followUp({
+				return interaction.editReply({
 					embeds: [successEmbed],
 				});
 			}
 			triviaUser.answersCorrect += Number(args[2]);
 			triviaUser.save();
 
-			return interaction.followUp({
+			return interaction.editReply({
 				embeds: [successEmbed],
 			});
 		}
@@ -87,7 +87,7 @@ const command: Command = {
 				tokens: args[2],
 			});
 
-			return interaction.followUp({
+			return interaction.editReply({
 				embeds: [successEmbed],
 			});
 		}
@@ -95,7 +95,7 @@ const command: Command = {
 		tokenUser.tokens += Number(args[2]);
 		tokenUser.save();
 
-		return interaction.followUp({
+		return interaction.editReply({
 			embeds: [successEmbed],
 		});
 	},

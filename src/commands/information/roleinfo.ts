@@ -20,7 +20,7 @@ const command: Command = {
 		const role = interaction.guild?.roles.cache.find((serverRoles: Role) => serverRoles.name.toLowerCase() === args[0]?.toLowerCase());
 
 		if (!role) {
-			return interaction.followUp({
+			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('🗄️ Invalid Role!')
@@ -30,7 +30,7 @@ const command: Command = {
 			});
 		}
 
-		return interaction.followUp({
+		return interaction.editReply({
 			embeds: [
 				new EmbedBuilder() // prettier-ignore
 					.setTitle('ℹ️ Role Information')

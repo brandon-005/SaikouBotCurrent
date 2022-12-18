@@ -92,12 +92,12 @@ const command: Command = {
 			/* IF USER HAS PROMPT OPEN */
 			if (activeInteraction.has(interaction.user.id)) {
 				infoEmbed.setFooter({ text: 'Exit previous search prompt to receive the option to scan.' });
-				return interaction.followUp({ embeds: [infoEmbed] });
+				return interaction.editReply({ embeds: [infoEmbed] });
 			}
 
 			activeInteraction.add(interaction.user.id);
 
-			const info: any = await interaction.followUp({
+			const info: any = await interaction.editReply({
 				embeds: [infoEmbed],
 				components: [new ActionRowBuilder<ButtonBuilder>().addComponents([new ButtonBuilder().setLabel('Scan Account 📊').setStyle(ButtonStyle.Primary).setCustomId('scanAcc'), new ButtonBuilder().setLabel('Exit 🚪').setStyle(ButtonStyle.Primary).setCustomId('exit')])],
 			});
@@ -159,6 +159,7 @@ const command: Command = {
 							url: 'https://bans.saikouapi.xyz/v1/bans/list-bans',
 							headers: {
 								'X-API-KEY': `${process.env.SAIKOU_BANS_TOKEN}`,
+								'Accept-Encoding': 'gzip,deflate,compress',
 							},
 						})
 							.then((response: any) => response.data.map((user: any) => user.RobloxID))
@@ -278,7 +279,7 @@ const command: Command = {
 			});
 		} else {
 			infoEmbed.setTimestamp();
-			interaction.followUp({ embeds: [infoEmbed] });
+			interaction.editReply({ embeds: [infoEmbed] });
 		}
 	},
 };

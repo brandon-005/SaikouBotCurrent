@@ -70,7 +70,7 @@ const command: Command = {
 
 		if (triviaData.length === 0) {
 			leaderboard.setDescription('Uh oh! Looks like no data was found. Try getting some correct trivias and try again!');
-			return interaction.followUp({ embeds: [leaderboard] });
+			return interaction.editReply({ embeds: [leaderboard] });
 		}
 
 		triviaData.forEach((user, count: number) => {
@@ -94,7 +94,7 @@ const command: Command = {
 		try {
 			leaderboard.addFields([{ name: 'Users', value: tenUsers }]);
 		} catch (err) {
-			return interaction.followUp({
+			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('❌ Too many users!')
@@ -105,7 +105,7 @@ const command: Command = {
 			});
 		}
 
-		interaction.followUp({ embeds: [leaderboard] });
+		interaction.editReply({ embeds: [leaderboard] });
 
 		const topUser = args[0] === 'Weekly Champion 🌅' ? await weeklyTrivia.find({}, '-_id').sort({ answersCorrect: -1 }).limit(1) : await triviaUsers.find({}, '-_id').sort({ answersCorrect: -1 }).limit(1);
 

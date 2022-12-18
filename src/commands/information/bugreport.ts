@@ -1,4 +1,4 @@
-import { Command, Message, ActionRowBuilder, SelectMenuBuilder, Interaction, ComponentType, SelectMenuInteraction, ButtonStyle, ButtonBuilder, EmbedBuilder, ButtonInteraction, ModalBuilder, TextInputBuilder, ModalActionRowComponentBuilder, TextInputStyle, MessageCollector, AttachmentBuilder } from 'discord.js';
+import { Command, Message, ActionRowBuilder, StringSelectMenuBuilder, Interaction, ComponentType, StringSelectMenuInteraction, ButtonStyle, ButtonBuilder, EmbedBuilder, ButtonInteraction, ModalBuilder, TextInputBuilder, ModalActionRowComponentBuilder, TextInputStyle, MessageCollector, AttachmentBuilder } from 'discord.js';
 import urlRegex from 'url-regex';
 
 import { EMBED_COLOURS, PROMPT_TIMEOUT, MESSAGE_TIMEOUT, VIDEO_FILE_TYPES } from '../../utils/constants';
@@ -14,14 +14,6 @@ const command: Command = {
 	},
 	run: async ({ interaction }) => {
 		let sentMenu: Message;
-
-		function sendNoContent(userMessage: Message) {
-			if (!userMessage.content) {
-				openPrompt.delete(message.author.id);
-				return noContent(message);
-			}
-			return false;
-		}
 
 		/* IF USER HAS PROMPT OPEN */
 		if (openPrompt.has(interaction.user.id))
@@ -48,9 +40,9 @@ const command: Command = {
 						.setColor(EMBED_COLOURS.blurple),
 				],
 				components: [
-					new ActionRowBuilder<SelectMenuBuilder>() // prettier-ignore
+					new ActionRowBuilder<StringSelectMenuBuilder>() // prettier-ignore
 						.addComponents([
-							new SelectMenuBuilder()
+							new StringSelectMenuBuilder()
 								.setCustomId('platform-menu')
 								.setPlaceholder('Please select a platform')
 								.addOptions([
@@ -75,16 +67,15 @@ const command: Command = {
 			});
 		} catch (err) {
 			openPrompt.delete(interaction.user.id);
-			return interaction
-				.followUp({
-					embeds: [
-						new EmbedBuilder() // prettier-ignore
-							.setTitle('❌ Unable to DM!')
-							.setDescription("Please ensure your DM's are enabled in order for the bot to message you the prompt.")
-							.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
-							.setColor(EMBED_COLOURS.red),
-					],
-				})
+			return interaction.followUp({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setTitle('❌ Unable to DM!')
+						.setDescription("Please ensure your DM's are enabled in order for the bot to message you the prompt.")
+						.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+						.setColor(EMBED_COLOURS.red),
+				],
+			});
 		}
 
 		/* DM Sent Embed */
@@ -101,9 +92,9 @@ const command: Command = {
 
 		/* Menu Collector */
 		const dmChannel = await interaction.user.createDM();
-		const menuCollector = dmChannel.createMessageComponentCollector({ filter: (msgInteraction: Interaction) => msgInteraction.user.id === interaction.user.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT });
+		const menuCollector = dmChannel.createMessageComponentCollector({ filter: (msgInteraction: Interaction) => msgInteraction.user.id === interaction.user.id, componentType: ComponentType.StringSelect, time: PROMPT_TIMEOUT });
 
-		menuCollector.on('collect', (selectMenu: SelectMenuInteraction) => {
+		menuCollector.on('collect', (selectMenu: StringSelectMenuInteraction) => {
 			const platform = selectMenu.values;
 
 			selectMenu.update({

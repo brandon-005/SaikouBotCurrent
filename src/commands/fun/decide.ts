@@ -32,7 +32,7 @@ const command: Command = {
 	run: async ({ interaction, args }) => {
 		const options = args.map((choice) => `• ${choice}\n`);
 
-		return interaction.followUp({
+		return interaction.editReply({
 			embeds: [
 				new EmbedBuilder() //
 					.setTitle('📝 Decide Results')

@@ -36,7 +36,7 @@ const command: Command = {
 
 		/* If no user */
 		if (!triviaUser)
-			return interaction.followUp({
+			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('🗃️ No trivia data!')
@@ -46,7 +46,7 @@ const command: Command = {
 			});
 
 		/* If found user */
-		return interaction.followUp({
+		return interaction.editReply({
 			embeds: [
 				new EmbedBuilder() // prettier-ignore
 					.setTitle('🎖️ Trivia Statistics')

@@ -51,7 +51,7 @@ const command: Command = {
 		const userWarns = await warnData.findOne({ userID: member.id });
 
 		if (member.isCommunicationDisabled() === true) {
-			return interaction.followUp({
+			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('❌ Already Muted!')
@@ -62,7 +62,7 @@ const command: Command = {
 		}
 
 		if (!time || !ms(time)) {
-			return interaction.followUp({
+			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('⏱️ Supply a time!')
@@ -75,7 +75,7 @@ const command: Command = {
 
 		member.timeout(ms(time), reason);
 
-		interaction.followUp({
+		interaction.editReply({
 			embeds: [
 				new EmbedBuilder() // prettier-ignore
 					.setDescription(`✅ **${member.displayName} has been muted for ${ms(ms(time))}.**`)

@@ -84,7 +84,9 @@ export = async (bot: Client, reaction: any, user: User) => {
 					switch (buttonInteraction.first()!.customId) {
 						case 'Yes':
 							await suggestData.deleteOne({ messageID: message.id });
-							await message.delete();
+							if (message.deletable) {
+								await message.delete();
+							}
 
 							buttonInteraction.first()!.reply({
 								embeds: [
@@ -118,7 +120,11 @@ export = async (bot: Client, reaction: any, user: User) => {
 			} catch (err) {
 				await suggestData.deleteOne({ messageID: message.id });
 				openPrompt.delete(user.id);
-				return message.delete();
+				if (message.deletable) {
+					return message.delete();
+				}
+
+				return;
 			}
 		}
 
@@ -139,7 +145,9 @@ export = async (bot: Client, reaction: any, user: User) => {
 				.catch(() => {});
 
 			await suggestData.deleteOne({ messageID: message.id });
-			await message.delete();
+			if (message.deletable) {
+				await message.delete();
+			}
 		}
 
 		/* Adding Suggestion to featured if it wasn't denied */

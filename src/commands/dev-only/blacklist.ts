@@ -23,7 +23,7 @@ const command: Command = {
 		const blacklistedUser = await blacklisted.findOne({ userID: args[0] });
 
 		if (blacklistedUser) {
-			return interaction.followUp({
+			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setColor(EMBED_COLOURS.red)
@@ -33,7 +33,7 @@ const command: Command = {
 		}
 
 		return blacklisted.create({ userID: args[0] }).then(() => {
-			interaction.followUp({
+			interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setColor(EMBED_COLOURS.green)

@@ -9,7 +9,7 @@ const command: Command = {
 		limitedChannel: 'None',
 	},
 	run: async ({ interaction }) => {
-		interaction.followUp({ content: 'Success!' }).then((msg: Message) => msg.delete());
+		interaction.editReply({ content: 'Success!' }).then((msg: Message) => msg.delete());
 
 		interaction.channel.send({
 			content: '►**Where can I get notified for community events?**\nYou can press the buttons below to receive or remove our ping role. This will allow you to be informed of any upcoming community events that aren’t addressed to everyone.',

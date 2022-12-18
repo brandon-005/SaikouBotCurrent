@@ -28,7 +28,7 @@ const command: Command = {
 
 			interaction.guild!.members.unban(bannedUser!.user);
 
-			interaction.followUp({
+			interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setDescription(`✅ **${bannedUser!.user.username} has been unbanned.**`)

@@ -1,4 +1,4 @@
-import { ApplicationCommandType, ContextMenu, EmbedBuilder, ActionRowBuilder, SelectMenuBuilder, ComponentType, SelectMenuInteraction, Message, TextChannel } from 'discord.js';
+import { ApplicationCommandType, ContextMenu, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ComponentType, StringSelectMenuInteraction, Message, TextChannel } from 'discord.js';
 import { generateFromMessages } from 'discord-html-transcripts';
 
 import reportData from '../../models/reports';
@@ -17,7 +17,7 @@ const menu: ContextMenu = {
 
 		/* IF USER HAS PROMPT OPEN */
 		if (cooldown.has(interaction.user.id)) {
-			return interaction.followUp({
+			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('🐌 Whoah there! Slow down.')
@@ -28,7 +28,7 @@ const menu: ContextMenu = {
 			});
 		}
 
-		const reportedMsgsEmbed = await interaction.followUp({
+		const reportedMsgsEmbed = await interaction.editReply({
 			embeds: [
 				new EmbedBuilder() // prettier-ignore
 					.setTitle('Reporting Messages 🔎')
@@ -36,9 +36,9 @@ const menu: ContextMenu = {
 					.setColor(EMBED_COLOURS.blurple),
 			],
 			components: [
-				new ActionRowBuilder<SelectMenuBuilder>() // prettier-ignore
+				new ActionRowBuilder<StringSelectMenuBuilder>() // prettier-ignore
 					.addComponents([
-						new SelectMenuBuilder()
+						new StringSelectMenuBuilder()
 							.setCustomId('reportedMsgs-menu')
 							.setPlaceholder('Select the amount of messages to report')
 							.addOptions([
@@ -68,19 +68,17 @@ const menu: ContextMenu = {
 			ephemeral: true,
 		});
 
-		const collector = interaction.channel.createMessageComponentCollector({ filter: (menuInteraction: any) => menuInteraction.user.id === interaction.user.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT });
+		const collector = interaction.channel.createMessageComponentCollector({ filter: (menuInteraction: any) => menuInteraction.user.id === interaction.user.id, componentType: ComponentType.StringSelect, time: PROMPT_TIMEOUT });
 
-		collector.on('collect', async (selectMenuCollector: SelectMenuInteraction) => {
+		collector.on('collect', async (selectMenuCollector: StringSelectMenuInteraction) => {
 			const [menuValues] = selectMenuCollector.values;
 			const messageCount = parseInt(menuValues);
 			const userMessages = await interaction.channel?.messages.fetch();
 
 			const attachment = await generateFromMessages(userMessages.filter((msg: Message) => msg.author.id === selectedMessage.author.id).first(messageCount), interaction.channel, {
-				returnType: 'attachment',
-				fileName: 'Reported Messages.html',
-				minify: true,
+				filename: 'Reported Messages.html',
 				saveImages: false,
-				useCDN: true,
+				poweredBy: false,
 			});
 
 			(bot.channels.cache.find((channel: any) => channel.name === '📝report-abuse') as TextChannel)

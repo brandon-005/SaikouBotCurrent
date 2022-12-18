@@ -1,4 +1,4 @@
-import { Command, EmbedBuilder, Message, ActionRowBuilder, SelectMenuBuilder, SelectMenuInteraction, PermissionFlagsBits, ComponentType, Interaction, GuildMember } from 'discord.js';
+import { Command, EmbedBuilder, Message, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuInteraction, PermissionFlagsBits, ComponentType, Interaction, GuildMember } from 'discord.js';
 import { readdirSync } from 'fs';
 import { resolve } from 'path';
 
@@ -10,7 +10,7 @@ const command: Command = {
 	config: {
 		commandName: 'help',
 		commandAliases: ['cmds', 'commands'],
-		commandDescription: "Hey this is the command you're using now! As you may of realised, this grabs all of SaikouBot's commands ready for your next powerful move.",
+		commandDescription: "The command that displays all of SaikouBot's commands ready for your next powerful move.",
 	},
 	run: async ({ bot, interaction }) => {
 		const prefix = '/';
@@ -56,7 +56,7 @@ const command: Command = {
 		/* IF USER HAS PROMPT OPEN */
 		if (openPrompt.has(interaction.user.id))
 			return interaction
-				.followUp({
+				.editReply({
 					embeds: [
 						new EmbedBuilder() // prettier-ignore
 							.setTitle('🗃️ Prompt already open!')
@@ -78,14 +78,14 @@ const command: Command = {
 						.setColor(EMBED_COLOURS.blurple),
 				],
 				components: [
-					new ActionRowBuilder<SelectMenuBuilder>() // prettier-ignore
-						.addComponents([new SelectMenuBuilder().setCustomId('help-menu').setPlaceholder('Please select a category').addOptions(menuOptions)]),
+					new ActionRowBuilder<StringSelectMenuBuilder>() // prettier-ignore
+						.addComponents([new StringSelectMenuBuilder().setCustomId('help-menu').setPlaceholder('Please select a category').addOptions(menuOptions)]),
 				],
 			});
 		} catch (err) {
 			console.log(err);
 			openPrompt.delete(interaction.user.id);
-			return interaction.followUp({
+			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setDescription("Unable to send DM, please make sure your DM's are enabled.")
@@ -94,7 +94,7 @@ const command: Command = {
 			});
 		}
 
-		interaction.followUp({
+		interaction.editReply({
 			embeds: [
 				new EmbedBuilder() // prettier-ignore
 					.setDescription(`📬 A message has been sent to your DM's <@${interaction.user.id}>`)
@@ -102,9 +102,9 @@ const command: Command = {
 			],
 		});
 
-		const collector = (await interaction.user.createDM()).createMessageComponentCollector({ filter: (msgInteraction: Interaction) => msgInteraction.user.id === interaction.user.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT });
+		const collector = (await interaction.user.createDM()).createMessageComponentCollector({ filter: (msgInteraction: Interaction) => msgInteraction.user.id === interaction.user.id, componentType: ComponentType.StringSelect, time: PROMPT_TIMEOUT });
 
-		collector.on('collect', (selectMenu: SelectMenuInteraction) => {
+		collector.on('collect', (selectMenu: StringSelectMenuInteraction) => {
 			const [category] = selectMenu.values;
 
 			switch (category) {

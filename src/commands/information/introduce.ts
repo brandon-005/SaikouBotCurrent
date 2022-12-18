@@ -62,7 +62,7 @@ const command: Command = {
 		openPrompt.add(interaction.user.id);
 
 		interaction
-			.followUp({
+			.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setDescription(`📬 A message has been sent to your DM's <@${interaction.user.id}>`)

@@ -22,13 +22,13 @@ const command: Command = {
 		if (activeInteraction.has(interaction.user.id)) {
 			missionEmbed.setFooter({ text: 'To get buttons to change missions, wait for timeout (60s).' });
 			missionEmbed.setDescription(`${choose(MWT_MISSIONS)}`);
-			return interaction.followUp({ embeds: [missionEmbed] });
+			return interaction.editReply({ embeds: [missionEmbed] });
 		}
 
 		activeInteraction.add(interaction.user.id);
 
 		missionEmbed.setDescription(`${choose(MWT_MISSIONS)}`);
-		const sentEmbed = await interaction.followUp({
+		const sentEmbed = await interaction.editReply({
 			embeds: [missionEmbed],
 			components: [
 				new ActionRowBuilder<ButtonBuilder>().addComponents([

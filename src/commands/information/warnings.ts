@@ -1,4 +1,4 @@
-import { Command, ApplicationCommandOptionType, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonInteraction, SelectMenuBuilder, SelectMenuInteraction, Message, PermissionFlagsBits, ButtonStyle, ComponentType } from 'discord.js';
+import { Command, ApplicationCommandOptionType, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonInteraction, StringSelectMenuBuilder, StringSelectMenuInteraction, Message, PermissionFlagsBits, ButtonStyle, ComponentType } from 'discord.js';
 import moment from 'moment';
 
 import { EMBED_COLOURS, PROMPT_TIMEOUT } from '../../utils/constants';
@@ -34,7 +34,7 @@ const command: Command = {
 			.setDescription('ℹ️ This user has no warnings.')
 			.setColor(EMBED_COLOURS.blurple);
 
-		if (!userWarns || !userWarns.warnings.length) return interaction.followUp({ embeds: [noWarnsEmbed] });
+		if (!userWarns || !userWarns.warnings.length) return interaction.editReply({ embeds: [noWarnsEmbed] });
 
 		const menuOptions: any = [];
 		const warningsEmbed = new EmbedBuilder() // prettier-ignore
@@ -61,12 +61,12 @@ const command: Command = {
 			/* IF USER HAS PROMPT OPEN */
 			if (activeInteraction.has(interaction.user.id)) {
 				warningsEmbed.setFooter({ text: 'Exit previous warning prompt to receive options to delete/edit warns.' });
-				return interaction.followUp({ embeds: [warningsEmbed] });
+				return interaction.editReply({ embeds: [warningsEmbed] });
 			}
 
 			activeInteraction.add(interaction.user.id);
 
-			const warningSentEmbed: any = await interaction.followUp({
+			const warningSentEmbed: any = await interaction.editReply({
 				embeds: [warningsEmbed],
 				components: [
 					new ActionRowBuilder<ButtonBuilder>().addComponents([
@@ -99,15 +99,15 @@ const command: Command = {
 									.setColor(EMBED_COLOURS.blurple),
 							],
 							components: [
-								new ActionRowBuilder<SelectMenuBuilder>() // prettier-ignore
-									.addComponents([new SelectMenuBuilder().setCustomId('editwarn-menu').setPlaceholder('Please select a warning').addOptions(menuOptions)]),
+								new ActionRowBuilder<StringSelectMenuBuilder>() // prettier-ignore
+									.addComponents([new StringSelectMenuBuilder().setCustomId('editwarn-menu').setPlaceholder('Please select a warning').addOptions(menuOptions)]),
 							],
 						});
 
 						// eslint-disable-next-line no-case-declarations
-						const editWarnCollector = interaction.channel!.createMessageComponentCollector({ filter: (menu: any) => menu.user.id === interaction.user.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT });
+						const editWarnCollector = interaction.channel!.createMessageComponentCollector({ filter: (menu: any) => menu.user.id === interaction.user.id, componentType: ComponentType.StringSelect, time: PROMPT_TIMEOUT });
 
-						editWarnCollector.on('collect', async (editWarnInteraction: SelectMenuInteraction) => {
+						editWarnCollector.on('collect', async (editWarnInteraction: StringSelectMenuInteraction) => {
 							const [warnID] = editWarnInteraction.values;
 							const matchingWarn = userWarns.warnings.find((warning: any) => String(warning._id) === String(warnID));
 
@@ -162,15 +162,15 @@ const command: Command = {
 									.setColor(EMBED_COLOURS.blurple),
 							],
 							components: [
-								new ActionRowBuilder<SelectMenuBuilder>() // prettier-ignore
-									.addComponents([new SelectMenuBuilder().setCustomId('delete-menu').setPlaceholder('Please select a warning').addOptions(menuOptions).setMinValues(1).setMaxValues(userWarns.warnings.length)]),
+								new ActionRowBuilder<StringSelectMenuBuilder>() // prettier-ignore
+									.addComponents([new StringSelectMenuBuilder().setCustomId('delete-menu').setPlaceholder('Please select a warning').addOptions(menuOptions).setMinValues(1).setMaxValues(userWarns.warnings.length)]),
 							],
 						});
 
 						// eslint-disable-next-line no-case-declarations
-						const warnRemoveCollector = interaction.channel!.createMessageComponentCollector({ filter: (menu: any) => menu.user.id === interaction.user.id, componentType: ComponentType.SelectMenu, time: PROMPT_TIMEOUT });
+						const warnRemoveCollector = interaction.channel!.createMessageComponentCollector({ filter: (menu: any) => menu.user.id === interaction.user.id, componentType: ComponentType.StringSelect, time: PROMPT_TIMEOUT });
 
-						warnRemoveCollector.on('collect', async (menuInteraction: SelectMenuInteraction) => {
+						warnRemoveCollector.on('collect', async (menuInteraction: StringSelectMenuInteraction) => {
 							menuInteraction.values.forEach(async (warningID) => {
 								const matchingWarn = userWarns.warnings.find((warning: any) => String(warning._id) === String(warningID));
 								await warnData.updateOne({ userID: member.id }, { $pull: { warnings: { _id: matchingWarn._id } } });
@@ -197,7 +197,7 @@ const command: Command = {
 				activeInteraction.delete(interaction.user.id);
 			});
 		} else {
-			return interaction.followUp({ embeds: [warningsEmbed] });
+			return interaction.editReply({ embeds: [warningsEmbed] });
 		}
 	},
 };

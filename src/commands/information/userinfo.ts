@@ -58,7 +58,7 @@ const command: Command = {
 		if (member.permissions.has(PermissionFlagsBits.Administrator)) userinfoEmbed.addFields([{ name: 'Acknowledgements', value: 'Server Admin' }]);
 		else if (member.permissions.has(PermissionFlagsBits.ManageMessages)) userinfoEmbed.addFields([{ name: 'Acknowledgements', value: 'Server Moderator' }]);
 
-		interaction.followUp({ embeds: [userinfoEmbed] });
+		interaction.editReply({ embeds: [userinfoEmbed] });
 	},
 };
 

@@ -11,6 +11,7 @@ import { devErrorEmbed, moderationDmEmbed } from './utils/embeds';
 import { choose } from './utils/functions';
 
 import qotdQuestions from './finalFetched.json';
+import wyrQuestions from './wouldyourathers.json';
 import questionNumber from './models/count';
 import birthdays from './staffBirthdays.json';
 
@@ -106,8 +107,8 @@ setInterval(async () => {
 	/* Fetching Universe ID from Place ID's provided */
 	for (const id of PLACE_ID) {
 		await axios
-			.get(`https://api.roblox.com/universes/get-universe-containing-place?placeid=${id}`)
-			.then((response: any) => UNIVERSE_ID.push(response.data.UniverseId))
+			.get(`https://apis.roblox.com/universes/v1/places/${id}/universe`)
+			.then((response: any) => UNIVERSE_ID.push(response.data.universeId))
 			.catch(() => {});
 	}
 
@@ -161,6 +162,32 @@ cron.schedule('0 13 * * *', async () => {
 		counter.save();
 
 		(qotdChannel as TextChannel).send({ content: qotdQuestions[counter.count] });
+	}
+});
+
+/* Automatic Would You Rather */
+cron.schedule('0 1 * * *', async () => {
+	const counter = await questionNumber.findOne({ id: 2 });
+	const wyrChannel = bot.channels.cache.find((channel: any) => (channel as TextChannel).name === '🤔would-you-rather');
+
+	if (!counter) {
+		questionNumber.create({
+			id: 2,
+			count: 0,
+		});
+
+		(wyrChannel as TextChannel).send({ content: `<@&692394198451748874>\n**Would You Rather**\n${wyrQuestions[0]}` }).then(async (msg) => {
+			await msg.react('🅰️');
+			await msg.react('🅱️');
+		});
+	} else {
+		counter.count += 1;
+		counter.save();
+
+		(wyrChannel as TextChannel).send({ content: `<@&692394198451748874>\n**Would You Rather**\n${wyrQuestions[counter.count]}` }).then(async (msg) => {
+			await msg.react('🅰️');
+			await msg.react('🅱️');
+		});
 	}
 });
 

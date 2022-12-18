@@ -35,7 +35,7 @@ const command: Command = {
 		if (!member) return noUser(interaction, false);
 
 		if (isNaN(Number(deleteAmount)) || parseInt(String(deleteAmount), 10) <= 0) {
-			return interaction.followUp({
+			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setDescription(`**❌ Amount cannot be less than 1 or contain letters.**`)
@@ -45,7 +45,7 @@ const command: Command = {
 		}
 
 		if (parseInt(String(deleteAmount), 10) > 100) {
-			return interaction.followUp({
+			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setDescription('**❌ Deletion amount must be less than 100.**')
@@ -91,7 +91,7 @@ const command: Command = {
 				deletedMessages += 1;
 			});
 
-		return interaction.followUp({
+		return interaction.editReply({
 			embeds: [
 				new EmbedBuilder() // prettier-ignore
 					.setDescription(`**✅ Successfully deleted ${deleteAmount} messages from <@${member.id}>!**`)
