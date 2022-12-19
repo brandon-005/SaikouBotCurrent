@@ -10,9 +10,9 @@ import { BIRTHDAY_GIFS, BIRTHDAY_MESSAGES, EMBED_COLOURS } from './utils/constan
 import { devErrorEmbed, moderationDmEmbed } from './utils/embeds';
 import { choose } from './utils/functions';
 
-import qotdQuestions from './finalFetched.json';
-import wyrQuestions from './wouldyourathers.json';
 import questionNumber from './models/count';
+import qotdQuestion from './models/qotd';
+import wyrQuestion from './models/wyrQuestion';
 import birthdays from './staffBirthdays.json';
 
 config();
@@ -156,12 +156,14 @@ cron.schedule('0 13 * * *', async () => {
 			count: 0,
 		});
 
-		(qotdChannel as TextChannel).send({ content: qotdQuestions[0] });
+		(qotdChannel as TextChannel).send({ content: '<@&692394198451748874>\n**Question of the day: What is one app that you hate but still use anyways?**\nSubmit your answer in <#398237638492160000> and keep up to date with our next question tomorrow!' });
 	} else {
 		counter.count += 1;
 		counter.save();
 
-		(qotdChannel as TextChannel).send({ content: qotdQuestions[counter.count] });
+		const currentQOTD = await qotdQuestion.find({});
+
+		(qotdChannel as TextChannel).send({ content: `<@&692394198451748874>\n${currentQOTD[counter.count].question}\nSubmit your answer in <#398237638492160000> and keep up to date with our next question tomorrow!'` });
 	}
 });
 
@@ -176,7 +178,7 @@ cron.schedule('0 1 * * *', async () => {
 			count: 0,
 		});
 
-		(wyrChannel as TextChannel).send({ content: `<@&692394198451748874>\n**Would You Rather**\n${wyrQuestions[0]}` }).then(async (msg) => {
+		(wyrChannel as TextChannel).send({ content: '<@&692394198451748874>\n**Would You Rather**\nA: Eat a sandwich made with moldy bread\nB: Eat a sandwich made with stale bread' }).then(async (msg) => {
 			await msg.react('🅰️');
 			await msg.react('🅱️');
 		});
@@ -184,7 +186,9 @@ cron.schedule('0 1 * * *', async () => {
 		counter.count += 1;
 		counter.save();
 
-		(wyrChannel as TextChannel).send({ content: `<@&692394198451748874>\n**Would You Rather**\n${wyrQuestions[counter.count]}` }).then(async (msg) => {
+		const currentQuestion = await wyrQuestion.find({});
+
+		(wyrChannel as TextChannel).send({ content: `<@&692394198451748874>\n**Would You Rather**\n${currentQuestion[counter.count].optionA}\n${currentQuestion[counter.count].optionB}` }).then(async (msg) => {
 			await msg.react('🅰️');
 			await msg.react('🅱️');
 		});
