@@ -1,7 +1,11 @@
-import { Client, GatewayIntentBits, Partials, Collection, ActivityType, EmbedBuilder, TextChannel, VoiceChannel } from 'discord.js';
+import { Client, GatewayIntentBits, Partials, Collection, ActivityType, EmbedBuilder, TextChannel, VoiceChannel, RoleData } from 'discord.js';
 import { config } from 'dotenv';
 import axios from 'axios';
 import cron from 'node-cron';
+import { writeFileSync } from 'fs';
+import moment from 'moment';
+import removeFiles from 'find-remove';
+import { join } from 'path';
 
 import statusTimer from './models/statusTimer';
 import weeklyTrivia from './models/weeklyTrivia';
@@ -168,7 +172,7 @@ cron.schedule('0 13 * * *', async () => {
 });
 
 /* Automatic Would You Rather */
-cron.schedule('0 1 * * *', async () => {
+cron.schedule('0 0 * * *', async () => {
 	const counter = await questionNumber.findOne({ id: 2 });
 	const wyrChannel = bot.channels.cache.find((channel: any) => (channel as TextChannel).name === '🤔would-you-rather');
 
@@ -196,7 +200,7 @@ cron.schedule('0 1 * * *', async () => {
 });
 
 /* Birthday Messages */
-cron.schedule('0 1 * * *', async () => {
+cron.schedule('0 0 * * *', async () => {
 	birthdays.forEach((birthday) => {
 		const [day, month, year] = birthday.birthdate.split('/');
 		const todaysDate = new Date();
@@ -207,6 +211,39 @@ cron.schedule('0 1 * * *', async () => {
 				(bot.channels.cache.find((channel: any) => channel.name === '💬general-staff') as TextChannel).send({ content: `${choose(BIRTHDAY_GIFS)}` });
 			});
 		}
+	});
+});
+
+cron.schedule('0 0 * * *', async () => {
+	removeFiles('../dataBackups', {
+		age: { seconds: 604800 },
+		extensions: '.json',
+	});
+
+	bot.guilds.fetch(process.env.SERVER_ID).then((guild) => {
+		const roles: any = [];
+		guild.roles.cache
+			.filter((role) => !role.managed)
+			.sort((a, b) => b.position - a.position)
+			.forEach((role) => {
+				const roleData = {
+					name: role.name,
+					color: role.hexColor,
+					hoist: role.hoist,
+					permissions: role.permissions.bitfield.toString(),
+					mentionable: role.mentionable,
+					position: role.position,
+					isEveryone: guild.id === role.id,
+				};
+				roles.push(roleData);
+			});
+
+		const finalJson = {
+			roles,
+			guildData: guild,
+		};
+
+		writeFileSync(`${join(__dirname, '../dataBackups/')}${moment(new Date()).format('DD-MM-YYYY[@]h-mma')}.json`, JSON.stringify(finalJson, null, 2));
 	});
 });
 
