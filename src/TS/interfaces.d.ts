@@ -91,3 +91,14 @@ export interface TokensTypes extends Document {
 	userID: string;
 	tokens: number;
 }
+
+// --- WYR Schema ---
+export interface QuestionTypes extends Document {
+	optionA: string;
+	optionB: string;
+}
+
+// --- QOTD Schema ---
+export interface QOTDTypes extends Document {
+	question: string;
+}
