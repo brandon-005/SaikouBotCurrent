@@ -83,7 +83,7 @@ const command: Command = {
 						.setDescription("You're about to post a suggestion with the following details:")
 						.addFields(
 							{ name: '🏠 Platform', value: args[0], inline: true }, // prettier-ignore
-							{ name: '🥷 Anonymous', value: args[2] ? 'Yes' : 'No', inline: true },
+							{ name: '🥷 Anonymous', value: JSON.parse(args[2]) ? 'Yes' : 'No', inline: true },
 							{ name: '📖 Suggestion', value: args[1], inline: false }
 						)
 						.setColor(EMBED_COLOURS.red)
