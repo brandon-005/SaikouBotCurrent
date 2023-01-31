@@ -11,7 +11,7 @@ const command: Command = {
 		commandName: 'kick',
 		commandAliases: ['tempremove'],
 		commandDescription: 'Removes a user from the Discord server.',
-		userPermissions: 'KickMembers',
+		userPermissions: 'ManageRoles',
 		commandUsage: '<user> <reason>',
 		limitedChannel: 'None',
 		COOLDOWN_TIME: 30,
@@ -38,7 +38,7 @@ const command: Command = {
 		const reason = args[1];
 
 		if (!member) return noUser(interaction, false);
-		if (member.permissions && member.permissions.has(PermissionFlagsBits.KickMembers)) return equalPerms(interaction, 'Kick Members');
+		if (member.permissions && member.permissions.has(PermissionFlagsBits.ManageRoles)) return equalPerms(interaction, 'Manage Roles');
 
 		await moderationDmEmbed(member, 'Kick', `Hello **${member.user.username}**,\n\nWe noticed your account has recently broke Saikou's Community Rules again. Because of this, your account has received a kick from the Saikou Discord.\n\nIf you continue to break the rules, your account will be permanently banned from accessing the Discord server. To learn more about our rules, visit <#397797150840324115>.\n\nWe build our games and community for players to have fun. Creating a safe environment and enjoyable experience for everyone is a crucial part of what we're about, and our community rules in place is what we ask and expect players to abide by to achieve this.\n\nPlease check the attached moderator note below for more details.`, reason);
 
