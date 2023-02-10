@@ -1,4 +1,8 @@
-import { GuildMember } from 'discord.js';
+import { GuildMember, Client, TextChannel } from 'discord.js';
+
+import QuestionNumber from '../models/count';
+import QotdQuestion from '../models/qotd';
+import WyrQuestion from '../models/wyrQuestion';
 
 /* Get a random number */
 export function getRandomInt(min: number, max: number) {
@@ -30,4 +34,40 @@ export function getMember(message: any, inputtedUser: string, moderation?: Boole
 	if (moderation && moderation === true) return null;
 
 	return message.member;
+}
+
+export async function sendQuestion(bot: Client, WYR?: boolean) {
+	const questionCounter = await QuestionNumber.findOne({ id: 1 });
+	const currentQuestion: any = WYR ? await WyrQuestion.find({}) : await QotdQuestion.find({});
+	const sendQuestionChannel = bot.channels.cache.find((channel: any) => channel.name === `${WYR ? '🤔would-you-rather' : '❔question-of-the-day'}`) as TextChannel;
+
+	/* Send Question If Counter Doesn't Exist */
+	if (!questionCounter) {
+		QuestionNumber.create({
+			id: 1,
+			count: 0,
+		});
+
+		if (!WYR || WYR !== true) {
+			return sendQuestionChannel.send({ content: '<@&692394198451748874>\n**Question of the day: What is one app that you hate but still use anyways?**\nSubmit your answer in <#398237638492160000> and keep up to date with our next question tomorrow!' });
+		}
+
+		return sendQuestionChannel.send({ content: '<@&692394198451748874>\n**Would You Rather**\nA: Eat a sandwich made with moldy bread\nB: Eat a sandwich made with stale bread' }).then(async (msg) => {
+			await msg.react('🅰️');
+			await msg.react('🅱️');
+		});
+	}
+
+	/* Send Question If Counter Exists */
+	questionCounter.count += 1;
+	await questionCounter.save();
+
+	if (!WYR || WYR !== true) {
+		return sendQuestionChannel.send({ content: `<@&692394198451748874>\n${currentQuestion[questionCounter.count].question}\nSubmit your answer in <#398237638492160000> and keep up to date with our next question tomorrow!` });
+	}
+
+	return sendQuestionChannel.send({ content: `<@&692394198451748874>\n**Would You Rather**\n${currentQuestion[questionCounter.count].optionA}\n${currentQuestion[questionCounter.count].optionB}` }).then(async (msg) => {
+		await msg.react('🅰️');
+		await msg.react('🅱️');
+	});
 }
