@@ -18,7 +18,7 @@ const command: Command = {
 		/* IF USER HAS PROMPT OPEN */
 		if (openPrompt.has(interaction.user.id))
 			return interaction
-				.followUp({
+				.editReply({
 					embeds: [
 						new EmbedBuilder() // prettier-ignore
 							.setTitle('🗃️ Prompt already open!')
@@ -67,7 +67,7 @@ const command: Command = {
 			});
 		} catch (err) {
 			openPrompt.delete(interaction.user.id);
-			return interaction.followUp({
+			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('❌ Unable to DM!')
@@ -80,7 +80,7 @@ const command: Command = {
 
 		/* DM Sent Embed */
 		await interaction
-			.followUp({
+			.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setDescription(`📬 A message has been sent to your DM's <@${interaction.user.id}>`)
