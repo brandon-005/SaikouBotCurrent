@@ -10,7 +10,7 @@ export function cancel(interaction: CommandInteraction, dm: Boolean) {
 		.setColor(EMBED_COLOURS.green);
 
 	if (dm === true) return interaction.user.send({ embeds: [embed] });
-	return interaction.followUp({ embeds: [embed] });
+	return interaction.editReply({ embeds: [embed] });
 }
 
 export function noContent(interaction: CommandInteraction) {
@@ -43,7 +43,7 @@ export function noUser(interaction: CommandInteraction, dm?: Boolean): Promise<a
 		.setTimestamp();
 
 	if (dm === true) return interaction.user.send({ embeds: [embed] });
-	return interaction.followUp({ embeds: [embed] });
+	return interaction.editReply({ embeds: [embed] });
 }
 
 export function equalPerms(interaction: CommandInteraction, perms: string): Promise<any | Message<boolean>> {
@@ -53,7 +53,7 @@ export function equalPerms(interaction: CommandInteraction, perms: string): Prom
 		.setColor(EMBED_COLOURS.red)
 		.setFooter({ text: `Equal Permission(s): ${perms}` });
 
-	return interaction?.followUp({ embeds: [embed] });
+	return interaction?.editReply({ embeds: [embed] });
 }
 
 export function moderationDmEmbed(member: any, punishment: string, description: string, reason: string) {
@@ -122,7 +122,7 @@ export function errorEmbed(interaction?: CommandInteraction) {
 		.setThumbnail('https://i.ibb.co/C5YvkJg/4-128.png')
 		.setColor(EMBED_COLOURS.red);
 
-	return interaction?.followUp({ embeds: [embed] });
+	return interaction?.editReply({ embeds: [embed] });
 }
 
 export function devErrorEmbed(bot: Client, title: string, errorMessage: string) {
