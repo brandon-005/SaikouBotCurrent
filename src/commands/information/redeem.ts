@@ -103,12 +103,12 @@ const command: Command = {
 					new ActionRowBuilder<ButtonBuilder>().addComponents([
 						new ButtonBuilder() // prettier-ignore
 							.setLabel('Confirm')
-							.setStyle(ButtonStyle.Danger)
+							.setStyle(ButtonStyle.Success)
 							.setCustomId('send'),
 
 						new ButtonBuilder() // prettier-ignore
 							.setLabel('Cancel')
-							.setStyle(ButtonStyle.Success)
+							.setStyle(ButtonStyle.Danger)
 							.setCustomId('exit'),
 					]),
 				],
