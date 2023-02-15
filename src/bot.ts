@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Partials, Collection, ActivityType, EmbedBuilder, TextChannel, VoiceChannel, RoleData } from 'discord.js';
+import { Client, GatewayIntentBits, Partials, Collection, ActivityType, EmbedBuilder, TextChannel, VoiceChannel } from 'discord.js';
 import { config } from 'dotenv';
 import axios from 'axios';
 import cron from 'node-cron';
