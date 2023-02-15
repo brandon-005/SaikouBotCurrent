@@ -1,7 +1,11 @@
-import { Client, GatewayIntentBits, Partials, Collection, ActivityType, EmbedBuilder, TextChannel, VoiceChannel } from 'discord.js';
+import { Client, GatewayIntentBits, Partials, Collection, ActivityType, EmbedBuilder, TextChannel, VoiceChannel, RoleData } from 'discord.js';
 import { config } from 'dotenv';
 import axios from 'axios';
 import cron from 'node-cron';
+import { writeFileSync } from 'fs';
+import moment from 'moment';
+import removeFiles from 'find-remove';
+import { join } from 'path';
 
 import { StatusTimerTypes } from './TS/interfaces';
 import { BIRTHDAY_GIFS, BIRTHDAY_MESSAGES, EMBED_COLOURS } from './utils/constants';
@@ -158,6 +162,21 @@ cron.schedule('0 0 * * *', async () => {
 			await staffChannel.send(`${choose(BIRTHDAY_GIFS)}`);
 		});
 	}
+});
+
+/* Birthday Messages */
+cron.schedule('0 0 * * *', async () => {
+	birthdays.forEach((birthday) => {
+		const [day, month, year] = birthday.birthdate.split('/');
+		const todaysDate = new Date();
+		const staffBirthDate = new Date(+year, Number(month) - 1, +day);
+
+		if (staffBirthDate.getDate() === todaysDate.getDate() && staffBirthDate.getMonth() === todaysDate.getMonth()) {
+			(bot.channels.cache.find((channel: any) => channel.name === '💬general-staff') as TextChannel).send({ content: `<@${birthday.id}>, ${choose(BIRTHDAY_MESSAGES)}` }).then(() => {
+				(bot.channels.cache.find((channel: any) => channel.name === '💬general-staff') as TextChannel).send({ content: `${choose(BIRTHDAY_GIFS)}` });
+			});
+		}
+	});
 });
 
 /* Automatic QOTD */
