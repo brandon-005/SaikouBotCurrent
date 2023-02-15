@@ -88,7 +88,7 @@ export = async (bot: any, message: Message) => {
 		const similarity = stringSimilarity.compareTwoStrings(message.content.toLowerCase(), question.toLowerCase());
 
 		// If the message is similar enough to the pre-defined question, send the pre-defined answer
-		if (similarity > 0.6) {
+		if (similarity > 0.7) {
 			return message.channel.send(answer);
 		}
 	}
