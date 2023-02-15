@@ -230,7 +230,7 @@ export const MWT_WEAPONS = [
 	'Sawed-Off Shotgun',
 	'M1 Garand Rifle',
 	'Marksman Rifle',
-	'Flamethrower',
+	'Dual SMGs',
 	'LMG',
 	'AK-47',
 	'Crossbow',
@@ -284,7 +284,7 @@ export const MWT_MISSIONS = [
 	// prettier-ignore
 	"Get **7** kills in one play session with the `Default Knife`.",
 	'Raid **3** players bases by using the `back enterance`.',
-	'Get **10** kills in one play session with the `flamethrower`.',
+	'Get **10** kills in one play session with the `Dual SMGs`.',
 	'Get **20** kills in one play session with the `Light Machine Gun`.',
 	'**Complete** your base in 30 minutes of `one play session`.',
 	'Get **5** kills whilst playing on `max sensitivity`.',
