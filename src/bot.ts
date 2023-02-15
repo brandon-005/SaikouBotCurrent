@@ -6,7 +6,7 @@ import cron from 'node-cron';
 import { StatusTimerTypes } from './TS/interfaces';
 import { BIRTHDAY_GIFS, BIRTHDAY_MESSAGES, EMBED_COLOURS } from './utils/constants';
 import { devErrorEmbed, moderationDmEmbed } from './utils/embeds';
-import { choose, sendQuestion } from './utils/functions';
+import { choose, sendQuestion, awardRole } from './utils/functions';
 
 import WeeklyTrivia from './models/weeklyTrivia';
 import StatusTimer from './models/statusTimer';
@@ -156,6 +156,12 @@ cron.schedule('0 0 * * *', async () => {
 		}
 	});
 });
+
+/* Automatic Trivia King / Weekly Champion Role Giving */
+setInterval(async () => {
+	await awardRole(bot, true);
+	await awardRole(bot, false);
+}, SIXTY_SECONDS);
 
 /* Automatic QOTD */
 cron.schedule('0 13 * * *', async () => {

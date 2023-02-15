@@ -3,6 +3,8 @@ import { GuildMember, Client, TextChannel } from 'discord.js';
 import QuestionNumber from '../models/count';
 import QotdQuestion from '../models/qotd';
 import WyrQuestion from '../models/wyrQuestion';
+import WeeklyTrivia from '../models/weeklyTrivia';
+import TriviaUsers from '../models/correctTrivia';
 
 /* Get a random number */
 export function getRandomInt(min: number, max: number) {
@@ -69,5 +71,40 @@ export async function sendQuestion(bot: Client, WYR?: boolean) {
 	return sendQuestionChannel.send({ content: `<@&692394198451748874>\n**Would You Rather**\n${currentQuestion[questionCounter.count].optionA}\n${currentQuestion[questionCounter.count].optionB}` }).then(async (msg) => {
 		await msg.react('🅰️');
 		await msg.react('🅱️');
+	});
+}
+
+export async function awardRole(bot: Client, weekly?: boolean) {
+	const topUser = weekly ? await WeeklyTrivia.find({}, '-_id').sort({ answersCorrect: -1 }).limit(1) : await TriviaUsers.find({}, '-_id').sort({ answersCorrect: -1 }).limit(1);
+
+	if (!topUser.length) return;
+
+	const server = bot.guilds.cache.get(`${BigInt(String(process.env.SERVER_ID))}`);
+	const kingUsers = server.roles.cache.find((role: any) => role.name === `${weekly ? 'Weekly Champion 🌅' : 'Trivia King 👑'}`)!.members.map((member: GuildMember) => member.user.id);
+	const topUserInServer = server.members.cache.get(`${BigInt(Object.values(topUser)[0]!.userID)}`);
+
+	if (kingUsers.length === 0 && topUserInServer) {
+		topUserInServer.roles.add(server.roles.cache.find((role: any) => role.name === `${weekly ? 'Weekly Champion 🌅' : 'Trivia King 👑'}`)!, 'New Leaderboard King!');
+		(bot.channels.cache.get(process.env.OFFTOPIC_CHANNEL) as TextChannel).send({
+			content: weekly ? `<@${Object.values(topUser)[0]!.userID}> is the new weekly trivia champion! 🌅` : `<@${Object.values(topUser)[0]!.userID}> is the new trivia leaderboard king! 👑`,
+		});
+	}
+
+	kingUsers.forEach(async (userID: string) => {
+		const oldTopUserInServer = server.members.cache.get(`${BigInt(userID)}`);
+
+		if (topUserInServer && oldTopUserInServer) {
+			if (String(userID) !== String(Object.values(topUser)[0]!.userID)) {
+				/* Removing Role from old leaderboard king */
+				oldTopUserInServer.roles.remove(server.roles.cache.find((role: any) => role.name === `${weekly ? 'Weekly Champion 🌅' : 'Trivia King 👑'}`)!, 'New Leaderboard King!').catch(() => {});
+
+				/* Adding Role to new leaderboard king */
+				topUserInServer.roles.add(server.roles.cache.find((role: any) => role.name === `${weekly ? 'Weekly Champion 🌅' : 'Trivia King 👑'}`)!, 'New Leaderboard King!').catch(() => {});
+
+				(bot.channels.cache.get(process.env.OFFTOPIC_CHANNEL) as TextChannel).send({
+					content: weekly ? `<@${Object.values(topUser)[0]!.userID}> is the new weekly trivia champion! 🌅` : `<@${Object.values(topUser)[0]!.userID}> is the new trivia leaderboard king! 👑`,
+				});
+			}
+		}
 	});
 }
