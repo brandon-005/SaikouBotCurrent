@@ -7,4 +7,4 @@ const count: Schema = new Schema({
 	count: { type: Number },
 });
 
-export = model<CountType>('qotdCount', count);
+export = model<CountType>('questionCounter', count);

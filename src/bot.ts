@@ -7,16 +7,13 @@ import moment from 'moment';
 import removeFiles from 'find-remove';
 import { join } from 'path';
 
-import statusTimer from './models/statusTimer';
-import weeklyTrivia from './models/weeklyTrivia';
 import { StatusTimerTypes } from './TS/interfaces';
 import { BIRTHDAY_GIFS, BIRTHDAY_MESSAGES, EMBED_COLOURS } from './utils/constants';
 import { devErrorEmbed, moderationDmEmbed } from './utils/embeds';
-import { choose } from './utils/functions';
+import { choose, sendQuestion } from './utils/functions';
 
-import questionNumber from './models/count';
-import qotdQuestion from './models/qotd';
-import wyrQuestion from './models/wyrQuestion';
+import WeeklyTrivia from './models/weeklyTrivia';
+import StatusTimer from './models/statusTimer';
 import birthdays from './staffBirthdays.json';
 
 config();
@@ -57,7 +54,7 @@ process.on('unhandledRejection', (rejectionError: Error) => {
 const SIXTY_SECONDS = 60000;
 
 setInterval(async () => {
-	const statusTimerData = await statusTimer.find({}, '-_id -__v');
+	const statusTimerData = await StatusTimer.find({}, '-_id -__v');
 
 	statusTimerData.forEach(async (user: StatusTimerTypes) => {
 		if (new Date(user.timestamp).getTime() + user.duration < Date.now()) {
@@ -92,7 +89,7 @@ setInterval(async () => {
 				}
 			}
 
-			await statusTimer.deleteOne({ userID: user.userID });
+			await StatusTimer.deleteOne({ userID: user.userID });
 		}
 	});
 }, SIXTY_SECONDS);
@@ -149,52 +146,20 @@ setInterval(async () => {
 		.catch(() => {});
 }, FIVE_MINUTES);
 
-/* Automatic QOTD */
-cron.schedule('0 13 * * *', async () => {
-	const counter = await questionNumber.findOne({ id: 1 });
-	const qotdChannel = bot.channels.cache.find((channel: any) => (channel as TextChannel).name === '❔question-of-the-day');
-
-	if (!counter) {
-		questionNumber.create({
-			id: 1,
-			count: 0,
-		});
-
-		(qotdChannel as TextChannel).send({ content: '<@&692394198451748874>\n**Question of the day: What is one app that you hate but still use anyways?**\nSubmit your answer in <#398237638492160000> and keep up to date with our next question tomorrow!' });
-	} else {
-		counter.count += 1;
-		counter.save();
-
-		const currentQOTD = await qotdQuestion.find({});
-
-		(qotdChannel as TextChannel).send({ content: `<@&692394198451748874>\n${currentQOTD[counter.count].question}\nSubmit your answer in <#398237638492160000> and keep up to date with our next question tomorrow!'` });
-	}
-});
-
-/* Automatic Would You Rather */
+/* Birthday Messages */
 cron.schedule('0 0 * * *', async () => {
-	const counter = await questionNumber.findOne({ id: 2 });
-	const wyrChannel = bot.channels.cache.find((channel: any) => (channel as TextChannel).name === '🤔would-you-rather');
+	const today = new Date();
+	const staffMembersWithBirthdayToday = birthdays.filter((staffMember) => {
+		const [day, month, year] = staffMember.birthdate.split('/');
+		const staffMemberBirthday = new Date(+year, Number(month) - 1, +day);
+		return staffMemberBirthday.getDate() === today.getDate() && staffMemberBirthday.getMonth() === today.getMonth();
+	});
 
-	if (!counter) {
-		questionNumber.create({
-			id: 2,
-			count: 0,
-		});
-
-		(wyrChannel as TextChannel).send({ content: '<@&692394198451748874>\n**Would You Rather**\nA: Eat a sandwich made with moldy bread\nB: Eat a sandwich made with stale bread' }).then(async (msg) => {
-			await msg.react('🅰️');
-			await msg.react('🅱️');
-		});
-	} else {
-		counter.count += 1;
-		counter.save();
-
-		const currentQuestion = await wyrQuestion.find({});
-
-		(wyrChannel as TextChannel).send({ content: `<@&692394198451748874>\n**Would You Rather**\n${currentQuestion[counter.count].optionA}\n${currentQuestion[counter.count].optionB}` }).then(async (msg) => {
-			await msg.react('🅰️');
-			await msg.react('🅱️');
+	if (staffMembersWithBirthdayToday.length > 0) {
+		const staffChannel = bot.channels.cache.find((channel: any) => channel.name === '💬General-staff') as TextChannel;
+		staffMembersWithBirthdayToday.forEach(async (staffMember) => {
+			await staffChannel.send(`<@${staffMember.id}>, ${choose(BIRTHDAY_MESSAGES)}`);
+			await staffChannel.send(`${choose(BIRTHDAY_GIFS)}`);
 		});
 	}
 });
@@ -214,42 +179,19 @@ cron.schedule('0 0 * * *', async () => {
 	});
 });
 
+/* Automatic QOTD */
+cron.schedule('0 13 * * *', async () => {
+	await sendQuestion(bot);
+});
+
+/* Automatic Would You Rather */
 cron.schedule('0 0 * * *', async () => {
-	removeFiles('../dataBackups', {
-		age: { seconds: 604800 },
-		extensions: '.json',
-	});
-
-	bot.guilds.fetch(process.env.SERVER_ID).then((guild) => {
-		const roles: any = [];
-		guild.roles.cache
-			.filter((role) => !role.managed)
-			.sort((a, b) => b.position - a.position)
-			.forEach((role) => {
-				const roleData = {
-					name: role.name,
-					color: role.hexColor,
-					hoist: role.hoist,
-					permissions: role.permissions.bitfield.toString(),
-					mentionable: role.mentionable,
-					position: role.position,
-					isEveryone: guild.id === role.id,
-				};
-				roles.push(roleData);
-			});
-
-		const finalJson = {
-			roles,
-			guildData: guild,
-		};
-
-		writeFileSync(`${join(__dirname, '../dataBackups/')}${moment(new Date()).format('DD-MM-YYYY[@]h-mma')}.json`, JSON.stringify(finalJson, null, 2));
-	});
+	await sendQuestion(bot, true);
 });
 
 /* Weekly trivia deletion */
 cron.schedule('0 0 * * MON', async () => {
-	await weeklyTrivia.deleteMany({});
+	await WeeklyTrivia.deleteMany({});
 });
 
 bot.login(process.env.TEST === 'true' ? process.env.DISCORD_TESTTOKEN : process.env.DISCORD_TOKEN);

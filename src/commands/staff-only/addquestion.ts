@@ -82,7 +82,6 @@ const command: Command = {
 								new TextInputBuilder() // prettier-ignore
 									.setCustomId('option-a')
 									.setMinLength(5)
-									.setMaxLength(30)
 									.setPlaceholder('Option A')
 									.setLabel('What is the first WYR option to choose from?')
 									.setStyle(TextInputStyle.Short)]), // prettier-ignore
@@ -91,7 +90,6 @@ const command: Command = {
 								new TextInputBuilder() // prettier-ignore
 									.setCustomId('option-b')
 									.setMinLength(5)
-									.setMaxLength(30)
 									.setPlaceholder('Option B')
 									.setLabel('What is the second WYR option to choose from?')
 									.setStyle(TextInputStyle.Short)]), // prettier-ignore
@@ -170,7 +168,6 @@ const command: Command = {
                             new TextInputBuilder() // prettier-ignore
                                 .setCustomId('question')
                                 .setMinLength(5)
-                                .setMaxLength(100)
                                 .setPlaceholder('Input Question')
                                 .setLabel('What is the question you would like to add?')
                                 .setStyle(TextInputStyle.Short)]), // prettier-ignore

@@ -27,7 +27,7 @@ const command: Command = {
 		const member = interaction.options.getMember('user');
 		if (!member) return noUser(interaction, false);
 
-		if (member.isCommunicationDisabled() === false) {
+		if (!member.communicationDisabledUntilTimestamp) {
 			const noDataEmbed = new EmbedBuilder() // prettier-ignore
 				.setTitle('🔍 Unable to find data!')
 				.setDescription(`This user has no mute to remove.`)
@@ -38,7 +38,7 @@ const command: Command = {
 			return interaction.editReply({ embeds: [noDataEmbed] });
 		}
 
-		await member.timeout(0, `Removed by ${interaction.user.username}`);
+		await member.timeout(null, `Removed by ${interaction.user.username}`);
 
 		return interaction.editReply({
 			embeds: [

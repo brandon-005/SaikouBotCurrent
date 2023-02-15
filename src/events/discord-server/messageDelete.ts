@@ -34,11 +34,11 @@ export = async (bot: any, message: Message) => {
 			messageDeletedEmbed.setImage(message.attachments.first().proxyURL);
 
 			if (message.content) {
-				messageDeletedEmbed.addFields([{ name: 'Message Content', value: `> ${message.content}`, inline: true }]);
+				messageDeletedEmbed.addFields([{ name: 'Message Content', value: `> ${message.content.length > 1020 ? `${message.content.substring(0, 1019)}...` : message.content}`, inline: true }]);
 			}
 		} else {
 			messageDeletedEmbed.setDescription(`**<@!${message.author.id}> deleted a message posted <t:${parseInt(String(message.createdTimestamp / 1000))}:R> in <#${message.channel.id}>**`);
-			messageDeletedEmbed.addFields([{ name: 'Message Content', value: `> ${message.content}`, inline: true }]);
+			messageDeletedEmbed.addFields([{ name: 'Message Content', value: `> ${message.content.length > 1020 ? `${message.content.substring(0, 1019)}...` : message.content}`, inline: true }]);
 		}
 
 		return bot.channels.cache.get(process.env.ADMIN_LOG).send({ embeds: [messageDeletedEmbed] });

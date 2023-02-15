@@ -8,7 +8,7 @@ const command: Command = {
 		commandName: 'ban',
 		commandAliases: ['permremove'],
 		commandDescription: 'Removes a user from the Discord server.',
-		userPermissions: 'BanMembers',
+		userPermissions: 'ManageEvents',
 		commandUsage: '<user> <reason>',
 		limitedChannel: 'None',
 		COOLDOWN_TIME: 30,
@@ -35,7 +35,7 @@ const command: Command = {
 		const reason = args[1];
 
 		if (!member) return noUser(interaction, false);
-		if (member.permissions && member.permissions.has(PermissionFlagsBits.BanMembers)) return equalPerms(interaction, 'Ban Members');
+		if (member.permissions && member.permissions.has(PermissionFlagsBits.ManageEvents)) return equalPerms(interaction, 'Manage Events');
 
 		/* DELETE MESSAGE HISTORY PROMPT */
 		const buttonMsg = await interaction.followUp({

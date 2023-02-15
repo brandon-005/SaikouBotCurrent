@@ -111,7 +111,7 @@ export async function swearCheck(bot: any, message: Message) {
 	const data: any = {};
 	const requestedAttributes: any = {};
 	const attributeThresholds: any = {
-		PROFANITY: 0.9,
+		PROFANITY: 0.65,
 		SEXUALLY_EXPLICIT: 0.95,
 		TOXICITY: 0.8,
 		INSULT: 0.8,
@@ -167,11 +167,11 @@ export async function swearCheck(bot: any, message: Message) {
 export async function inviteLinkCheck(bot: any, message: Message) {
 	if (message.author.bot || message.system === true || message.channel.type === ChannelType.DM || message.content === '') return;
 
-	const inviteLinkRegex = /(https?:\/\/)?(www\.)?(discord\.(gg|com|io|me|net)|discordapp\.com\/invite)\/.+[a-z]/i;
+	for (const invite of ['discord.gg/', 'discord.com/invite', 'discordapp.com/invite']) {
+		if (message.content.toLowerCase().includes(`${invite}/saikou`)) return;
 
-	if (message.content.includes('discord.gg/saikou' || 'discord.com/saikou' || 'discordapp.com/invite/saikou')) return;
-
-	autoPunish(inviteLinkRegex.test(message.content), message, 'INVITE_LINK', `\`1.8\` - All forms of **advertising**, selling, scamming are forbidden.`, bot);
+		autoPunish(message.content.includes(invite), message, 'INVITE_LINK', `\`1.8\` - All forms of **advertising**, selling, scamming are forbidden.`, bot);
+	}
 }
 
 /* Banning users who post malicious links */
@@ -343,8 +343,7 @@ export async function devMention(bot: any, message: Message) {
 export async function personalInfoCheck(bot: any, message: Message) {
 	if (message.author.bot) return;
 
-	const phoneNumberRegex = /\b[+]?[(]?[0-9]{2,6}[)]?[-\s.]?[-\s/.0-9]{3,15}\b/m;
 	const emailRegex = /[\w.]+@[\w.]+\.[\w.]+/;
 
-	await autoPunish(phoneNumberRegex.test(message.content) || emailRegex.test(message.content), message, 'PERSONAL_INFORMATION', `\`1.15\` - Leaking any personal information about other members or staff is forbidden.`, bot);
+	await autoPunish(emailRegex.test(message.content), message, 'PERSONAL_INFORMATION', `\`1.15\` - Leaking any personal information about other members or staff is forbidden.`, bot);
 }
