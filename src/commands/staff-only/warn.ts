@@ -131,7 +131,7 @@ const command: Command = {
 					switch (clickedButton.first()!.customId) {
 						case 'Yes':
 							try {
-								member.ban({ deleteMessageDays: 7, reason });
+								member.ban({ deleteMessageSeconds: 604800, reason });
 							} catch (err) {
 								if (!message) {
 									interaction.guild?.members.ban(member);

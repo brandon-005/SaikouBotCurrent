@@ -79,7 +79,7 @@ const command: Command = {
 					await moderationDmEmbed(member, 'Ban', `Hello **${member.user.username}**,\n\nWe noticed your account has recently broke Saikou's Community Rules for the final time. Because of this, your account has been permanently banned from the Saikou Discord.\n\nIf you believe this is a mistake, submit an appeal by visiting:\nhttps://forms.gle/L98zfzbC8fuAz5We6\n\nWe build our games and community for players to have fun. Creating a safe environment and enjoyable experience for everyone is a crucial part of what we're about, and our community rules in place is what we ask and expect players to abide by to achieve this.\n\nPlease check the attached moderator note below for more details.`, reason);
 
 					try {
-						member.ban({ deleteMessageDays: 7, reason });
+						member.ban({ deleteMessageSeconds: 604800, reason });
 					} catch (err) {
 						interaction.guild?.members.ban(member);
 					}

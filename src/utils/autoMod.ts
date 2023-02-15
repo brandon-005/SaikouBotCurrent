@@ -92,7 +92,7 @@ export async function autoPunish(ifStatement: any, message: Message, autoModEmbe
 				bot.channels.cache.find((channel: TextChannel) => channel.name === '📂moderation').send({ content: `**<t:${Math.floor(Date.now() / 1000)}:F> | ${message.author.username}**\nContent: ${message.cleanContent}` });
 
 				message.channel.send({ content: `<@${message.author.id}>, You have been automatically banned for breaking Saikou's rules (Reached 6 warnings).\n\n**Infraction:** ${reason}` });
-				message.member!.ban({ deleteMessageDays: 7, reason: 'Reached 6 warnings.' });
+				message.member!.ban({ deleteMessageSeconds: 604800, reason: 'Reached 6 warnings.' });
 				break;
 			default:
 				await moderationDmEmbed(message.author, 'Warning', `Hello **${message.author.username}**,\n\nYour account has recently been flagged by a staff member for breaching Saikou's Community Rules.\n\nTo learn more about our server rules, visit <#397797150840324115>\n\nWe take these actions seriously. If you continue to break the rules, we may need to take additional action against your account, which could result in a permanent ban from the Saikou Discord.\n\nPlease check the attached moderator note below for more details.`, `${reason} [AUTOMATIC]`);
@@ -221,7 +221,7 @@ export async function maliciousLinkCheck(bot: any, message: Message) {
 			.catch(() => {});
 
 		const bannedUserID = message.member!.id;
-		message.member?.ban({ deleteMessageDays: 7, reason: 'Softban - User triggered auto moderation for posting scam links.' }).then(() => message.guild!.members.unban(bannedUserID));
+		message.member?.ban({ deleteMessageSeconds: 604800, reason: 'Softban - User triggered auto moderation for posting scam links.' }).then(() => message.guild!.members.unban(bannedUserID));
 
 		bot.channels.cache
 			.find((channel: TextChannel) => channel.name === '📂moderation')
