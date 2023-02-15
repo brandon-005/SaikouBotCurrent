@@ -80,7 +80,7 @@ const command: Command = {
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('❌ Incorrect Message ID!')
 						.setDescription("Uh oh! Looks like that ID doesn't exist or an unknown error occurred. To copy the Message ID, follow below...")
-						.setImage('https://i.ibb.co/FVbyLQC/image.png')
+						.setImage('https://saikou.dev/assets/images/discord-bot/suggest-help.png')
 						.setColor(EMBED_COLOURS.red),
 				],
 			});

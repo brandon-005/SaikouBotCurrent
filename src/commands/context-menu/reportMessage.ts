@@ -22,7 +22,7 @@ const menu: ContextMenu = {
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('🐌 Whoah there! Slow down.')
 						.setDescription(`You can only report someone every **5 minutes**, please try again later.`)
-						.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+						.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
 						.setColor(EMBED_COLOURS.red),
 				],
 			});

@@ -152,7 +152,7 @@ export async function swearCheck(bot: any, message: Message) {
 					embeds: [
 						new EmbedBuilder() // prettier-ignore
 							.setDescription("We've detected some behaviour that may be toxic or insulting.\n\n🔎 **Looking on how to quick report? Follow below.**")
-							.setImage('https://i.ibb.co/HFcn5k4/image.png')
+							.setImage('https://saikou.dev/assets/images/discord-bot/report-help.png')
 							.setColor(EMBED_COLOURS.red),
 					],
 				});

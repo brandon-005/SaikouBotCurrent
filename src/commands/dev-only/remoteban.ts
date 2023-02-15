@@ -107,7 +107,7 @@ const command: Command = {
 					.catch((err) => {
 						const embed = new EmbedBuilder() // prettier-ignore
 							.setColor(EMBED_COLOURS.red)
-							.setThumbnail('https://i.ibb.co/C5YvkJg/4-128.png');
+							.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-sad.png');
 
 						switch (err.response.data.errorCode) {
 							case 8:
@@ -149,7 +149,7 @@ const command: Command = {
 				.catch((err) => {
 					const embed = new EmbedBuilder() // prettier-ignore
 						.setColor(EMBED_COLOURS.red)
-						.setThumbnail('https://i.ibb.co/C5YvkJg/4-128.png');
+						.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-sad.png');
 
 					switch (err.response.data.errorCode) {
 						case 8:

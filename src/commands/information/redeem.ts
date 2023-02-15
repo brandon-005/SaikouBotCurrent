@@ -120,7 +120,7 @@ const command: Command = {
 						new EmbedBuilder() // prettier-ignore
 							.setTitle('❌ Unable to DM!')
 							.setDescription("Please ensure your DM's are enabled in order for the bot to message you the prompt.")
-							.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+							.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
 							.setColor(EMBED_COLOURS.red),
 					],
 				})

@@ -72,7 +72,7 @@ const command: Command = {
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('❌ Unable to DM!')
 						.setDescription("Please ensure your DM's are enabled in order for the bot to message you the prompt.")
-						.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+						.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
 						.setColor(EMBED_COLOURS.red),
 				],
 			});
@@ -123,7 +123,7 @@ const command: Command = {
 								new EmbedBuilder() // prettier-ignore
 									.setTitle('✅ Cancelled!')
 									.setDescription('The prompt has been cancelled successfully.')
-									.setThumbnail('https://i.ibb.co/kxJqM6F/mascot-Success.png')
+									.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-success.png')
 									.setColor(EMBED_COLOURS.green),
 							],
 							components: [],
@@ -192,7 +192,7 @@ const command: Command = {
 										new EmbedBuilder() // prettier-ignore
 											.setTitle('✅ Cancelled!')
 											.setDescription('The prompt has been cancelled successfully.')
-											.setThumbnail('https://i.ibb.co/kxJqM6F/mascot-Success.png')
+											.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-success.png')
 											.setColor(EMBED_COLOURS.green),
 									],
 								});
@@ -210,7 +210,7 @@ const command: Command = {
 											.setTitle('📎 Provide Attachment!')
 											.setDescription('You must provide at least **one** attachment or link before submitting this report.')
 											.setColor(EMBED_COLOURS.red)
-											.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png'),
+											.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png'),
 									],
 								});
 							}
@@ -222,7 +222,7 @@ const command: Command = {
 											.setTitle('🗃️ Maximum Uploads!')
 											.setDescription("You have reached the maximum upload limit for this report (5 attachments).\n\n**🔎 Looking where to go next?**\nYou'll need to either `cancel` this report to upload different attachments, or say `done` to submit.")
 											.setColor(EMBED_COLOURS.red)
-											.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png'),
+											.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png'),
 									],
 								});
 							}
@@ -321,7 +321,7 @@ const command: Command = {
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('❌ Cancelled!')
 						.setDescription("You didn't input in time, please try again.")
-						.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+						.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
 						.setColor(EMBED_COLOURS.red),
 				],
 				components: [],

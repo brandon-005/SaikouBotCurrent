@@ -57,7 +57,7 @@ export = async (bot: Client, interaction: Interaction) => {
 										.map((channel: any) => channel.toString())
 										.join(' or ')}** channel. Try relocating to that channel and trying again!`
 								)
-								.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+								.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
 								.setColor(EMBED_COLOURS.red),
 						],
 					})
@@ -75,7 +75,7 @@ export = async (bot: Client, interaction: Interaction) => {
 							new EmbedBuilder() // prettier-ignore
 								.setTitle("📌 Can't use this channel!")
 								.setDescription(`The **${commandName}** command is limited to the **${interaction.guild!.channels.cache.filter((channel: any) => channel.name.match('🤖bot-commands')).map((channel: any) => channel.toString())}** channel. Try relocating to that channel and trying again!`)
-								.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+								.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
 								.setColor(EMBED_COLOURS.red),
 						],
 					})
@@ -100,7 +100,7 @@ export = async (bot: Client, interaction: Interaction) => {
 						new EmbedBuilder()
 							.setTitle('🚫 Blacklisted!') // prettier-ignore
 							.setDescription(`Uh oh! Looks like you are blacklisted from using SaikouBot. This can be a result of... \n\n• Inappropriate content through commands.\n• Abusing glitches for personal gain.`)
-							.setThumbnail('https://i.ibb.co/C5YvkJg/4-128.png')
+							.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-sad.png')
 							.setColor(EMBED_COLOURS.red),
 					],
 				})
@@ -119,7 +119,7 @@ export = async (bot: Client, interaction: Interaction) => {
 						new EmbedBuilder() // prettier-ignore
 							.setTitle(String(choose(titleOptions)))
 							.setDescription(`You must wait **${ms(bot.cooldowns.get(`${interaction.user.id}-${commandName}`)! - Date.now(), { long: true })}** before re-using the **${commandName}** command.\nThe default cooldown is \`${COOLDOWN_TIME || 5}s\`. `)
-							.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+							.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
 							.setColor(EMBED_COLOURS.red),
 					],
 				})

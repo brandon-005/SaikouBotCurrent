@@ -41,7 +41,7 @@ const command: Command = {
 						.setTitle('Prompt Open! 📂')
 						.setDescription('You already have an active prompt, please exit to gain options.')
 						.setColor(EMBED_COLOURS.red)
-						.setThumbnail('https://i.ibb.co/C5YvkJg/4-128.png'),
+						.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-sad.png'),
 				],
 			});
 		}

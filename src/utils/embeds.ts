@@ -6,7 +6,7 @@ export function cancel(interaction: CommandInteraction, dm: Boolean) {
 	const embed = new EmbedBuilder() // prettier-ignore
 		.setTitle('✅ Cancelled!')
 		.setDescription('The prompt has been cancelled successfully.')
-		.setThumbnail('https://i.ibb.co/kxJqM6F/mascot-Success.png')
+		.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-success.png')
 		.setColor(EMBED_COLOURS.green);
 
 	if (dm === true) return interaction.user.send({ embeds: [embed] });
@@ -17,7 +17,7 @@ export function noContent(interaction: CommandInteraction) {
 	const embed = new EmbedBuilder() // prettier-ignore
 		.setTitle('❌ No Content!')
 		.setDescription("You didn't input any message content for this prompt. Please ensure you're not submitting videos or images and re-run the prompt again.")
-		.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+		.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
 		.setColor(EMBED_COLOURS.red);
 
 	return interaction.user.send({ embeds: [embed] });
@@ -27,7 +27,7 @@ export function timeout(interaction: CommandInteraction, dm: Boolean) {
 	const embed = new EmbedBuilder() // prettier-ignore
 		.setTitle('❌ Cancelled!')
 		.setDescription("You didn't input in time, please try again.")
-		.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+		.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
 		.setColor(EMBED_COLOURS.red);
 
 	if (dm === true) return interaction.user.send({ embeds: [embed] });
@@ -119,7 +119,7 @@ export function errorEmbed(interaction?: CommandInteraction) {
 	const embed = new EmbedBuilder() // prettier-ignore
 		.setTitle('❌ Something went wrong!') // prettier-ignore
 		.setDescription(`Uh oh! Looks like Kaiou has hit some of the wrong buttons, causing an error. You can try... \n\n• Coming back later and trying again\n• Checking out Saikou's social medias whilst you wait 😏`)
-		.setThumbnail('https://i.ibb.co/C5YvkJg/4-128.png')
+		.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-sad.png')
 		.setColor(EMBED_COLOURS.red);
 
 	return interaction?.editReply({ embeds: [embed] });

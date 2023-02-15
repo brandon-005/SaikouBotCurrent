@@ -20,7 +20,7 @@ const command: Command = {
 	run: async ({ interaction, args }) => {
 		let weaponList: any = '';
 
-		const weaponEmbed = new EmbedBuilder().setTitle('Your New Arsenal').setColor(EMBED_COLOURS.blurple).setThumbnail('https://i.ibb.co/FqgT3fp/Group-1.png');
+		const weaponEmbed = new EmbedBuilder().setTitle('Your New Arsenal').setColor(EMBED_COLOURS.blurple).setThumbnail('https://saikou.dev/assets/images/discord-bot/saikou-games.png');
 
 		if (args[0] && !isNaN(Number(args[0])) && Number(args[0]) >= 1 && !(Number(args[0]) > 20)) {
 			for (let currentCount = 0; currentCount < Number(args[0]); currentCount++) {

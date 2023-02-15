@@ -65,7 +65,7 @@ const command: Command = {
 								new EmbedBuilder() // prettier-ignore
 									.setTitle('✅ Cancelled!')
 									.setDescription('The prompt has been cancelled successfully.')
-									.setThumbnail('https://i.ibb.co/kxJqM6F/mascot-Success.png')
+									.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-success.png')
 									.setColor(EMBED_COLOURS.green),
 							],
 							components: [],
@@ -151,7 +151,7 @@ const command: Command = {
 								new EmbedBuilder() // prettier-ignore
 									.setTitle('✅ Cancelled!')
 									.setDescription('The prompt has been cancelled successfully.')
-									.setThumbnail('https://i.ibb.co/kxJqM6F/mascot-Success.png')
+									.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-success.png')
 									.setColor(EMBED_COLOURS.green),
 							],
 							components: [],

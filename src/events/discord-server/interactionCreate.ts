@@ -108,7 +108,7 @@ export = async (bot: Client, interaction: Interaction) => {
 						.setTitle('✅ Introduction Posted!')
 						.setDescription('Your introduction has been posted in <#984067335038054451>.')
 						.setColor(EMBED_COLOURS.green)
-						.setThumbnail('https://i.ibb.co/kxJqM6F/mascot-Success.png'),
+						.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-success.png'),
 				],
 			});
 		}
