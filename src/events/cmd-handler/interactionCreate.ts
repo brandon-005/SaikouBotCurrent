@@ -1,4 +1,4 @@
-import { Client, CommandInteraction, Interaction, EmbedBuilder, ChannelType, WebhookClient, PermissionFlagsBits } from 'discord.js';
+import { Client, CommandInteraction, Interaction, EmbedBuilder, ChannelType, WebhookClient, PermissionFlagsBits, Role, GuildMember } from 'discord.js';
 import { readdirSync } from 'fs';
 import { redBright, bold } from 'chalk';
 import ms from 'ms';
@@ -6,7 +6,7 @@ import blacklisted from '../../models/blacklistedUsers';
 
 import { errorEmbed } from '../../utils/embeds';
 import { choose } from '../../utils/functions';
-import { EMBED_COLOURS, MESSAGE_TIMEOUT } from '../../utils/constants';
+import { EMBED_COLOURS, MESSAGE_TIMEOUT, LOWER_COOLDOWN_COMMANDS } from '../../utils/constants';
 
 const webhookClient: WebhookClient = new WebhookClient({ id: `${BigInt(String(process.env.WEBHOOK_ID))}`, token: String(process.env.WEBHOOK_TOKEN) });
 
@@ -112,26 +112,40 @@ export = async (bot: Client, interaction: Interaction) => {
 
 		if (bot.cooldowns.has(`${interaction.user.id}-${commandName}`)) {
 			const titleOptions = ['🐌 Woah there, slow down!', '🦥 Way too fast there!'];
+			const cooldownEmbed = new EmbedBuilder() // prettier-ignore
+				.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
+				.setColor(EMBED_COLOURS.red)
+				.setTitle(String(choose(titleOptions)));
+
+			if (LOWER_COOLDOWN_COMMANDS.indexOf(commandName) > -1 === true) {
+				if ((interaction.member as GuildMember).roles.cache.find((role: Role) => role.name === 'Omega Follower')) {
+					cooldownEmbed.setDescription(`You must wait **${ms(bot.cooldowns.get(`${interaction.user.id}-${commandName}`)! - Date.now(), { long: true })}** before re-using the **${commandName}** command.\n\nThe default cooldown is \`${COOLDOWN_TIME || 5}s\`, but since you're an **Omega Follower** you only have to wait \`${Math.round(COOLDOWN_TIME - COOLDOWN_TIME / 4) || 5}s\`! `);
+				} else {
+					cooldownEmbed.setDescription(`You must wait **${ms(bot.cooldowns.get(`${interaction.user.id}-${commandName}`)! - Date.now(), { long: true })}** before re-using the **${commandName}** command.\nThe default cooldown is \`${COOLDOWN_TIME || 5}s\`.\n\nLooking to run commands faster? Become an **Omega Follower** and only have to wait \`${Math.round(COOLDOWN_TIME - COOLDOWN_TIME / 4) || 5}s\`! `);
+				}
+			} else {
+				cooldownEmbed.setDescription(`You must wait **${ms(bot.cooldowns.get(`${interaction.user.id}-${commandName}`)! - Date.now(), { long: true })}** before re-using the **${commandName}** command.\nThe default cooldown is \`${COOLDOWN_TIME || 5}s\`.`);
+			}
 
 			return interaction
 				.followUp({
-					embeds: [
-						new EmbedBuilder() // prettier-ignore
-							.setTitle(String(choose(titleOptions)))
-							.setDescription(`You must wait **${ms(bot.cooldowns.get(`${interaction.user.id}-${commandName}`)! - Date.now(), { long: true })}** before re-using the **${commandName}** command.\nThe default cooldown is \`${COOLDOWN_TIME || 5}s\`. `)
-							.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
-							.setColor(EMBED_COLOURS.red),
-					],
+					embeds: [cooldownEmbed],
 				})
 				.then(() => setTimeout(() => interaction.deleteReply(), MESSAGE_TIMEOUT));
 		}
 
 		if (!COOLDOWN_TIME) COOLDOWN_TIME = 5;
 
+		if (LOWER_COOLDOWN_COMMANDS.indexOf(commandName) > -1 === true) {
+			if ((interaction.member as GuildMember).roles.cache.find((role: Role) => role.name === 'Omega Follower')) {
+				COOLDOWN_TIME -= COOLDOWN_TIME / 4;
+			}
+		}
+
 		bot.cooldowns.set(`${interaction.user.id}-${commandName}`, Date.now() + COOLDOWN_TIME * 1000);
 		setTimeout((): void => {
 			bot.cooldowns.delete(`${interaction.user.id}-${commandName}`);
-		}, COOLDOWN_TIME * 1000);
+		}, Math.round(COOLDOWN_TIME) * 1000);
 
 		commandFile.run({ bot, args, interaction }).catch((errorMessage: Error) => {
 			console.error(errorMessage);

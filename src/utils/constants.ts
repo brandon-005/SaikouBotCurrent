@@ -379,3 +379,8 @@ export const QUESTION_ANSWERS = [
 		answer: 'To report an individual to the staff team, please use our <#675459553122451456> channel. From there a member of staff will review the report and take any necessary actions against the player.',
 	},
 ];
+
+export const LOWER_COOLDOWN_COMMANDS = [
+	// prettier-ignore
+	"trivia",
+];
