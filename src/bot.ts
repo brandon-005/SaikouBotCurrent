@@ -1,11 +1,7 @@
-import { Client, GatewayIntentBits, Partials, Collection, ActivityType, EmbedBuilder, TextChannel, VoiceChannel, RoleData } from 'discord.js';
+import { Client, GatewayIntentBits, Partials, Collection, ActivityType, EmbedBuilder, TextChannel, VoiceChannel } from 'discord.js';
 import { config } from 'dotenv';
 import axios from 'axios';
 import cron from 'node-cron';
-import { writeFileSync } from 'fs';
-import moment from 'moment';
-import removeFiles from 'find-remove';
-import { join } from 'path';
 
 import { StatusTimerTypes } from './TS/interfaces';
 import { BIRTHDAY_GIFS, BIRTHDAY_MESSAGES, EMBED_COLOURS } from './utils/constants';
@@ -145,24 +141,6 @@ setInterval(async () => {
 		})
 		.catch(() => {});
 }, FIVE_MINUTES);
-
-/* Birthday Messages */
-cron.schedule('0 0 * * *', async () => {
-	const today = new Date();
-	const staffMembersWithBirthdayToday = birthdays.filter((staffMember) => {
-		const [day, month, year] = staffMember.birthdate.split('/');
-		const staffMemberBirthday = new Date(+year, Number(month) - 1, +day);
-		return staffMemberBirthday.getDate() === today.getDate() && staffMemberBirthday.getMonth() === today.getMonth();
-	});
-
-	if (staffMembersWithBirthdayToday.length > 0) {
-		const staffChannel = bot.channels.cache.find((channel: any) => channel.name === '💬General-staff') as TextChannel;
-		staffMembersWithBirthdayToday.forEach(async (staffMember) => {
-			await staffChannel.send(`<@${staffMember.id}>, ${choose(BIRTHDAY_MESSAGES)}`);
-			await staffChannel.send(`${choose(BIRTHDAY_GIFS)}`);
-		});
-	}
-});
 
 /* Birthday Messages */
 cron.schedule('0 0 * * *', async () => {
