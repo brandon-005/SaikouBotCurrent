@@ -181,13 +181,19 @@ const command: Command = {
 					.setFooter({ text: `${args[0]} • Permanent ban` })
 					.setTimestamp();
 
-				await axios.get(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${robloxID}&size=720x720&format=png`).then((image: any) => {
-					modLog.setThumbnail(String(image.data.data.map((value: any) => value.imageUrl)));
-				});
+				await axios
+					.get(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${robloxID}&size=720x720&format=png`)
+					.then((image: any) => {
+						modLog.setThumbnail(String(image.data.data.map((value: any) => value.imageUrl)));
+					})
+					.catch(() => modLog.setThumbnail('https://saikou.dev/assets/images/discord-bot/broken-avatar.png'));
 
-				await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${robloxID}&size=720x720&format=png`).then((image: any) => {
-					modLog.setAuthor({ name: `${args[0]} | Permanent ban`, iconURL: String(image.data.data.map((value: any) => value.imageUrl)) });
-				});
+				await axios
+					.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${robloxID}&size=720x720&format=png`)
+					.then((image: any) => {
+						modLog.setAuthor({ name: `${args[0]} | Permanent ban`, iconURL: String(image.data.data.map((value: any) => value.imageUrl)) });
+					})
+					.catch(() => modLog.setAuthor({ name: `${args[0]} | Permanent ban`, iconURL: 'https://saikou.dev/assets/images/discord-bot/broken-avatar.png' }));
 
 				await (bot.channels.cache.get(String(process.env.MODERATION_CHANNEL)) as TextChannel)!.send({
 					embeds: [modLog],
@@ -205,6 +211,12 @@ const command: Command = {
 				const embed = new EmbedBuilder() // prettier-ignore
 					.setColor(EMBED_COLOURS.red)
 					.setThumbnail('https://i.ibb.co/C5YvkJg/4-128.png');
+
+				if (!err.response) {
+					embed.setTitle('❌ Unknown Error!');
+					embed.setDescription("Uh oh! Looks like something's not working quite right. Please try re-running the command.");
+					return interaction.editReply({ embeds: [embed] });
+				}
 
 				switch (err.response.data.errorCode) {
 					case 8:
