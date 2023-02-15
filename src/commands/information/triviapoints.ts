@@ -3,6 +3,7 @@ import { Command, ApplicationCommandOptionType, EmbedBuilder } from 'discord.js'
 import { EMBED_COLOURS } from '../../utils/constants';
 import { noUser } from '../../utils/embeds';
 import triviaUserData from '../../models/correctTrivia';
+import weeklyTrivia from '../../models/weeklyTrivia';
 
 const command: Command = {
 	config: {
@@ -25,17 +26,23 @@ const command: Command = {
 
 		const member = interaction.options.getMember('user') || interaction.member;
 
-		const triviaUser = await triviaUserData.findOne({ userID: member.id });
-		let rank = 0;
+		const overallUserStats = await triviaUserData.findOne({ userID: member.id });
+		const weeklyUserStats = await weeklyTrivia.findOne({ userID: member.id });
+		const alltimeTriviaUsers = await triviaUserData.find({}).sort({ answersCorrect: -1 });
+		const weeklyTriviaUsers = await weeklyTrivia.find({}).sort({ answersCorrect: -1 });
+		let alltimeRank = 0;
+		let weeklyRank = 0;
 
-		const allTriviaUsers = await triviaUserData.find({}).sort({ answersCorrect: -1 });
+		alltimeTriviaUsers.forEach((position, count) => {
+			if (position.userID === member.id) alltimeRank = count + 1;
+		});
 
-		allTriviaUsers.forEach((position, count) => {
-			if (position.userID === member.id) rank = count + 1;
+		weeklyTriviaUsers.forEach((position, count) => {
+			if (position.userID === member.id) weeklyRank = count + 1;
 		});
 
 		/* If no user */
-		if (!triviaUser)
+		if (!overallUserStats)
 			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
@@ -45,19 +52,29 @@ const command: Command = {
 				],
 			});
 
+		const statsEmbed = new EmbedBuilder() // prettier-ignore
+			.setTitle('🎖️ Trivia Statistics')
+			.setDescription(`Down below you can find **${member.displayName ? member.displayName : member.user.username}'s** trivia statistics.`)
+			.addFields([
+				// prettier-ignore
+				{ name: '🥇 Overall Points', value: `**${overallUserStats.answersCorrect}**`, inline: true },
+				{ name: '🌍 Overall Position', value: `**#${alltimeRank}**`, inline: true },
+			])
+			.setColor(EMBED_COLOURS.blurple);
+
+		if (weeklyUserStats) {
+			statsEmbed.addFields([
+				//prettier-ignore
+				{ name: '\u200b', value: '\u200b', inline: true },
+				{ name: '🥈 Weekly Points', value: `**${weeklyUserStats.answersCorrect}**`, inline: true },
+				{ name: '🌅 Weekly Position', value: `**#${weeklyRank}**`, inline: true },
+				{ name: '\u200b', value: '\u200b', inline: true },
+			]);
+		}
+
 		/* If found user */
 		return interaction.editReply({
-			embeds: [
-				new EmbedBuilder() // prettier-ignore
-					.setTitle('🎖️ Trivia Statistics')
-					.setDescription(`Down below you can find **${member.displayName ? member.displayName : member.user.username}'s** trivia statistics.`)
-					.addFields([
-						// prettier-ignore
-						{ name: 'Trivia Points', value: `${triviaUser.answersCorrect}`, inline: true },
-						{ name: 'Leaderboard Position', value: `#${rank}`, inline: true },
-					])
-					.setColor(EMBED_COLOURS.blurple),
-			],
+			embeds: [statsEmbed],
 		});
 	},
 };
