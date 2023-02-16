@@ -178,7 +178,7 @@ const command: Command = {
 							embeds: [
 								new EmbedBuilder() // prettier-ignore
 									.setTitle('[3/3] Evidence 🧾')
-									.setDescription('Please input a video/photo of the bug in action.\n\nSay **done** once complete to submit your report.')
+									.setDescription('Please input a video/photo of the bug in action.\n\nSay **done** once complete to submit your report.\nYou can also say **done** if you have no evidence to bypass the prompt.')
 									.setColor(EMBED_COLOURS.blurple)
 									.setFooter({ text: 'Input cancel to exit the prompt.' }),
 							],
@@ -206,18 +206,6 @@ const command: Command = {
 								menuCollector.stop();
 								detailsCollector.stop();
 								return attachmentCollector.stop('Prompt Cancelled');
-							}
-
-							if (collectedMsg.content.toLowerCase() === 'done' && !fetchedAttachments.length) {
-								return interaction.user.send({
-									embeds: [
-										new EmbedBuilder() // prettier-ignore
-											.setTitle('📎 Provide Attachment!')
-											.setDescription('You must provide at least **one** attachment or link before submitting this report.')
-											.setColor(EMBED_COLOURS.red)
-											.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png'),
-									],
-								});
 							}
 
 							if (collectedMsg.attachments.size > 5 || fetchedAttachments.length === 5) {
