@@ -36,7 +36,7 @@ const command: Command = {
 			},
 		],
 	},
-	run: async ({ bot, interaction, args }) => {
+	run: async ({ interaction, args }) => {
 		const numbers = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'keycap_ten'];
 		let number = '';
 		let tenUsers = '';
