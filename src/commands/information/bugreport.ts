@@ -231,7 +231,19 @@ const command: Command = {
 
 							if (collectedMsg.attachments.size > 0) {
 								collectedMsg.attachments.forEach((attachment) => {
-									fetchedAttachments.push({ content: collectedMsg.content ? collectedMsg.content : '', url: attachment.url });
+									if (attachment.size >= 100000000) {
+										interaction.user.send({
+											embeds: [
+												new EmbedBuilder() // prettier-ignore
+													.setTitle('🗃️ Maximum File Size!')
+													.setDescription("You are posting files that are too large for SaikouBot to re-upload.\n\n**🔎 Looking where to go next?**\nYou'll need to submit files that are below 100MB in order for them to be posted.")
+													.setColor(EMBED_COLOURS.red)
+													.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png'),
+											],
+										});
+									} else {
+										fetchedAttachments.push({ content: collectedMsg.content ? collectedMsg.content : '', url: attachment.url });
+									}
 								});
 							}
 
