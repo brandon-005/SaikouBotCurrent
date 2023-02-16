@@ -104,17 +104,17 @@ export const WELCOME_MESSAGES: string[] = [
 	'welcome to Saikou! Make sure to check out our <#692066565327421442> channel for some additional information.',
 	'thanks for joining us on our journey! Looking to report an exploiter? You can use our <#675459553122451456> channel.',
 	'welcome to our server! Looking to get started here? Check out <#397797150840324115> and <#692066565327421442>!',
-];
-
-export const WEALTH_STATUS: string[] = [
-	// prettier-ignore
-	'Very Poor',
-	'Broke',
-	'Sustainable',
-	'Wealthy',
-	'Very Wealthy',
-	'Rich',
-	'Filthy Rich',
+	"welcome to the Saikou community! We hope you'll enjoy your stay with us.",
+	"welcome to Saikou! We're thrilled to have you here!",
+	"welcome to Saikou! We're glad to have you here, and can't wait to get to know you!",
+	'thanks for stopping by the Saikou community! We hope you have a great time here, and make some new friends!',
+	"we're delighted to welcome you to Saikou! We hope you feel at home here, and that you make some great connections with our community members!",
+	"welcome to our server! We're glad you're here, and we hope you have an amazing time getting to know our community!",
+	'has just joined the server, we hope you find this server to be a welcoming and fun place to hang out!',
+	'thanks for joining Saikou! We hope you feel the warmth and positivity of our community, and enjoy your time with us!',
+	"we're delighted to welcome you to Saikou! We hope you'll enjoy being a part of our community and making new memories with us.",
+	"welcome to Saikou! We hope you'll find this server to be a safe and welcoming space, and we can't wait to see all the great things you'll do here.",
+	"welcome to the Saikou Discord! We're always on the lookout for fresh perspectives and new ideas and can't wait to see what you bring to our community!",
 ];
 
 export const WHITELISTED_WORDS: string[] = [
@@ -264,20 +264,6 @@ export const MWT_WEAPONS = [
 	'Festive Launcher',
 	'Golden Sniper',
 	'Golden AK-47',
-];
-
-export const BAD_PERMISSIONS = [
-	// prettier-ignore
-	'Administrator',
-	'ManageChannels',
-	'ManageGuild',
-	'ManageMessages',
-	'ManageNicknames',
-	'ManageRoles',
-	'ManageWebhooks',
-	'BanMembers',
-	'KickMembers',
-	'MentionEveryone',
 ];
 
 export const MWT_MISSIONS = [
