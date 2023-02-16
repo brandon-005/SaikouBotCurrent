@@ -1,4 +1,4 @@
-import { Command, ApplicationCommandOptionType, GuildMember, EmbedBuilder, TextChannel } from 'discord.js';
+import { Command, ApplicationCommandOptionType, EmbedBuilder } from 'discord.js';
 
 import triviaUsers from '../../models/correctTrivia';
 import weeklyTrivia from '../../models/weeklyTrivia';
