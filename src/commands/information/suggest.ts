@@ -10,12 +10,12 @@ const command: Command = {
 		commandName: 'suggest',
 		commandAliases: ['suggestion'],
 		commandDescription: 'Pondering on that one idea for Saikou? Why wait!',
-		commandUsage: '<platform> <suggestion> <anonymous>',
+		commandUsage: '<category> <suggestion> <anonymous>',
 		limitedChannel: 'suggestions',
 		slashOptions: [
 			{
-				name: 'platform',
-				description: 'The platform your suggestion is for.',
+				name: 'category',
+				description: 'The category your suggestion is for.',
 				type: ApplicationCommandOptionType.String,
 				required: true,
 				choices: [
@@ -26,6 +26,10 @@ const command: Command = {
 					{
 						name: '💬 Discord Server',
 						value: 'Discord',
+					},
+					{
+						name: '🤖 SaikouBot',
+						value: 'SaikouBot',
 					},
 					{
 						name: '🔎 Other',
@@ -82,7 +86,7 @@ const command: Command = {
 						.setTitle('Just to confirm...')
 						.setDescription("You're about to post a suggestion with the following details:")
 						.addFields(
-							{ name: '🏠 Platform', value: args[0], inline: true }, // prettier-ignore
+							{ name: '🔡 Category', value: args[0], inline: true }, // prettier-ignore
 							{ name: '🥷 Anonymous', value: JSON.parse(args[2]) ? 'Yes' : 'No', inline: true },
 							{ name: '📖 Suggestion', value: args[1], inline: false }
 						)

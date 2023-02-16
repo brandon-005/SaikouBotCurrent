@@ -35,8 +35,8 @@ const command: Command = {
 			sentMenu = await interaction.user.send({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
-						.setTitle('[1/3] Select Platform 🔎')
-						.setDescription('Please select the platform the bug occurred on below.')
+						.setTitle('[1/3] Select Category 🔎')
+						.setDescription('Please select the category the bug occurred on below.')
 						.setColor(EMBED_COLOURS.blurple),
 				],
 				components: [
@@ -44,7 +44,7 @@ const command: Command = {
 						.addComponents([
 							new StringSelectMenuBuilder()
 								.setCustomId('platform-menu')
-								.setPlaceholder('Please select a platform')
+								.setPlaceholder('Please select a category')
 								.addOptions([
 									{
 										label: 'Military Warfare Tycoon',
@@ -55,6 +55,11 @@ const command: Command = {
 										label: 'Discord',
 										value: 'Discord',
 										emoji: '💬',
+									},
+									{
+										label: 'SaikouBot',
+										value: 'SaikouBot',
+										emoji: '🤖',
 									},
 									{
 										label: 'Killstreak',
