@@ -87,7 +87,7 @@ const command: Command = {
 		}
 
 		const reporter = await reportData.findOne({ messageID: args[1] });
-		const suggester = await suggestData.findOne({ messageID: args[1] });
+		const suggester = (await suggestData.findOne({ messageID: args[1] })) ? await suggestData.findOne({ messageID: args[1] }) : await suggestData.findOne({ featuredMessageID: args[1] });
 		const oldEmbed = targetMsg.embeds[0];
 
 		if (!suggester && !reporter)

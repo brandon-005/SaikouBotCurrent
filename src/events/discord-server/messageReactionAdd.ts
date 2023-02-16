@@ -22,7 +22,7 @@ export = async (bot: Client, reaction: any, user: User) => {
 		});
 	}
 
-	if (reaction.message.channel.id === process.env.SUGGEST_CHANNEL) {
+	if (reaction.message.channel.name === '💡suggestions' || message.channel.name === '🔥suggestions-nitro') {
 		/* If not cached by bot (old suggestions) try to fetch */
 		if (reaction.message.partial) {
 			try {
@@ -154,13 +154,15 @@ export = async (bot: Client, reaction: any, user: User) => {
 		if (!suggestion.featured && message.reactions.cache.get('⬆️').count - 1 >= 15) {
 			if (message.embeds[0]?.fields[0]?.value.includes('❌')) return;
 
-			suggestion.featured = true;
-			await suggestion.save();
-
 			message.guild?.channels.cache
 				.get(`${BigInt(String(process.env.FEATURED_CHANNEL))}`)!
 				.send({ embeds: [message.embeds[0]] })
-				.then((embed: Message) => embed.react('⬆️').then(() => embed.react('↔').then(() => embed.react('⬇️'))));
+				.then(async (embed: Message) => {
+					['⬆️', '↔', '⬇️'].forEach((msgReaction) => embed.react(msgReaction));
+					suggestion.featuredMessageID = embed.id;
+					suggestion.featured = true;
+					await suggestion.save();
+				});
 		}
 	}
 };

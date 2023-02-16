@@ -6,6 +6,7 @@ export interface SuggestionTypes extends Document {
 	channelID: string;
 	messageID: string;
 	featured: boolean;
+	featuredMessageID?: string;
 	userID: string;
 }
 

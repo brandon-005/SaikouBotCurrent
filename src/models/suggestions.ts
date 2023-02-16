@@ -7,6 +7,7 @@ const suggestionSchema: Schema = new Schema({
 	channelID: { type: String, required: true },
 	messageID: { type: String, unique: true, required: true },
 	featured: { type: Boolean, required: true, default: false },
+	featuredMessageID: { type: String, unique: true, required: false },
 	userID: { type: String, required: true },
 });
 
