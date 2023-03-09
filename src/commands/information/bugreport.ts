@@ -1,5 +1,5 @@
 import { Command, Message, ActionRowBuilder, StringSelectMenuBuilder, Interaction, ComponentType, StringSelectMenuInteraction, ButtonStyle, ButtonBuilder, EmbedBuilder, ButtonInteraction, ModalBuilder, TextInputBuilder, ModalActionRowComponentBuilder, TextInputStyle, MessageCollector, AttachmentBuilder } from 'discord.js';
-import urlRegex from 'url-regex';
+import urlRegex from 'url-regex-safe';
 
 import { EMBED_COLOURS, PROMPT_TIMEOUT, MESSAGE_TIMEOUT, VIDEO_FILE_TYPES } from '../../utils/constants';
 

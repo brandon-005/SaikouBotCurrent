@@ -350,7 +350,7 @@ export const QUESTION_ANSWERS = [
 	},
 	{
 		question: 'How do I report',
-		answer: 'You can report exploiters or rule breakers in <#675459553122451456>. Make sure to do </pickweapon:983395751029776438> so the bot can DM you further instructions.',
+		answer: 'You can report exploiters or rule breakers in <#675459553122451456>. Make sure to do </report:1016682656198570024> so the bot can DM you further instructions.',
 	},
 	{
 		question: 'How do I get elite soldier',

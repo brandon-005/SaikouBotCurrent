@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Message, EmbedBuilder, ChannelType, ActivityType, TextChannel, MessageMentions } from 'discord.js';
 import { google } from 'googleapis';
 import { Types } from 'mongoose';
-import urlRegex from 'url-regex';
+import urlRegex from 'url-regex-safe';
 import getUrls from 'get-urls';
 
 import { EMBED_COLOURS, WHITELISTED_WORDS } from './constants';

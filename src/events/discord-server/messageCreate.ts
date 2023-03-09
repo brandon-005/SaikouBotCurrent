@@ -1,5 +1,5 @@
 import { Message, EmbedBuilder, ChannelType, PermissionFlagsBits } from 'discord.js';
-import urlRegex from 'url-regex';
+import urlRegex from 'url-regex-safe';
 import stringSimilarity from 'string-similarity';
 
 import { EMBED_COLOURS, MESSAGE_TIMEOUT, QUESTION_ANSWERS } from '../../utils/constants';

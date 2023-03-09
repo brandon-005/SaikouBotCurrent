@@ -48,14 +48,14 @@ const command: Command = {
 			.setFooter({ text: `${interaction.guild!.name}`, iconURL: interaction.guild?.iconURL()! })
 			.setTimestamp();
 
-		if (args[0] && !Number.isNaN(Number(args[0]))) {
-			leaderboard.setDescription(`Displaying the **top ${args[0]}** users with the most trivia points.`);
+		if (args[1] && !Number.isNaN(Number(args[1]))) {
+			leaderboard.setDescription(`Displaying the **top ${args[1]}** users with the most trivia points.`);
 
 			if (args[0] === 'Weekly Champion 🌅') {
 				leaderboard.setTitle('🌅 Weekly Trivia Leaderboard');
-				triviaData = await weeklyTrivia.find({}).sort({ answersCorrect: -1 }).limit(Number(args[0]));
+				triviaData = await weeklyTrivia.find({}).sort({ answersCorrect: -1 }).limit(Number(args[1]));
 			} else {
-				triviaData = await triviaUsers.find({}).sort({ answersCorrect: -1 }).limit(Number(args[0]));
+				triviaData = await triviaUsers.find({}).sort({ answersCorrect: -1 }).limit(Number(args[1]));
 			}
 		} else {
 			leaderboard.setDescription('Displaying the **top 10** users with the most trivia points.');
@@ -88,7 +88,7 @@ const command: Command = {
 					number = numbers[count] ? `:${numbers[count]}:` : `**${count + 1}**`;
 					break;
 			}
-			tenUsers += `${number} <@${user.userID}> | **${user.answersCorrect.toLocaleString()} Points**\n`;
+			tenUsers += `${number} ${interaction.guild?.members.cache.get(user.userID)?.displayName || 'Member Left'} | **${user.answersCorrect.toLocaleString()} Points**\n`;
 		});
 
 		try {

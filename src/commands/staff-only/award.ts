@@ -9,9 +9,9 @@ const command: Command = {
 	config: {
 		commandName: 'award',
 		commandAliases: ['addpoints'],
-		commandDescription: 'DEVELOPER ONLY - Awarding points.',
+		commandDescription: 'Manually add trivia or booster token data through this command.',
 		limitedChannel: 'None',
-		developerOnly: true,
+		userPermissions: 'BanMembers',
 		slashOptions: [
 			{
 				name: 'data',
