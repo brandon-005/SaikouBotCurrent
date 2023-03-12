@@ -370,3 +370,27 @@ export const LOWER_COOLDOWN_COMMANDS = [
 	// prettier-ignore
 	"trivia",
 ];
+
+export const VERIFICATION_PHRASES = [
+	// prettier-ignore
+	"Elephant Giraffe Rhino Lion Zebra",
+	'Pizza Pasta Salad Soup Burger',
+	'Guitar Drums Piano Bass Trumpet',
+	'Sun Moon Stars Sky Clouds',
+	'Happy Sad Angry Excited Tired',
+	'Apple Banana Orange Mango Pineapple',
+	'Beach Ocean Sand Waves Sunscreen',
+	'Love Hate Jealousy Envy Trust',
+	'Chair Table Desk Sofa Bed',
+	'Red Blue Green Yellow Purple',
+	'Summer Fall Winter Spring Season',
+	'Dog Cat Bird Fish Hamster',
+	'Hat Cap Scarf Gloves Socks',
+	'Laugh Cry Smile Frown Wink',
+	'Car Truck Bus Train Bicycle',
+	'Coffee Tea Juice Soda Water',
+	'Movie Music Book Game Show',
+	'Friend Enemy Acquaintance Stranger Family',
+	'School College University Education Learning',
+	'Camera Phone Computer Tablet Television',
+];

@@ -1,7 +1,11 @@
-import { Client, Role, EmbedBuilder, TextChannel, InteractionType, Interaction, GuildMember, Embed, ActionRowBuilder, ModalBuilder, ModalActionRowComponentBuilder, TextInputBuilder, TextInputStyle, ButtonBuilder, ButtonStyle, ComponentType, ButtonInteraction } from 'discord.js';
+import { Client, Role, EmbedBuilder, TextChannel, InteractionType, Interaction, GuildMember, ActionRowBuilder, ModalBuilder, ModalActionRowComponentBuilder, TextInputBuilder, TextInputStyle, ButtonBuilder, ButtonStyle, ComponentType, ButtonInteraction, Message } from 'discord.js';
 
-import { EMBED_COLOURS, PROMPT_TIMEOUT } from '../../utils/constants';
+import { EMBED_COLOURS, MESSAGE_TIMEOUT, PROMPT_TIMEOUT, VERIFICATION_PHRASES } from '../../utils/constants';
 import axios from 'axios';
+import verifiedUser from '../../models/verifiedUser';
+import { choose } from '../../utils/functions';
+
+const openPrompt = new Set();
 
 export = async (bot: Client, interaction: Interaction) => {
 	if (interaction.isButton()) {
@@ -73,8 +77,41 @@ export = async (bot: Client, interaction: Interaction) => {
 				break;
 
 			case 'VerifyAccount':
+				/* IF USER IS ALREADY VERIFIED */
+				const activeVerification = await verifiedUser.findOne({ userID: interaction.user.id });
+
+				if (activeVerification) {
+					const member = interaction.guild.members.cache.get(interaction.user.id);
+
+					/* Setting Roblox nickname */
+					member.setNickname(activeVerification.robloxName).catch(() => {});
+
+					/* Giving Follower roles */
+					if (activeVerification.roleName !== 'Follower') {
+						await member.roles.add(interaction.guild.roles.cache.find((discordRole) => discordRole.name === 'Follower')).catch(() => {});
+					}
+					await member.roles.add(interaction.guild.roles.cache.find((discordRole) => discordRole.name === activeVerification.roleName)).catch(() => {});
+
+					return interaction.reply({ content: `👋 Welcome to **Saikou**, ${activeVerification.robloxName}! Your roles and username have been updated successfully.`, ephemeral: true });
+				}
+
+				/* IF USER HAS PROMPT OPEN */
+				if (openPrompt.has(interaction.user.id))
+					return interaction.reply({
+						embeds: [
+							new EmbedBuilder() // prettier-ignore
+								.setTitle('🗃️ Prompt already open!')
+								.setDescription('You already have a verification prompt open, please either finish/cancel and try again!')
+								.setColor(EMBED_COLOURS.red)
+								.setFooter({ text: 'Already open prompt' }),
+						],
+						ephemeral: true,
+					});
+
+				openPrompt.add(interaction.user.id);
+
 				/* USERNAME PROMPT */
-				await interaction.reply({
+				const verifyPrompt = await interaction.reply({
 					embeds: [
 						new EmbedBuilder() // prettier-ignore
 							.setTitle('[1/2] Roblox Username 🔎')
@@ -92,7 +129,7 @@ export = async (bot: Client, interaction: Interaction) => {
 					ephemeral: true,
 				});
 
-				const buttonCollector = interaction.channel.createMessageComponentCollector({ filter: (msgFilter: Interaction) => msgFilter.user.id === interaction.user.id, componentType: ComponentType.Button, time: PROMPT_TIMEOUT });
+				const buttonCollector = interaction.channel.createMessageComponentCollector({ filter: (msgFilter: Interaction) => msgFilter.user.id === interaction.user.id, componentType: ComponentType.Button, time: 5000 });
 
 				buttonCollector.on('collect', async (button: ButtonInteraction) => {
 					if (button.customId === 'submitUser') {
@@ -114,6 +151,7 @@ export = async (bot: Client, interaction: Interaction) => {
 						const formResponse = await button.awaitModalSubmit({ time: PROMPT_TIMEOUT, filter: (menuUser) => menuUser.user.id === interaction.user.id }).catch(() => null);
 
 						if (formResponse === null) {
+							openPrompt.delete(interaction.user.id);
 							return buttonCollector.stop();
 						}
 
@@ -148,12 +186,12 @@ export = async (bot: Client, interaction: Interaction) => {
 								],
 								components: [],
 							});
-
+							openPrompt.delete(interaction.user.id);
 							return buttonCollector.stop();
 						}
 
 						/* UPDATE STATUS PROMPT */
-						const phrase = 'apple tomato orange blue ocean';
+						const phrase = choose(VERIFICATION_PHRASES); //'apple tomato orange blue ocean';
 
 						await formResponse.update({
 							embeds: [
@@ -192,71 +230,112 @@ export = async (bot: Client, interaction: Interaction) => {
 										],
 										components: [],
 									});
+									openPrompt.delete(interaction.user.id);
 									buttonCollector.stop();
 									return finalButtonCollector.stop();
 
 								case 'completeVerification':
-									const followerRole = await axios.get(`https://groups.roblox.com/v2/users/${robloxID}/groups/roles`).then((response: any) => {
-										if (response.data.data.length === 1 && response.data.data.map((groupData: any) => groupData.group.name).toString() === 'Saikou') {
-											return response.data.data.map((groupRole: any) => groupRole.role.name)[0];
-										}
+									let apiError: any = {};
 
-										for (const groupInfo of response.data.data) {
-											if (groupInfo.group.name.toString() === 'Saikou') {
-												return groupInfo.role.name;
+									const aboutMe = await axios
+										.get(`https://users.roblox.com/v1/users/${robloxID}`)
+										.then((response: any) => response.data.description)
+										.catch(() => (apiError = { errMessage: 'API Error - About Me', error: true }));
+
+									const followerRole = await axios
+										.get(`https://groups.roblox.com/v2/users/${robloxID}/groups/roles`)
+										.then((response: any) => {
+											if (response.data.data.length === 1 && response.data.data.map((groupData: any) => groupData.group.name).toString() === 'Saikou') {
+												return response.data.data.map((groupRole: any) => groupRole.role.name)[0];
 											}
+
+											for (const groupInfo of response.data.data) {
+												if (groupInfo.group.name.toString() === 'Saikou') {
+													return groupInfo.role.name;
+												}
+											}
+
+											return null;
+										})
+										.catch(() => (apiError = { errMessage: 'API Error - Follower Roles', error: true }));
+
+									if (apiError.error) {
+										finalButton.update({
+											embeds: [
+												new EmbedBuilder() // prettier-ignore
+													.setTitle('❌ API Error!')
+													.setDescription('Uh oh! Looks like the Roblox API is currently down, please try re-running the prompt later.')
+													.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
+													.setColor(EMBED_COLOURS.red)
+													.setFooter({ text: `Dev Report: ${apiError.errMessage}` }),
+											],
+											components: [],
+										});
+										openPrompt.delete(interaction.user.id);
+										buttonCollector.stop();
+										return finalButtonCollector.stop();
+									}
+
+									/* USER VERIFIED CORRECTLY */
+									if (aboutMe.includes(phrase)) {
+										await verifiedUser.create({
+											robloxName: robloxName.toString(),
+											robloxID: robloxID.toString(),
+											roleName: followerRole || 'Follower',
+											userID: interaction.user.id,
+										});
+
+										const member = interaction.guild.members.cache.get(interaction.user.id);
+
+										/* Setting Roblox nickname */
+										member.setNickname(robloxName).catch(() => {});
+
+										/* Giving Follower roles */
+										if (followerRole) {
+											if (followerRole !== 'Follower') {
+												await member.roles.add(interaction.guild.roles.cache.find((discordRole) => discordRole.name === 'Follower')).catch(() => {});
+											}
+											await member.roles.add(interaction.guild.roles.cache.find((discordRole) => discordRole.name === followerRole)).catch(() => {});
 										}
 
-										return null;
+										finalButton.update({
+											content: `👋 Welcome to **Saikou**, ${robloxName}! Looking to change your account? Use the /reverify command.`,
+											embeds: [],
+											components: [],
+										});
+
+										openPrompt.delete(interaction.user.id);
+										buttonCollector.stop();
+										return finalButtonCollector.stop();
+									}
+
+									finalButton.update({
+										embeds: [
+											new EmbedBuilder() // prettier-ignore
+												.setTitle('❌ Incorrect About Me!')
+												.setDescription("Uh oh! Looks like you didn't input the correct phrase provided. Make sure you are updating the right place, as shown below:")
+												.setImage('https://saikou.dev/assets/images/discord-bot/verify-help.png')
+												.setColor(EMBED_COLOURS.red)
+												.setFooter({ text: 'Re-run the prompt and provide the correct phrase.' }),
+										],
+										components: [],
 									});
 
-									console.log(followerRole);
-
-									const aboutMe = await axios.get(`https://users.roblox.com/v1/users/${robloxID}`).then((response: any) => response.data.description);
-
-									//console.log(aboutMe);
-									break;
+									openPrompt.delete(interaction.user.id);
+									buttonCollector.stop();
+									return finalButtonCollector.stop();
 							}
+						});
+
+						finalButtonCollector.on('end', () => {
+							openPrompt.delete(interaction.user.id);
 						});
 					}
 				});
 
-				/* Checking if user provided is a valid Roblox player */
-				// if (String(platform) !== 'Discord' && String(platform) !== 'Other') {
-				// 	let invalidUser = false;
-				// 	await axios({
-				// 		method: 'post',
-				// 		url: 'https://users.roblox.com/v1/usernames/users',
-				// 		data: {
-				// 			usernames: [username],
-				// 		},
-				// 	})
-				// 		.then((response: any) => {
-				// 			robloxDisplayName = response.data.data.map((value: any) => value.displayName);
-				// 			robloxID = response.data.data.map((value: any) => value.id);
-				// 			if (response.data.data.length === 0) invalidUser = true;
-				// 		})
-				// 		.catch((error) => {
-				// 			console.error(error);
-				// 		});
-
-				// 	if (invalidUser !== false) {
-				// 		formResponse.update({
-				// 			embeds: [
-				// 				new EmbedBuilder() // prettier-ignore
-				// 					.setTitle('Unable to find Roblox User! 🔎')
-				// 					.setDescription("Please ensure you're providing a valid Roblox player to proceed.")
-				// 					.setColor(EMBED_COLOURS.red)
-				// 					.setTimestamp(),
-				// 			],
-				// 			components: [],
-				// 		});
-
-				// 		openPrompt.delete(interaction.user.id);
-				// 		menuCollector.stop();
-				// 		return detailsCollector.stop();
-				// 	}
-				// }
+				buttonCollector.on('end', () => {
+					openPrompt.delete(interaction.user.id);
+				});
 
 				break;
 

@@ -103,3 +103,11 @@ export interface QuestionTypes extends Document {
 export interface QOTDTypes extends Document {
 	question: string;
 }
+
+// --- Verified User Schema ---
+export interface VerifyTypes extends Document {
+	robloxName: string;
+	robloxID: number;
+	userID: string;
+	roleName: string;
+}
