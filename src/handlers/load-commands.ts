@@ -42,7 +42,7 @@ export = (bot: Client) => {
 			}
 		}
 	};
-	['fun', 'dev-only', 'staff-only', 'information', 'context-menu'].forEach((folder) => load(folder));
+	['fun', 'dev-only', 'staff-only', 'information', 'context-menu', 'verification'].forEach((folder) => load(folder));
 
 	bot.on('ready', async () => {
 		if (process.env.TEST === 'true') {
