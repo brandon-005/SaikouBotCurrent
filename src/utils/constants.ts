@@ -393,4 +393,5 @@ export const VERIFICATION_PHRASES = [
 	'Friend Enemy Acquaintance Stranger Family',
 	'School College University Education Learning',
 	'Camera Phone Computer Tablet Television',
+	'apple tomato orange blue ocean',
 ];

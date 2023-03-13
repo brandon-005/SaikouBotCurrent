@@ -5,6 +5,7 @@ import QotdQuestion from '../models/qotd';
 import WyrQuestion from '../models/wyrQuestion';
 import WeeklyTrivia from '../models/weeklyTrivia';
 import TriviaUsers from '../models/correctTrivia';
+import axios from 'axios';
 
 /* Get a random number */
 export function getRandomInt(min: number, max: number) {
@@ -107,4 +108,64 @@ export async function awardRole(bot: Client, weekly?: boolean) {
 			}
 		}
 	});
+}
+
+export async function fetchRobloxUser(username: string) {
+	let robloxName = '';
+	let robloxID = '';
+	let invalidUser = false;
+	let error = false;
+
+	await axios({
+		method: 'post',
+		url: 'https://users.roblox.com/v1/usernames/users',
+		data: {
+			usernames: [username],
+		},
+	})
+		.then((response: any) => {
+			robloxName = response.data.data.map((value: any) => value.name);
+			robloxID = response.data.data.map((value: any) => value.id);
+			if (response.data.data.length === 0) invalidUser = true;
+		})
+		.catch(() => (error = true));
+
+	return { robloxName: robloxName.toString(), robloxID: robloxID.toString(), invalid: invalidUser, error };
+}
+
+export async function checkAboutMe(robloxID: string, phrase: string) {
+	let error = false;
+	let correctPhrase = false;
+	const aboutMe = await axios
+		.get(`https://users.roblox.com/v1/users/${robloxID}`)
+		.then((response: any) => response.data.description)
+		.catch(() => (error = true));
+
+	if (aboutMe.toLowerCase().includes(phrase.toLowerCase())) {
+		correctPhrase = true;
+	}
+
+	return { correctPhrase, error };
+}
+
+export async function checkFollowerRoles(robloxID: string) {
+	let error = false;
+	let followerRole: string | null = null;
+
+	await axios
+		.get(`https://groups.roblox.com/v2/users/${robloxID}/groups/roles`)
+		.then((response: any) => {
+			if (response.data.data.length === 1 && response.data.data.map((groupData: any) => groupData.group.name).toString() === 'Saikou') {
+				followerRole = response.data.data.map((groupRole: any) => groupRole.role.name)[0];
+			}
+
+			for (const groupInfo of response.data.data) {
+				if (groupInfo.group.name.toString() === 'Saikou') {
+					followerRole = groupInfo.role.name;
+				}
+			}
+		})
+		.catch(() => (error = true));
+
+	return { followerRole, error };
 }

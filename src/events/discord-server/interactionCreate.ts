@@ -1,9 +1,10 @@
-import { Client, Role, EmbedBuilder, TextChannel, InteractionType, Interaction, GuildMember, ActionRowBuilder, ModalBuilder, ModalActionRowComponentBuilder, TextInputBuilder, TextInputStyle, ButtonBuilder, ButtonStyle, ComponentType, ButtonInteraction, Message } from 'discord.js';
+import { Client, Role, EmbedBuilder, TextChannel, InteractionType, Interaction, GuildMember, ActionRowBuilder, ModalBuilder, ModalActionRowComponentBuilder, TextInputBuilder, TextInputStyle, ButtonBuilder, ButtonStyle, ComponentType, ButtonInteraction, WebhookClient } from 'discord.js';
 
-import { EMBED_COLOURS, MESSAGE_TIMEOUT, PROMPT_TIMEOUT, VERIFICATION_PHRASES } from '../../utils/constants';
-import axios from 'axios';
+import { EMBED_COLOURS, PROMPT_TIMEOUT, VERIFICATION_PHRASES } from '../../utils/constants';
 import verifiedUser from '../../models/verifiedUser';
-import { choose } from '../../utils/functions';
+import { checkAboutMe, checkFollowerRoles, choose, fetchRobloxUser } from '../../utils/functions';
+
+const webhookClient: WebhookClient = new WebhookClient({ id: `1084843431454576726`, token: 'v6U2CuOFklrEIrSJgD_roQmZU0hehvv3s7pqmhGVDADOJDFGIaOjmgwVy-YYDBpTlUR5' });
 
 const openPrompt = new Set();
 
@@ -77,9 +78,22 @@ export = async (bot: Client, interaction: Interaction) => {
 				break;
 
 			case 'VerifyAccount':
-				/* IF USER IS ALREADY VERIFIED */
 				const activeVerification = await verifiedUser.findOne({ userID: interaction.user.id });
+				const phrase = choose(VERIFICATION_PHRASES);
 
+				const outOfTimeEmbed = new EmbedBuilder() // prettier-ignore
+					.setTitle('⏱ Out of time!')
+					.setDescription('You ran out of time to input the prompt response, please re-run the command and answer within a timely manner.')
+					.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
+					.setColor(EMBED_COLOURS.red);
+
+				const apiErrorEmbed = new EmbedBuilder() // prettier-ignore
+					.setTitle('❌ API Error!')
+					.setDescription('Uh oh! Looks like the Roblox API is currently down, please try re-running the prompt later.')
+					.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
+					.setColor(EMBED_COLOURS.red);
+
+				/* IF USER IS ALREADY VERIFIED */
 				if (activeVerification) {
 					const member = interaction.guild.members.cache.get(interaction.user.id);
 
@@ -96,7 +110,9 @@ export = async (bot: Client, interaction: Interaction) => {
 				}
 
 				/* IF USER HAS PROMPT OPEN */
-				if (openPrompt.has(interaction.user.id))
+				if (openPrompt.has(interaction.user.id)) {
+					webhookClient.send({ content: `**${interaction.user.username}** failed the verification - Open Prompt` });
+
 					return interaction.reply({
 						embeds: [
 							new EmbedBuilder() // prettier-ignore
@@ -107,32 +123,26 @@ export = async (bot: Client, interaction: Interaction) => {
 						],
 						ephemeral: true,
 					});
+				}
 
 				openPrompt.add(interaction.user.id);
 
 				/* USERNAME PROMPT */
-				const verifyPrompt = await interaction.reply({
+				await interaction.reply({
 					embeds: [
 						new EmbedBuilder() // prettier-ignore
 							.setTitle('[1/2] Roblox Username 🔎')
 							.setDescription('Your Roblox username is used to identify who you are in the server. Please click the button below to submit your username.')
 							.setColor(EMBED_COLOURS.blurple),
 					],
-					components: [
-						new ActionRowBuilder<ButtonBuilder>().addComponents([
-							new ButtonBuilder() // prettier-ignore
-								.setLabel('Submit Username 📝')
-								.setStyle(ButtonStyle.Primary)
-								.setCustomId('submitUser'),
-						]),
-					],
+					components: [new ActionRowBuilder<ButtonBuilder>().addComponents([new ButtonBuilder().setLabel('Submit Username 📝').setStyle(ButtonStyle.Primary).setCustomId('submitUser')])],
 					ephemeral: true,
 				});
 
-				const buttonCollector = interaction.channel.createMessageComponentCollector({ filter: (msgFilter: Interaction) => msgFilter.user.id === interaction.user.id, componentType: ComponentType.Button, time: 5000 });
+				const usernameCollector = interaction.channel.createMessageComponentCollector({ filter: (msgFilter: Interaction) => msgFilter.user.id === interaction.user.id, componentType: ComponentType.Button, time: 20000 });
 
-				buttonCollector.on('collect', async (button: ButtonInteraction) => {
-					if (button.customId === 'submitUser') {
+				usernameCollector.on('collect', async (clickedButton: ButtonInteraction) => {
+					if (clickedButton.customId === 'submitUser') {
 						const modal = new ModalBuilder().setCustomId('verify-form').setTitle('Saikou Verification');
 
 						modal.addComponents([
@@ -146,36 +156,24 @@ export = async (bot: Client, interaction: Interaction) => {
 									.setStyle(TextInputStyle.Short)]), // prettier-ignore
 						]);
 
-						await button.showModal(modal);
+						await clickedButton.showModal(modal);
 
-						const formResponse = await button.awaitModalSubmit({ time: PROMPT_TIMEOUT, filter: (menuUser) => menuUser.user.id === interaction.user.id }).catch(() => null);
-
-						if (formResponse === null) {
+						/* LISTENING FOR FORM RESPONSE */
+						const formResponse: any = await clickedButton.awaitModalSubmit({ time: 60000, filter: (menuUser) => menuUser.user.id === interaction.user.id }).catch(() => {
+							webhookClient.send({ content: `**${interaction.user.username}** failed the verification - Username Form Timeout` });
+							clickedButton.editReply({ embeds: [outOfTimeEmbed], components: [] });
 							openPrompt.delete(interaction.user.id);
-							return buttonCollector.stop();
-						}
+							usernameCollector.stop();
+							return;
+						});
 
-						/* CHECKING ROBLOX USERNAME */
-						const username = formResponse.fields.getTextInputValue('username');
-						let robloxName = '';
-						let robloxID = '';
-						let invalidUser = false;
+						if (!formResponse) return;
 
-						await axios({
-							method: 'post',
-							url: 'https://users.roblox.com/v1/usernames/users',
-							data: {
-								usernames: [username],
-							},
-						})
-							.then((response: any) => {
-								robloxName = response.data.data.map((value: any) => value.name);
-								robloxID = response.data.data.map((value: any) => value.id);
-								if (response.data.data.length === 0) invalidUser = true;
-							})
-							.catch(() => {});
+						const robloxUser = await fetchRobloxUser(formResponse.fields.getTextInputValue('username'));
 
-						if (invalidUser !== false) {
+						/* IF PLAYER IS INVALID */
+						if (robloxUser.invalid === true) {
+							webhookClient.send({ content: `**${interaction.user.username}** failed the verification - Invalid Roblox Username` });
 							formResponse.update({
 								embeds: [
 									new EmbedBuilder() // prettier-ignore
@@ -187,17 +185,43 @@ export = async (bot: Client, interaction: Interaction) => {
 								components: [],
 							});
 							openPrompt.delete(interaction.user.id);
-							return buttonCollector.stop();
+							usernameCollector.stop();
+							return;
 						}
 
-						/* UPDATE STATUS PROMPT */
-						const phrase = choose(VERIFICATION_PHRASES); //'apple tomato orange blue ocean';
+						/* IF ROBLOX API ERROR */
+						if (robloxUser.error === true) {
+							webhookClient.send({ content: `**${interaction.user.username}** failed the verification - Roblox API Error` });
+							formResponse.update({ embeds: [apiErrorEmbed], components: [] });
+							openPrompt.delete(interaction.user.id);
+							usernameCollector.stop();
+							return;
+						}
 
+						/* IF USER IS ALREADY VERIFIED */
+						if (await verifiedUser.findOne({ robloxID: robloxUser.robloxID })) {
+							webhookClient.send({ content: `**${interaction.user.username}** failed the verification - Already Linked Account` });
+							formResponse.update({
+								embeds: [
+									new EmbedBuilder() // prettier-ignore
+										.setTitle('Already Linked! 🔗')
+										.setDescription('This account is aleady linked to a Discord user, you must change accounts or remove it before proceeding.')
+										.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
+										.setColor(EMBED_COLOURS.red),
+								],
+								components: [],
+							});
+							openPrompt.delete(interaction.user.id);
+							usernameCollector.stop();
+							return;
+						}
+
+						/* UPDATING ABOUT ME */
 						await formResponse.update({
 							embeds: [
 								new EmbedBuilder() // prettier-ignore
-									.setTitle('[2/2] Update About Me! 🔗')
-									.setDescription(`Thanks **${robloxName}!**\n\nYou're almost there! Please update your about me to include the following words/phrases:\n\`${phrase}\`\n\nOnce complete, click the button below to finalise the verification.`)
+									.setTitle('[2/2] Update Roblox About Me! 🔗')
+									.setDescription(`Thanks **${robloxUser.robloxName}!**\n\nYou're almost there! Please update your Roblox about me to include the following words/phrases:\n\`${phrase}\`\n\nOnce complete, click the button below to finalise the verification.`)
 									.setColor(EMBED_COLOURS.blurple),
 							],
 							components: [
@@ -215,12 +239,13 @@ export = async (bot: Client, interaction: Interaction) => {
 							],
 						});
 
-						const finalButtonCollector = interaction.channel.createMessageComponentCollector({ filter: (msgFilter: Interaction) => msgFilter.user.id === interaction.user.id, componentType: ComponentType.Button, time: PROMPT_TIMEOUT });
+						const aboutMeCollector = interaction.channel.createMessageComponentCollector({ filter: (msgFilter: Interaction) => msgFilter.user.id === interaction.user.id, componentType: ComponentType.Button, time: PROMPT_TIMEOUT });
 
-						finalButtonCollector.on('collect', async (finalButton: ButtonInteraction) => {
-							switch (finalButton.customId) {
+						aboutMeCollector.on('collect', async (buttonResponse: ButtonInteraction) => {
+							switch (buttonResponse.customId) {
 								case 'exitPrompt':
-									finalButton.update({
+									webhookClient.send({ content: `**${interaction.user.username}** failed the verification - Manually Exited (Update About Me)` });
+									buttonResponse.update({
 										embeds: [
 											new EmbedBuilder() // prettier-ignore
 												.setTitle('✅ Cancelled!')
@@ -231,85 +256,58 @@ export = async (bot: Client, interaction: Interaction) => {
 										components: [],
 									});
 									openPrompt.delete(interaction.user.id);
-									buttonCollector.stop();
-									return finalButtonCollector.stop();
+									usernameCollector.stop();
+									aboutMeCollector.stop();
+									return;
 
 								case 'completeVerification':
-									let apiError: any = {};
+									const aboutMeResult = await checkAboutMe(robloxUser.robloxID, phrase);
+									const followerRoles = await checkFollowerRoles(robloxUser.robloxID);
 
-									const aboutMe = await axios
-										.get(`https://users.roblox.com/v1/users/${robloxID}`)
-										.then((response: any) => response.data.description)
-										.catch(() => (apiError = { errMessage: 'API Error - About Me', error: true }));
-
-									const followerRole = await axios
-										.get(`https://groups.roblox.com/v2/users/${robloxID}/groups/roles`)
-										.then((response: any) => {
-											if (response.data.data.length === 1 && response.data.data.map((groupData: any) => groupData.group.name).toString() === 'Saikou') {
-												return response.data.data.map((groupRole: any) => groupRole.role.name)[0];
-											}
-
-											for (const groupInfo of response.data.data) {
-												if (groupInfo.group.name.toString() === 'Saikou') {
-													return groupInfo.role.name;
-												}
-											}
-
-											return null;
-										})
-										.catch(() => (apiError = { errMessage: 'API Error - Follower Roles', error: true }));
-
-									if (apiError.error) {
-										finalButton.update({
-											embeds: [
-												new EmbedBuilder() // prettier-ignore
-													.setTitle('❌ API Error!')
-													.setDescription('Uh oh! Looks like the Roblox API is currently down, please try re-running the prompt later.')
-													.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
-													.setColor(EMBED_COLOURS.red)
-													.setFooter({ text: `Dev Report: ${apiError.errMessage}` }),
-											],
-											components: [],
-										});
+									if (aboutMeResult.error || followerRoles.error) {
+										webhookClient.send({ content: `**${interaction.user.username}** failed the verification - Roblox API Error (Update About Me Section)` });
+										buttonResponse.update({ embeds: [apiErrorEmbed], components: [] });
 										openPrompt.delete(interaction.user.id);
-										buttonCollector.stop();
-										return finalButtonCollector.stop();
+										usernameCollector.stop();
+										aboutMeCollector.stop();
+										return;
 									}
 
-									/* USER VERIFIED CORRECTLY */
-									if (aboutMe.includes(phrase)) {
+									if (aboutMeResult.correctPhrase === true) {
+										webhookClient.send({ content: `**${interaction.user.username}** passed the verification with account **${robloxUser.robloxName}** ✅` });
 										await verifiedUser.create({
-											robloxName: robloxName.toString(),
-											robloxID: robloxID.toString(),
-											roleName: followerRole || 'Follower',
+											robloxName: robloxUser.robloxName,
+											robloxID: robloxUser.robloxID,
+											roleName: followerRoles.followerRole || 'Follower',
 											userID: interaction.user.id,
 										});
 
 										const member = interaction.guild.members.cache.get(interaction.user.id);
 
 										/* Setting Roblox nickname */
-										member.setNickname(robloxName).catch(() => {});
+										member.setNickname(robloxUser.robloxName).catch(() => {});
 
-										/* Giving Follower roles */
-										if (followerRole) {
-											if (followerRole !== 'Follower') {
+										if (followerRoles.followerRole) {
+											if (followerRoles.followerRole !== 'Follower') {
 												await member.roles.add(interaction.guild.roles.cache.find((discordRole) => discordRole.name === 'Follower')).catch(() => {});
 											}
-											await member.roles.add(interaction.guild.roles.cache.find((discordRole) => discordRole.name === followerRole)).catch(() => {});
+											await member.roles.add(interaction.guild.roles.cache.find((discordRole) => discordRole.name === followerRoles.followerRole)).catch(() => {});
 										}
 
-										finalButton.update({
-											content: `👋 Welcome to **Saikou**, ${robloxName}! Looking to change your account? Use the /reverify command.`,
+										buttonResponse.update({
+											content: `👋 Welcome to **Saikou**, ${robloxUser.robloxName}! Looking to change your account? Use the /reverify command.`,
 											embeds: [],
 											components: [],
 										});
 
 										openPrompt.delete(interaction.user.id);
-										buttonCollector.stop();
-										return finalButtonCollector.stop();
+										usernameCollector.stop();
+										aboutMeCollector.stop();
+										return;
 									}
 
-									finalButton.update({
+									webhookClient.send({ content: `**${interaction.user.username}** failed the verification - Incorrect About Me` });
+									buttonResponse.update({
 										embeds: [
 											new EmbedBuilder() // prettier-ignore
 												.setTitle('❌ Incorrect About Me!')
@@ -322,19 +320,41 @@ export = async (bot: Client, interaction: Interaction) => {
 									});
 
 									openPrompt.delete(interaction.user.id);
-									buttonCollector.stop();
-									return finalButtonCollector.stop();
+									usernameCollector.stop();
+									aboutMeCollector.stop();
+									return;
 							}
 						});
 
-						finalButtonCollector.on('end', () => {
-							openPrompt.delete(interaction.user.id);
+						aboutMeCollector.on('end', async (collectedResult) => {
+							/* IF NO RESPONSE WAS PROVIDED */
+							if (collectedResult.size === 0) {
+								webhookClient.send({ content: `**${interaction.user.username}** failed the verification - About Me Timeout` });
+								interaction.editReply({
+									embeds: [outOfTimeEmbed],
+									components: [],
+								});
+								openPrompt.delete(interaction.user.id);
+								usernameCollector.stop();
+								aboutMeCollector.stop();
+								return;
+							}
 						});
 					}
 				});
 
-				buttonCollector.on('end', () => {
-					openPrompt.delete(interaction.user.id);
+				usernameCollector.on('end', async (collectedContent) => {
+					/* IF NO RESPONSE WAS PROVIDED */
+					if (collectedContent.size === 0) {
+						webhookClient.send({ content: `**${interaction.user.username}** failed the verification - Username Prompt Timeout` });
+						interaction.editReply({
+							embeds: [outOfTimeEmbed],
+							components: [],
+						});
+						openPrompt.delete(interaction.user.id);
+						usernameCollector.stop();
+						return;
+					}
 				});
 
 				break;
