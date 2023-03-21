@@ -30,7 +30,7 @@ const command: Command = {
 					new ButtonBuilder() // prettier-ignore
 						.setLabel('❔ Need help?')
 						.setStyle(ButtonStyle.Link)
-						.setURL('https://discord.com/channels/840280079536095314/840957182534877194/1083387167683919896'),
+						.setURL('https://discord.com/channels/397791695514894341/700757354697719915/1084854560532746293'),
 				]),
 			],
 		});

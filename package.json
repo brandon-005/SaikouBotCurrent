@@ -1,6 +1,6 @@
 {
 	"name": "saikoubot",
-	"version": "4.3.0",
+	"version": "4.3.1",
 	"description": "The bot built to deliver a better user experience for the Saikou Discord.",
 	"main": "dist/bot.js",
 	"scripts": {
@@ -23,16 +23,16 @@
 	"types": "./dist/bot.d.ts",
 	"dependencies": {
 		"@iamtraction/google-translate": "^2.0.1",
-		"axios": "^1.3.3",
+		"axios": "^1.3.4",
 		"chalk": "^4.1.2",
-		"discord-html-transcripts": "^3.1.2",
-		"discord.js": "^14.7.1",
+		"discord-html-transcripts": "^3.1.4",
+		"discord.js": "^14.8.0",
 		"dotenv": "^16.0.3",
 		"find-remove": "^4.1.0",
 		"get-urls": "^10.0.1",
-		"googleapis": "^109.0.1",
+		"googleapis": "^113.0.0",
 		"moment": "^2.29.4",
-		"mongoose": "^6.9.1",
+		"mongoose": "^7.0.2",
 		"ms": "^2.1.3",
 		"node-cron": "^3.0.2",
 		"re2": "^1.18.0",
@@ -42,20 +42,20 @@
 	"devDependencies": {
 		"@types/find-remove": "^2.0.1",
 		"@types/ms": "^0.7.31",
-		"@types/node": "^18.13.0",
+		"@types/node": "^18.15.5",
 		"@types/node-cron": "^3.0.7",
 		"@types/string-similarity": "^4.0.0",
 		"@types/url-regex-safe": "^1.0.0",
-		"@typescript-eslint/eslint-plugin": "^5.52.0",
-		"@typescript-eslint/parser": "^5.52.0",
-		"eslint": "^8.34.0",
+		"@typescript-eslint/eslint-plugin": "^5.56.0",
+		"@typescript-eslint/parser": "^5.56.0",
+		"eslint": "^8.36.0",
 		"eslint-config-airbnb-typescript": "^17.0.0",
 		"eslint-config-node": "^4.1.0",
-		"eslint-config-prettier": "^8.6.0",
+		"eslint-config-prettier": "^8.8.0",
 		"eslint-plugin-import": "^2.27.5",
 		"eslint-plugin-node": "^11.1.0",
 		"eslint-plugin-prettier": "^4.2.1",
-		"prettier": "^2.8.4",
-		"typescript": "^4.9.5"
+		"prettier": "^2.8.6",
+		"typescript": "^5.0.2"
 	}
 }

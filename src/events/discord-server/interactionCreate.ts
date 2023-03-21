@@ -1,6 +1,7 @@
 import { Client, Role, EmbedBuilder, TextChannel, InteractionType, Interaction, GuildMember, ActionRowBuilder, ModalBuilder, ModalActionRowComponentBuilder, TextInputBuilder, TextInputStyle, ButtonBuilder, ButtonStyle, ComponentType, ButtonInteraction, WebhookClient } from 'discord.js';
+import axios from 'axios';
 
-import { EMBED_COLOURS, PROMPT_TIMEOUT, VERIFICATION_PHRASES } from '../../utils/constants';
+import { EMBED_COLOURS, PROMPT_TIMEOUT, VERIFICATION_PHRASES, WELCOME_MESSAGES } from '../../utils/constants';
 import verifiedUser from '../../models/verifiedUser';
 import { checkAboutMe, checkFollowerRoles, choose, fetchRobloxUser } from '../../utils/functions';
 
@@ -116,10 +117,9 @@ export = async (bot: Client, interaction: Interaction) => {
 					return interaction.reply({
 						embeds: [
 							new EmbedBuilder() // prettier-ignore
-								.setTitle('🗃️ Prompt already open!')
-								.setDescription('You already have a verification prompt open, please either finish/cancel and try again!')
-								.setColor(EMBED_COLOURS.red)
-								.setFooter({ text: 'Already open prompt' }),
+								.setTitle('🗃️ Open Prompt!')
+								.setDescription('You already have a verification prompt open, please either finish/cancel and try again! If you have dismissed the message, you will need to wait a maximum of:\n\n• Username Prompt - 20 Seconds\n• About Me Prompt - 5 Minutes')
+								.setColor(EMBED_COLOURS.red),
 						],
 						ephemeral: true,
 					});
@@ -149,8 +149,8 @@ export = async (bot: Client, interaction: Interaction) => {
 							new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents([
 								new TextInputBuilder() // prettier-ignore
 									.setCustomId('username')
-									.setMinLength(5)
-									.setMaxLength(50)
+									.setMinLength(3)
+									.setMaxLength(20)
 									.setPlaceholder('Roblox Username')
 									.setLabel('What is your Roblox username?')
 									.setStyle(TextInputStyle.Short)]), // prettier-ignore
@@ -221,7 +221,7 @@ export = async (bot: Client, interaction: Interaction) => {
 							embeds: [
 								new EmbedBuilder() // prettier-ignore
 									.setTitle('[2/2] Update Roblox About Me! 🔗')
-									.setDescription(`Thanks **${robloxUser.robloxName}!**\n\nYou're almost there! Please update your Roblox about me to include the following words/phrases:\n\`${phrase}\`\n\nOnce complete, click the button below to finalise the verification.`)
+									.setDescription(`Thanks **${robloxUser.robloxName}!**\n\nYou're almost there! Please update your [Roblox About Me](https://www.roblox.com/users/${robloxUser.robloxID}/profile) to include the following words/phrases:\n\`${phrase}\`\n\nOnce complete, click the button below to finalise the verification.`)
 									.setColor(EMBED_COLOURS.blurple),
 							],
 							components: [
@@ -292,12 +292,35 @@ export = async (bot: Client, interaction: Interaction) => {
 												await member.roles.add(interaction.guild.roles.cache.find((discordRole) => discordRole.name === 'Follower')).catch(() => {});
 											}
 											await member.roles.add(interaction.guild.roles.cache.find((discordRole) => discordRole.name === followerRoles.followerRole)).catch(() => {});
+
+											if (member.roles.cache.some((role) => role.name === 'Unverified')) {
+												member.roles.remove(interaction.guild.roles.cache.find((discordRole) => discordRole.name === 'Unverified')).catch(() => {});
+											}
 										}
 
 										buttonResponse.update({
 											content: `👋 Welcome to **Saikou**, ${robloxUser.robloxName}! Looking to change your account? Use the /reverify command.`,
 											embeds: [],
 											components: [],
+										});
+
+										const joinEmbed = new EmbedBuilder() // prettier-ignore
+											.setTitle('👋 Welcome to the **Saikou Discord**!')
+											.setDescription(`**[${robloxUser.robloxName}](https://www.roblox.com/users/${robloxUser.robloxID}/profile)** ${choose(WELCOME_MESSAGES)}`)
+											.setColor(EMBED_COLOURS.green)
+											.setFooter({ text: 'User joined' })
+											.setTimestamp();
+
+										await axios
+											.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${robloxUser.robloxID}&size=720x720&format=png`)
+											.then((image: any) => {
+												joinEmbed.setThumbnail(String(image.data.data.map((value: any) => value.imageUrl)));
+											})
+											.catch(() => joinEmbed.setThumbnail('https://saikou.dev/assets/images/discord-bot/broken-avatar.png'));
+
+										// @ts-ignore
+										bot.channels.cache.get(process.env.JOIN_LEAVES_CHANNEL).send({
+											embeds: [joinEmbed],
 										});
 
 										openPrompt.delete(interaction.user.id);
@@ -339,6 +362,7 @@ export = async (bot: Client, interaction: Interaction) => {
 								aboutMeCollector.stop();
 								return;
 							}
+							openPrompt.delete(interaction.user.id);
 						});
 					}
 				});
@@ -355,6 +379,7 @@ export = async (bot: Client, interaction: Interaction) => {
 						usernameCollector.stop();
 						return;
 					}
+					openPrompt.delete(interaction.user.id);
 				});
 
 				break;
