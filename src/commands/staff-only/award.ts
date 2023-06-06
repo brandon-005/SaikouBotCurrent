@@ -11,7 +11,7 @@ const command: Command = {
 		commandAliases: ['addpoints'],
 		commandDescription: 'Manually add trivia or booster token data through this command.',
 		limitedChannel: 'None',
-		userPermissions: 'BanMembers',
+		userPermissions: 'ManageEvents',
 		slashOptions: [
 			{
 				name: 'data',
