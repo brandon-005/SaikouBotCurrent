@@ -39,7 +39,7 @@ export = async (bot: any, member: GuildMember) => {
 		}
 		await member.roles.add(member.guild.roles.cache.find((discordRole) => discordRole.name === activeVerification.roleName)).catch(() => {});
 
-		member.send({ content: `👋 Welcome to **Saikou**, ${activeVerification.robloxName}! Your roles and username have been updated successfully.` });
+		member.send({ content: `👋 Welcome to **Saikou**, ${activeVerification.robloxName}! Your roles and username have been updated successfully.` }).catch(() => {});
 	} else {
 		member.send({ content: `Hey **${member.user.username}!** 👋\n\nThanks for joining Saikou! In order to receive access to the entire server, you'll need to verify your Roblox account with your Discord account.\n\nFor instructions on how to do this with SaikouBot, you can follow our tutorial in the <#700757354697719915> channel.\n\nWe hope you enjoy your stay with us!` }).catch(() => {});
 	}
