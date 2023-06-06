@@ -34,7 +34,37 @@ const command: Command = {
 		const member = interaction.options.getMember('user');
 		const reason = args[1];
 
-		if (!member) return noUser(interaction, false);
+		if (!member && args[0]) {
+			const idMember = await bot.users.fetch(`${BigInt(args[0])}`);
+
+			return interaction.guild.members.ban(idMember.id).then(() => {
+				interaction.editReply({
+					embeds: [
+						new EmbedBuilder() // prettier-ignore
+							.setDescription(`✅ **${idMember.username} has been banned.**`)
+							.setColor(EMBED_COLOURS.green),
+					],
+				});
+
+				(bot.channels.cache.get(String(process.env.MODERATION_CHANNEL)) as TextChannel).send({
+					embeds: [
+						new EmbedBuilder() // prettier-ignore
+							.setAuthor({ name: `Saikou Discord | Ban`, iconURL: idMember.displayAvatarURL() })
+							.addFields([
+								// prettier-ignore
+								{ name: 'Moderator', value: `<@${interaction.user.id}>`, inline: true },
+								{ name: 'User', value: idMember.tag, inline: true },
+								{ name: 'Reason', value: reason },
+							])
+							.setThumbnail(idMember.displayAvatarURL())
+							.setColor(EMBED_COLOURS.green)
+							.setFooter({ text: 'Ban' })
+							.setTimestamp(),
+					],
+				});
+			});
+		}
+
 		if (member.permissions && member.permissions.has(PermissionFlagsBits.ManageEvents)) return equalPerms(interaction, 'Manage Events');
 
 		/* DELETE MESSAGE HISTORY PROMPT */
