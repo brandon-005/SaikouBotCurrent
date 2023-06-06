@@ -1,4 +1,4 @@
-import { EmbedBuilder, Message, Client, CommandInteraction, WebhookClient } from 'discord.js';
+import { EmbedBuilder, Message, Client, CommandInteraction, WebhookClient, AutoModerationActionExecution } from 'discord.js';
 
 import { EMBED_COLOURS } from './constants';
 
@@ -54,6 +54,25 @@ export function equalPerms(interaction: CommandInteraction, perms: string): Prom
 		.setFooter({ text: `Equal Permission(s): ${perms}` });
 
 	return interaction?.editReply({ embeds: [embed] });
+}
+
+export function autoModDmEmbed(data: AutoModerationActionExecution, member: any, punishment: string, description: string, reason: string, channelMsg: string) {
+	return member
+		.send({
+			embeds: [
+				new EmbedBuilder() // prettier-ignore
+					.setTitle(`${punishment} Received!`)
+					.setDescription(description)
+					.addFields([{ name: 'Moderator Note', value: reason, inline: false }])
+					.setColor(EMBED_COLOURS.red)
+					.setFooter({ text: 'THIS IS AN AUTOMATED MESSAGE' })
+					.setTimestamp(),
+			],
+		})
+		.catch(() => {
+			/* If cant send message to DM */
+			data.channel.send({ content: channelMsg });
+		});
 }
 
 export function moderationDmEmbed(member: any, punishment: string, description: string, reason: string) {

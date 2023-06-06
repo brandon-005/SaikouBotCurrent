@@ -25,6 +25,7 @@ const bot: Client = new Client({
 		GatewayIntentBits.DirectMessageReactions,
 		GatewayIntentBits.DirectMessages,
 		GatewayIntentBits.MessageContent,
+		GatewayIntentBits.AutoModerationExecution,
 	],
 	partials: [Partials.Reaction, Partials.Message, Partials.Channel],
 	allowedMentions: { parse: ['users', 'roles'], repliedUser: true },
