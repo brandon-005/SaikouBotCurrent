@@ -149,7 +149,7 @@ export = async (bot: Client, interaction: Interaction) => {
 
 		commandFile.run({ bot, args, interaction }).catch((errorMessage: Error) => {
 			console.error(errorMessage);
-			errorEmbed(interaction);
+			errorEmbed(interaction).catch(() => {});
 
 			webhookClient.send({
 				embeds: [
@@ -173,7 +173,7 @@ export = async (bot: Client, interaction: Interaction) => {
 		const commandFile = bot.slashCommands.get(interaction.commandName);
 		const args: any = [];
 
-		if (!commandFile) return errorEmbed(interaction);
+		if (!commandFile) return errorEmbed(interaction).catch(() => {});
 
 		/* GETTING ARGS */
 		interaction.options.data.map((argument) => args.push(argument.value));
