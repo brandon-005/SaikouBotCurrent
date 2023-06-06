@@ -64,9 +64,8 @@ export = async (bot: any, member: GuildMember) => {
 						leaveEmbed.setThumbnail(String(image.data.data.map((value: any) => value.imageUrl)));
 					})
 					.catch(() => leaveEmbed.setThumbnail('https://saikou.dev/assets/images/discord-bot/broken-avatar.png'));
+				bot.channels.cache.get(process.env.JOIN_LEAVES_CHANNEL).send({ embeds: [leaveEmbed] });
 			}
-
-			bot.channels.cache.get(process.env.JOIN_LEAVES_CHANNEL).send({ embeds: [leaveEmbed] });
 
 			return bot.channels.cache.get(process.env.ADMIN_LOG).send({
 				embeds: [
