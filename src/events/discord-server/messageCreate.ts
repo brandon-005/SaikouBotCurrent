@@ -3,17 +3,15 @@ import urlRegex from 'url-regex-safe';
 import stringSimilarity from 'string-similarity';
 
 import { EMBED_COLOURS, MESSAGE_TIMEOUT, QUESTION_ANSWERS } from '../../utils/constants';
-import { swearCheck, maliciousLinkCheck, inviteLinkCheck, statusCheck, massMentionCheck, everyoneMention, devMention, personalInfoCheck } from '../../utils/autoMod';
+import { inviteLinkCheck, statusCheck, everyoneMention, devMention, personalInfoCheck, insultCheck } from '../../utils/autoMod';
 
 export = async (bot: any, message: Message) => {
 	/* Importing auto mod stuff */
 	if (message.author.bot || message.channel.type === ChannelType.DM || message.system) return;
 
 	if (!message.member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
-		await swearCheck(bot, message);
-		await maliciousLinkCheck(bot, message);
+		await insultCheck(message);
 		await inviteLinkCheck(bot, message);
-		await massMentionCheck(bot, message);
 		await everyoneMention(bot, message);
 		await devMention(bot, message);
 		await personalInfoCheck(bot, message);
@@ -40,7 +38,7 @@ export = async (bot: any, message: Message) => {
 	if ((message.channel.type === ChannelType.GuildText && message.channel.parent!.name === '🔖 | Feedback & reports') || (message.channel.type === ChannelType.GuildText && message.channel.name === '👋introductions')) {
 		try {
 			setTimeout(() => {
-				if (message.deletable) message.delete();
+				if (message.deletable) message.delete().catch(() => {});
 			}, 500);
 		} catch (err) {
 			return;
@@ -50,7 +48,7 @@ export = async (bot: any, message: Message) => {
 	/* Deleting content that isn't a discord attachment in memes and art */
 	if ((message.channel.type === ChannelType.GuildText && message.channel.name.match('memes')) || (message.channel.type === ChannelType.GuildText && message.channel.name.match('art'))) {
 		if (!(message.attachments.size > 0 || urlRegex({ exact: false }).test(message.content))) {
-			if (message.deletable) return message.delete();
+			if (message.deletable) return message.delete().catch(() => {});
 			return;
 		}
 

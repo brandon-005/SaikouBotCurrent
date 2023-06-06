@@ -1,7 +1,7 @@
 import { Message, ChannelType, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
 
 import { EMBED_COLOURS } from '../../utils/constants';
-import { swearCheck, maliciousLinkCheck, inviteLinkCheck, massMentionCheck, everyoneMention, devMention, personalInfoCheck } from '../../utils/autoMod';
+import { insultCheck, inviteLinkCheck, everyoneMention, devMention, personalInfoCheck } from '../../utils/autoMod';
 
 export = async (bot: any, oldMessage: Message, newMessage: Message) => {
 	if (oldMessage.channel.type !== ChannelType.DM && !newMessage.partial && !oldMessage.partial && !newMessage.author.bot && newMessage.channel.type !== ChannelType.DM) {
@@ -58,10 +58,8 @@ export = async (bot: any, oldMessage: Message, newMessage: Message) => {
 
 		/* AUTO MODERATION */
 		if (!newMessage.member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
-			await swearCheck(bot, newMessage);
-			await maliciousLinkCheck(bot, newMessage);
+			await insultCheck(newMessage);
 			await inviteLinkCheck(bot, newMessage);
-			await massMentionCheck(bot, newMessage);
 			await everyoneMention(bot, newMessage);
 			await devMention(bot, newMessage);
 			await personalInfoCheck(bot, newMessage);
