@@ -157,7 +157,12 @@ const command: Command = {
 							},
 						})
 							.then((response: any) => {
-								if (response.data.banned === true) return `:warning: Permanently banned from Saikou's games (Banned by ${response.data.player.Moderator})\n`;
+								if (response.data.banned === true) {
+									if (response.data.type === 'timeban') {
+										return `:warning: Temporarily banned from Saikou's games for ${moment.duration(response.data.player.Duration).asDays()} days (Banned by ${response.data.player.Moderator})\n`;
+									}
+									return `:warning: Permanently banned from Saikou's games (Banned by ${response.data.player.Moderator})\n`;
+								}
 								return false;
 							})
 							.catch((err) => {
