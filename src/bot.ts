@@ -2,6 +2,8 @@ import { Client, GatewayIntentBits, Partials, Collection, ActivityType, EmbedBui
 import { config } from 'dotenv';
 import axios from 'axios';
 import cron from 'node-cron';
+import twitter from 'twitter';
+import moment from 'moment';
 
 import { StatusTimerTypes } from './TS/interfaces';
 import { BIRTHDAY_GIFS, BIRTHDAY_MESSAGES, EMBED_COLOURS } from './utils/constants';
@@ -11,6 +13,7 @@ import { choose, sendQuestion, awardRole } from './utils/functions';
 import WeeklyTrivia from './models/weeklyTrivia';
 import StatusTimer from './models/statusTimer';
 import birthdays from './staffBirthdays.json';
+import tweetID from './models/tweetID';
 
 config();
 
@@ -178,5 +181,44 @@ cron.schedule('0 0 * * *', async () => {
 cron.schedule('0 0 * * MON', async () => {
 	await WeeklyTrivia.deleteMany({});
 });
+
+/* Posting Twitter Posts in Discord */
+const twitterClient = new twitter({
+	consumer_key: process.env.CONSUMER_KEY,
+	consumer_secret: process.env.CONSUMER_SECRET,
+	access_token_key: process.env.ACCESS_TOKEN_KEY,
+	access_token_secret: process.env.ACCESS_TOKEN_SECRET,
+});
+
+setInterval(async () => {
+	const latestTweet = await twitterClient.get('statuses/user_timeline', { screen_name: 'SaikouDev', count: 1 });
+	let previousTweetID = await tweetID.findOne({ identifier: 1 });
+
+	if (!previousTweetID) {
+		tweetID.create({
+			identifier: 1,
+			tweetID: '0',
+		});
+
+		previousTweetID = await tweetID.findOne({ identifier: 1 });
+	}
+
+	/* If Tweet isn't the same as the previous one */
+	if (latestTweet[0].id_str !== previousTweetID.tweetID) {
+		previousTweetID.tweetID = latestTweet[0].id_str;
+		await previousTweetID.save();
+
+		/* Send new Tweet in channel */
+		if (latestTweet[0].retweeted_status) {
+			(bot.channels.cache.find((channel: any) => channel.name === '🐤twitter') as TextChannel).send({ content: `**@SaikouDev** re-tweeted at ${new Date(latestTweet[0].created_at).toLocaleString('en-GB', { hour12: true })}: https://twitter.com/SaikouDev/status/${latestTweet[0].retweeted_status.id_str}` }).then((message) => {
+				if (message.crosspostable) message.crosspost();
+			});
+		} else {
+			(bot.channels.cache.find((channel: any) => channel.name === '🐤twitter') as TextChannel).send({ content: `**@SaikouDev** tweeted at ${new Date(latestTweet[0].created_at).toLocaleString('en-GB', { hour12: true })}: https://twitter.com/SaikouDev/status/${latestTweet[0].id_str}` }).then((message) => {
+				if (message.crosspostable) message.crosspost();
+			});
+		}
+	}
+}, 5000);
 
 bot.login(process.env.TEST === 'true' ? process.env.DISCORD_TESTTOKEN : process.env.DISCORD_TOKEN);

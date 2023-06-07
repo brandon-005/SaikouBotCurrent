@@ -111,3 +111,9 @@ export interface VerifyTypes extends Document {
 	userID: string;
 	roleName: string;
 }
+
+// --- TweetID Schema ---
+export interface TweetTypes extends Document {
+	identifier: number;
+	tweetID: string;
+}
