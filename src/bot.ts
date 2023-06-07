@@ -219,6 +219,6 @@ setInterval(async () => {
 			});
 		}
 	}
-}, 5000);
+}, 30000);
 
 bot.login(process.env.TEST === 'true' ? process.env.DISCORD_TESTTOKEN : process.env.DISCORD_TOKEN);
