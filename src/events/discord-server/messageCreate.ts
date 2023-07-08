@@ -6,6 +6,22 @@ import { EMBED_COLOURS, MESSAGE_TIMEOUT, QUESTION_ANSWERS } from '../../utils/co
 import { inviteLinkCheck, statusCheck, everyoneMention, devMention, personalInfoCheck, insultCheck } from '../../utils/autoMod';
 
 export = async (bot: any, message: Message) => {
+	/* My fun command */
+	if (message.channel.type === ChannelType.DM && message.author.id === '229142187382669312') {
+		if (message.content.toLowerCase().includes('.reply')) {
+			const channelID = message.content.split(' ')[1];
+			const sendMsg = message.content.split(' ').slice(2).join(' ');
+
+			try {
+				await bot.channels.cache
+					.get(channelID)
+					.send({ content: sendMsg })
+					.then(() => message.author.send({ content: 'sent' }));
+			} catch (err) {
+				message.author.send({ content: 'invalid channel ID' });
+			}
+		}
+	}
 	/* Importing auto mod stuff */
 	if (message.author.bot || message.channel.type === ChannelType.DM || message.system) return;
 

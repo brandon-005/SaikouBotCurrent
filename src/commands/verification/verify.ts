@@ -1,5 +1,4 @@
-import { Command, ApplicationCommandOptionType, EmbedBuilder, User } from 'discord.js';
-import { EMBED_COLOURS } from '../../utils/constants';
+import { Command, ApplicationCommandOptionType } from 'discord.js';
 
 const command: Command = {
 	config: {
@@ -16,29 +15,7 @@ const command: Command = {
 			},
 		],
 	},
-	run: async ({ interaction }) => {
-		const member: User = interaction.options.getUser('user')! || interaction.user;
-
-		if (!member.avatar) {
-			return interaction.editReply({
-				embeds: [
-					new EmbedBuilder() // prettier-ignore
-						.setDescription('ℹ️ This user has no avatar.')
-						.setColor(EMBED_COLOURS.blurple),
-				],
-			});
-		}
-
-		return interaction.editReply({
-			embeds: [
-				new EmbedBuilder() //
-					.setAuthor({ name: member.tag, iconURL: member.displayAvatarURL({ size: 64 }) })
-					.setDescription(member.avatarURL() ? `[JPG](${member.avatarURL({ extension: 'jpg' })}) | [PNG](${member.avatarURL({ extension: 'png' })}) | [WEBP](${member.avatarURL({ extension: 'webp' })}) | [JPEG](${member.avatarURL({ extension: 'jpeg' })})` : '')
-					.setColor(EMBED_COLOURS.blurple)
-					.setImage(member.displayAvatarURL({ extension: 'webp', size: 512 })),
-			],
-		});
-	},
+	run: async ({ interaction }) => interaction.editReply({ content: 'Coming Soon!' }),
 };
 
 export = command;

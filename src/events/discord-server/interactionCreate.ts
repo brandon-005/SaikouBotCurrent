@@ -285,7 +285,7 @@ export = async (bot: Client, interaction: Interaction) => {
 										const member = interaction.guild.members.cache.get(interaction.user.id);
 
 										/* Setting Roblox nickname */
-										member.setNickname(robloxUser.robloxName).catch(() => {});
+										await member.setNickname(robloxUser.robloxName).catch(() => {});
 
 										if (followerRoles.followerRole) {
 											if (followerRoles.followerRole !== 'Follower') {
@@ -296,6 +296,8 @@ export = async (bot: Client, interaction: Interaction) => {
 											if (member.roles.cache.some((role) => role.name === 'Unverified')) {
 												member.roles.remove(interaction.guild.roles.cache.find((discordRole) => discordRole.name === 'Unverified')).catch(() => {});
 											}
+										} else {
+											await member.roles.add(interaction.guild.roles.cache.find((discordRole) => discordRole.name === 'Follower')).catch(() => {});
 										}
 
 										buttonResponse.update({

@@ -3,7 +3,7 @@ import axios from 'axios';
 import ms from 'ms';
 
 import { noUser } from '../../utils/embeds';
-import { EMBED_COLOURS } from '../../utils/constants';
+import { EMBED_COLOURS, ROBLOXBAN_CHOICES } from '../../utils/constants';
 
 const command: Command = {
 	config: {
@@ -42,6 +42,7 @@ const command: Command = {
 				description: 'The reason for the ban.',
 				type: ApplicationCommandOptionType.String,
 				required: true,
+				choices: ROBLOXBAN_CHOICES,
 			},
 			{
 				name: 'duration',

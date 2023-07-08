@@ -3,7 +3,7 @@ import { VerifyTypes } from '../TS/interfaces';
 
 const verifySchema: Schema = new Schema({
 	robloxName: { type: String },
-	robloxID: { type: Number },
+	robloxID: { type: String },
 	userID: { type: String },
 	roleName: { type: String },
 });

@@ -107,7 +107,7 @@ export interface QOTDTypes extends Document {
 // --- Verified User Schema ---
 export interface VerifyTypes extends Document {
 	robloxName: string;
-	robloxID: number;
+	robloxID: string;
 	userID: string;
 	roleName: string;
 }

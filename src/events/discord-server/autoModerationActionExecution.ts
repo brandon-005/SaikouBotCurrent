@@ -27,7 +27,7 @@ export = async (bot: any, data: AutoModerationActionExecution) => {
 					.setAuthor({ name: 'Saikou Discord | Auto Moderation', iconURL: bot.user.displayAvatarURL() })
 					.setDescription(`**A message by <@${data.userId}> has been blocked <t:${parseInt(String(Date.now() / 1000))}:R> in <#${data.channelId}>**.`)
 					.addFields([
-						{ name: 'Triggered Content', value: `${data.content}` },
+						{ name: 'Triggered Content', value: `${data.content.length > 1020 ? `${data.content.substring(0, 1019)}...` : data.content}` },
 						{ name: 'Action', value: `${modAction}` },
 					])
 					.setFooter({ text: `${autoModEmbedReason} • User ID: ${data.user.id}` })

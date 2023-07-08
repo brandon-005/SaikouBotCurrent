@@ -18,7 +18,7 @@ export async function autoPunish(ifStatement: any, message: Message, autoModEmbe
 		const autoModEmbed = new EmbedBuilder() // prettier-ignore
 			.setAuthor({ name: message.member ? message.member.displayName : message.author.username, iconURL: message.author.displayAvatarURL() })
 			.setDescription(`**${message.author.username} has triggered the auto moderation for ${autoModEmbedReason}**.`)
-			.addFields([{ name: 'Triggered Content', value: `${message.cleanContent} [[Jump to message]](${message.url})` }])
+			.addFields([{ name: 'Triggered Content', value: `${message.content.length > 1020 ? `${message.cleanContent.substring(0, 1019)}...` : message.cleanContent} [[Jump to message]](${message.url})` }])
 			.setFooter({ text: `User ID: ${message.author.id}` })
 			.setTimestamp()
 			.setColor(EMBED_COLOURS.red);

@@ -395,3 +395,54 @@ export const VERIFICATION_PHRASES = [
 	'Camera Phone Computer Tablet Television',
 	'apple tomato orange blue ocean',
 ];
+
+export const ROBLOXBAN_CHOICES: any = [
+	{
+		name: 'Exploiting',
+		value: 'Exploiting.',
+	},
+	{
+		name: 'Bypassing the Roblox chat filter',
+		value: 'Bypassing the Roblox chat filter.',
+	},
+	{
+		name: 'Bypassing the Roblox chat filter (Abusive/Insulting)',
+		value: 'Bypassing the Roblox chat filter (Abusive/Insulting).',
+	},
+	{
+		name: 'Sexually derogatory comments',
+		value: 'Bypassing the chat filter to post inappropriate messages.',
+	},
+	{
+		name: 'Wall glitching',
+		value: 'Wall glitching.',
+	},
+	{
+		name: 'Excessive toxicity/insulting',
+		value: 'Excessive toxicity/insulting.',
+	},
+	{
+		name: 'Racial Slurs/Hate Speech',
+		value: 'Inappropriate remarks, hate speech.',
+	},
+	{
+		name: 'Impersonation',
+		value: 'Impersonating someone to mislead others.',
+	},
+	{
+		name: 'Exploit Threats or remarks',
+		value: 'Threatening to exploit/making exploit remarks.',
+	},
+	{
+		name: 'Scamming or phishing',
+		value: 'Scamming other players and/or phishing attempt.',
+	},
+	{
+		name: 'Child endangerment (grooming, sexuality, paedophilia)',
+		value: 'Endangerment - Inappropriate remarks to other players on a serious level. ',
+	},
+	// {
+	// 	name: 'Custom Reason',
+	// 	value: 'Other',
+	// },
+];

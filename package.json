@@ -37,7 +37,6 @@
 		"node-cron": "^3.0.2",
 		"re2": "^1.18.0",
 		"string-similarity": "^4.0.4",
-		"twitter": "^1.7.1",
 		"url-regex-safe": "^3.0.0"
 	},
 	"devDependencies": {
@@ -46,7 +45,6 @@
 		"@types/node": "^18.15.5",
 		"@types/node-cron": "^3.0.7",
 		"@types/string-similarity": "^4.0.0",
-		"@types/twitter": "^1.7.1",
 		"@types/url-regex-safe": "^1.0.0",
 		"@typescript-eslint/eslint-plugin": "^5.56.0",
 		"@typescript-eslint/parser": "^5.56.0",
