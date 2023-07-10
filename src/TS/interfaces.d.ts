@@ -16,6 +16,7 @@ export interface TriviaTypes extends Document {
 	options: string[];
 	answer: string;
 	points: number;
+	difficulty: string;
 }
 
 // --- Correct Trivias Schema ---

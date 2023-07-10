@@ -7,6 +7,7 @@ const triviaSchema: Schema = new Schema({
 	options: { type: Array },
 	answer: { type: String },
 	points: { type: Number },
+	difficulty: { type: String },
 });
 
 export = model<TriviaTypes>('triviaData', triviaSchema);

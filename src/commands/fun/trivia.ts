@@ -1,19 +1,46 @@
-import { Command, EmbedBuilder } from 'discord.js';
+import { ApplicationCommandOptionType, Command, EmbedBuilder } from 'discord.js';
 
 import triviaData from '../../models/trivias';
 import weeklyTrivia from '../../models/weeklyTrivia';
 import triviaAnswerData from '../../models/correctTrivia';
 import { EMBED_COLOURS, LETTER_EMOJIS, PROMPT_TIMEOUT } from '../../utils/constants';
+import { getRandomInt } from '../../utils/functions';
 
 const command: Command = {
 	config: {
 		commandName: 'trivia',
 		commandAliases: ['quiz', 'gamequestion', 't'],
 		commandDescription: "Answer questions based on Saikou's games, how good is your knowledge?",
-		COOLDOWN_TIME: 30,
+		// COOLDOWN_TIME: 30,
+		slashOptions: [
+			{
+				name: 'difficulty',
+				description: 'Which difficulty you would like to play.',
+				type: ApplicationCommandOptionType.String,
+				required: true,
+				choices: [
+					{
+						name: '😎 Easy',
+						value: 'Easy',
+					},
+					{
+						name: '🤔 Medium',
+						value: 'Medium',
+					},
+					{
+						name: '😨 Hard',
+						value: 'Hard',
+					},
+					{
+						name: '😱 Very Hard',
+						value: 'Very Hard',
+					},
+				],
+			},
+		],
 	},
-	run: async ({ interaction }) => {
-		const fetchedQuestion = await triviaData.aggregate([{ $sample: { size: 1 } }]);
+	run: async ({ interaction, args }) => {
+		const fetchedQuestion = await triviaData.aggregate([{ $match: { difficulty: `${args[0]}` } }, { $sample: { size: 1 } }]);
 		const triviaUser = await triviaAnswerData.findOne({ userID: interaction.user.id });
 		const weeklyTriviaUser = await weeklyTrivia.findOne({ userID: interaction.user.id });
 		const randomOrderedOptions = fetchedQuestion[0].options.sort(() => Math.random() - 0.5);
@@ -43,7 +70,7 @@ const command: Command = {
 
 			const resultEmbed = new EmbedBuilder() // prettier-ignore
 				.setTitle('Trivia Results')
-				.addFields([{ name: 'Your Answer', value: `${inputtedReaction}`, inline: true }])
+				.addFields([{ name: 'Your Answer', value: `${inputtedReaction} ${Object.keys(optionsObj)!.find((key: any) => optionsObj[key] === inputtedReaction)!}`, inline: true }])
 				.setColor(EMBED_COLOURS.blurple)
 				.setThumbnail(interaction.user.displayAvatarURL());
 
@@ -80,7 +107,7 @@ const command: Command = {
 
 			if (triviaUser && triviaUser.answersCorrect - 1 > 0 && weeklyTriviaUser && weeklyTriviaUser.answersCorrect - 1 > 0) {
 				resultEmbed.setDescription(`You answered the trivia incorrectly and lost **1 point**!`);
-				resultEmbed.addFields([{ name: 'Correct Answer', value: `${Object.entries(optionsObj).find((key: any) => key[0] === fetchedQuestion[0].answer)![1]}`, inline: true }]);
+				resultEmbed.addFields([{ name: 'Correct Answer', value: `${Object.entries(optionsObj).find((key: any) => key[0] === fetchedQuestion[0].answer)![1]} ${fetchedQuestion[0].answer}`, inline: true }]);
 
 				triviaUser.answersCorrect -= 1;
 				weeklyTriviaUser.answersCorrect -= 1;
@@ -93,7 +120,7 @@ const command: Command = {
 			}
 
 			resultEmbed.setDescription(`You answered the trivia incorrectly, good try!`);
-			resultEmbed.addFields([{ name: 'Correct Answer', value: `${Object.entries(optionsObj).find((key: any) => key[0] === fetchedQuestion[0].answer)![1]}`, inline: true }]);
+			resultEmbed.addFields([{ name: 'Correct Answer', value: `${Object.entries(optionsObj).find((key: any) => key[0] === fetchedQuestion[0].answer)![1]} ${fetchedQuestion[0].answer}`, inline: true }]);
 
 			return await interaction.editReply({ embeds: [resultEmbed] }).then((msg) => {
 				msg.reactions.removeAll();
