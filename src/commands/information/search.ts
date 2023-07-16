@@ -93,7 +93,7 @@ const command: Command = {
 				// prettier-ignore
 				{ name: 'About Me', value: response.data.description ? response.data.description : 'None' },
 				{ name: 'Display Name', value: response.data.displayName, inline: true },
-				{ name: 'Banned', value: response.data.isBanned ? 'Yes' : 'No', inline: true },
+				{ name: 'Terminated', value: response.data.isBanned ? 'Yes' : 'No', inline: true },
 				{ name: 'Last Online', value: moment(lastOnline).fromNow(), inline: true },
 			]);
 

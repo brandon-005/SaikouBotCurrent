@@ -52,7 +52,7 @@ const command: Command = {
 						{ name: 'Display Name', value: response.data.displayName, inline: true },
 						{ name: 'Creation Date', value: `${moment.utc(response.data.created).format('ll')}\n(${moment(response.data.created).fromNow()})`, inline: true },
 						{ name: 'Roblox ID', value: robloxUser.robloxID, inline: true },
-						{ name: 'Banned', value: `${response.data.isBanned ? 'Yes' : 'No'}`, inline: true },
+						{ name: 'Terminated', value: `${response.data.isBanned ? 'Yes' : 'No'}`, inline: true },
 						{ name: 'Verified Badge', value: `${response.data.hasVerifiedBadge ? 'Yes' : 'No'}`, inline: true },
 						{ name: '\u200b', value: '\u200b' },
 					]);
