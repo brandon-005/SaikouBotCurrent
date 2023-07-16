@@ -441,8 +441,8 @@ export const ROBLOXBAN_CHOICES: any = [
 		name: 'Child endangerment (grooming, sexuality, paedophilia)',
 		value: 'Endangerment - Inappropriate remarks to other players on a serious level. ',
 	},
-	// {
-	// 	name: 'Custom Reason',
-	// 	value: 'Other',
-	// },
+	{
+		name: 'Ban Evading',
+		value: 'Ban Evading. ',
+	},
 ];

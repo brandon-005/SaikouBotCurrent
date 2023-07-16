@@ -4,6 +4,8 @@ import ms from 'ms';
 
 import { noUser } from '../../utils/embeds';
 import { EMBED_COLOURS, ROBLOXBAN_CHOICES } from '../../utils/constants';
+import verifiedUser from '../../models/verifiedUser';
+import moment from 'moment';
 
 const command: Command = {
 	config: {
@@ -13,7 +15,7 @@ const command: Command = {
 		commandUsage: '<game> <player> <reason> [duration]',
 		userPermissions: 'ManageMessages',
 		limitedChannel: '🤖staff-cmds',
-		COOLDOWN_TIME: 10,
+		COOLDOWN_TIME: 60,
 		slashOptions: [
 			{
 				name: 'game',
@@ -56,6 +58,7 @@ const command: Command = {
 		let robloxName: any;
 		let robloxID: any;
 		let invalidUser = false;
+		let apiError;
 
 		/* CHECKING IF ROBLOX NAME IS VALID */
 		await axios({
@@ -76,13 +79,15 @@ const command: Command = {
 			return noUser(interaction, false);
 		}
 
+		const verified = await verifiedUser.findOne({ robloxID });
+
 		/* ADDING BAN */
 		if (args[3]) {
 			if (!ms(args[3])) {
 				return interaction.editReply({ content: 'Invalid time.' });
 			}
 
-			return axios({
+			await axios({
 				url: 'https://bans.saikouapi.xyz/v1/timebans/create-new',
 				method: 'POST',
 				data: {
@@ -138,6 +143,7 @@ const command: Command = {
 					});
 				})
 				.catch((err) => {
+					apiError = true;
 					const embed = new EmbedBuilder() // prettier-ignore
 						.setColor(EMBED_COLOURS.red)
 						.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-sad.png');
@@ -166,9 +172,29 @@ const command: Command = {
 							return interaction.editReply({ embeds: [embed] });
 					}
 				});
+
+			if (verified && !apiError) {
+				const member = interaction.guild.members.cache.get(verified.userID);
+
+				await member
+					.send({
+						embeds: [
+							new EmbedBuilder() // prettier-ignore
+								.setTitle('Temporary Game Ban! 🎮')
+								.setDescription(`Hey, **${robloxName}**!\n\nIt appears that you've received a temporary ban from one of Saikou's affiliated games. We take these punishments seriously, and if you continue to break the rules, we may choose to permanently ban you.\n\nIf you believe this punishment is unjustified or incorrect, we encourage you to submit an [appeal](https://forms.gle/L98zfzbC8fuAz5We6) for the offence. Please note that if you were correctly punished, this will not warrant a removal of your punishment and it will be ignored.`)
+								.addFields({ name: 'Ban Details', value: `Account [${robloxName}](https://www.roblox.com/users/${robloxID}/profile) was temporarily banned on ${moment.utc(new Date()).format('ll')}\n(${moment(new Date()).fromNow()}) from ${args[0]}. The ban is due to expire in ${ms(ms(String(args[3])), { long: true })}.\n\n__Moderator Reason__\n${args[2]}` })
+								.setColor(EMBED_COLOURS.red)
+								.setFooter({ text: 'THIS IS AN AUTOMATED MESSAGE' })
+								.setTimestamp(),
+						],
+					})
+					.catch();
+			}
+
+			return;
 		}
 
-		return axios({
+		await axios({
 			url: 'https://bans.saikouapi.xyz/v1/bans/create-new',
 			method: 'POST',
 			data: {
@@ -249,6 +275,44 @@ const command: Command = {
 						return interaction.editReply({ embeds: [embed] });
 				}
 			});
+
+		if (verified && !apiError) {
+			const member = interaction.guild.members.cache.get(verified.userID);
+
+			await member
+				.send({
+					embeds: [
+						new EmbedBuilder() // prettier-ignore
+							.setTitle('Game Banned! 🎮')
+							.setDescription(`Hey, **${robloxName}**!\n\nIt appears that you're currently permanently banned from one of Saikou's affiliated games. We take these punishments seriously, and as a result we ban players from the Saikou Discord who have committed serious offences within our other platforms.\n\nIf you believe this punishment is unjustified or incorrect, we encourage you to submit an [appeal](https://forms.gle/L98zfzbC8fuAz5We6) for the offence. Please note that if you were correctly punished, this will not warrant a removal of your punishment and it will be ignored.`)
+							.addFields({ name: 'Ban Details', value: `Account [${robloxName}](https://www.roblox.com/users/${robloxID}/profile) was permanently banned on ${moment.utc(new Date()).format('ll')}\n(${moment(new Date()).fromNow()}) from ${args[0]}.\n\n__Moderator Reason__\n${args[2]}` })
+							.setColor(EMBED_COLOURS.red)
+							.setFooter({ text: 'THIS IS AN AUTOMATED MESSAGE' })
+							.setTimestamp(),
+					],
+				})
+				.catch();
+
+			await member.ban({ reason: `Account ${robloxName} permanently banned from ${args[0]}.` }).catch();
+
+			bot.channels.cache
+				.find((channel: any) => channel.name === '🤖auto-mod')
+				.send({
+					embeds: [
+						new EmbedBuilder() // prettier-ignore
+							.setAuthor({ name: 'Saikou Discord | Auto Moderation', iconURL: bot.user.displayAvatarURL() })
+							.setDescription(`**Account <@${verified.userID}> was flagged <t:${parseInt(String(Date.now() / 1000))}:R> for a ban in a Saikou game.**`)
+							.addFields([
+								{ name: 'Triggered Reason', value: `User linked with Roblox Account **[${robloxName}](https://www.roblox.com/users/${robloxID}/profile)** was permanently banned from ${args[0]}.` },
+								{ name: 'Action', value: 'Discord Ban' },
+							])
+							.setFooter({ text: `Permanent Ban • User ID: ${verified.userID}` })
+							.setColor(EMBED_COLOURS.red),
+					],
+				});
+		}
+
+		return;
 	},
 };
 

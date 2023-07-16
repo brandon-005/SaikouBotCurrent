@@ -4,14 +4,13 @@ import triviaData from '../../models/trivias';
 import weeklyTrivia from '../../models/weeklyTrivia';
 import triviaAnswerData from '../../models/correctTrivia';
 import { EMBED_COLOURS, LETTER_EMOJIS, PROMPT_TIMEOUT } from '../../utils/constants';
-import { getRandomInt } from '../../utils/functions';
 
 const command: Command = {
 	config: {
 		commandName: 'trivia',
 		commandAliases: ['quiz', 'gamequestion', 't'],
-		commandDescription: "Answer questions based on Saikou's games, how good is your knowledge?",
-		// COOLDOWN_TIME: 30,
+		commandDescription: "Answer questions based on Saikou's games and platforms, how good is your knowledge?",
+		COOLDOWN_TIME: 30,
 		slashOptions: [
 			{
 				name: 'difficulty',
@@ -53,8 +52,7 @@ const command: Command = {
 					.setTitle('Trivia Question')
 					.setDescription(`Question\n**${fetchedQuestion[0].question}\n\n${randomOrderedOptions.map((option: string, number: number) => `${String.fromCharCode(97 + number).toUpperCase()}. ${option}\n`).join('')}**\nSubmit your answer by adding a reaction.`)
 					.setColor(EMBED_COLOURS.blurple)
-					.setFooter({ text: `Requested by: ${interaction.guild?.members.cache.get(interaction.user.id)?.displayName || interaction.user.username}`, iconURL: interaction.user.displayAvatarURL() })
-					.setTimestamp(),
+					.setFooter({ text: `Requested by: ${interaction.guild?.members.cache.get(interaction.user.id)?.displayName || interaction.user.username} • Difficulty: ${args[0]}`, iconURL: interaction.user.displayAvatarURL() }),
 			],
 		});
 
@@ -106,11 +104,30 @@ const command: Command = {
 			}
 
 			if (triviaUser && triviaUser.answersCorrect - 1 > 0 && weeklyTriviaUser && weeklyTriviaUser.answersCorrect - 1 > 0) {
-				resultEmbed.setDescription(`You answered the trivia incorrectly and lost **1 point**!`);
+				let lostPoints;
+
+				switch (args[0]) {
+					case 'Easy':
+						lostPoints = 1;
+						break;
+
+					case 'Medium':
+						lostPoints = 2;
+						break;
+
+					case 'Hard':
+						lostPoints = 3;
+						break;
+
+					case 'Very Hard':
+						lostPoints = 3;
+						break;
+				}
+				resultEmbed.setDescription(`You answered the trivia incorrectly and lost **${lostPoints} points**!`);
 				resultEmbed.addFields([{ name: 'Correct Answer', value: `${Object.entries(optionsObj).find((key: any) => key[0] === fetchedQuestion[0].answer)![1]} ${fetchedQuestion[0].answer}`, inline: true }]);
 
-				triviaUser.answersCorrect -= 1;
-				weeklyTriviaUser.answersCorrect -= 1;
+				triviaUser.answersCorrect -= lostPoints;
+				weeklyTriviaUser.answersCorrect -= lostPoints;
 				await triviaUser.save();
 				await weeklyTriviaUser.save();
 

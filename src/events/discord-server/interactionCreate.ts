@@ -4,6 +4,7 @@ import axios from 'axios';
 import { EMBED_COLOURS, PROMPT_TIMEOUT, VERIFICATION_PHRASES, WELCOME_MESSAGES } from '../../utils/constants';
 import verifiedUser from '../../models/verifiedUser';
 import { checkAboutMe, checkFollowerRoles, choose, fetchRobloxUser } from '../../utils/functions';
+import moment from 'moment';
 
 const webhookClient: WebhookClient = new WebhookClient({ id: `1084843431454576726`, token: 'v6U2CuOFklrEIrSJgD_roQmZU0hehvv3s7pqmhGVDADOJDFGIaOjmgwVy-YYDBpTlUR5' });
 
@@ -274,61 +275,115 @@ export = async (bot: Client, interaction: Interaction) => {
 									}
 
 									if (aboutMeResult.correctPhrase === true) {
-										webhookClient.send({ content: `**${interaction.user.username}** passed the verification with account **${robloxUser.robloxName}** ✅` });
-										await verifiedUser.create({
-											robloxName: robloxUser.robloxName,
-											robloxID: robloxUser.robloxID,
-											roleName: followerRoles.followerRole || 'Follower',
-											userID: interaction.user.id,
+										let gameBanned;
+										let banData: any;
+
+										await axios({
+											method: 'GET',
+											url: `https://bans.saikouapi.xyz/v1/users/${robloxUser.robloxID}/banned`,
+											headers: {
+												'X-API-KEY': `${process.env.SAIKOU_BANS_TOKEN}`,
+											},
+										}).then((response: any) => {
+											if (response.data.banned === true && response.data.type === 'permban') {
+												gameBanned = true;
+												banData = response.data;
+											}
 										});
 
-										const member = interaction.guild.members.cache.get(interaction.user.id);
+										/* IF PLAYER IS BANNED FROM THE GAME PERMANENTLY */
+										if (gameBanned === true) {
+											const bannedMember = interaction.guild.members.cache.get(interaction.user.id);
 
-										/* Setting Roblox nickname */
-										await member.setNickname(robloxUser.robloxName).catch(() => {});
+											await bannedMember
+												.send({
+													embeds: [
+														new EmbedBuilder() // prettier-ignore
+															.setTitle('Game Banned! 🎮')
+															.setDescription(`Hey, **${robloxUser.robloxName}**!\n\nIt appears that you're currently permanently banned from one of Saikou's affiliated games. We take these punishments seriously, and as a result we ban players from the Saikou Discord who have committed serious offences within our other platforms.\n\nIf you believe this punishment is unjustified or incorrect, we encourage you to submit an [appeal](https://forms.gle/L98zfzbC8fuAz5We6) for the offence. Please note that if you were correctly punished, this will not warrant a removal of your punishment and it will be ignored.`)
+															.addFields({ name: 'Ban Details', value: `Account [${robloxUser.robloxName}](https://www.roblox.com/users/${robloxUser.robloxID}/profile) was permanently banned on ${moment.utc(banData.player.Date).format('ll')}\n(${moment(banData.player.Date).fromNow()}) from ${banData.player.Place}.\n\n__Moderator Reason__\n${banData.player.Reason}` })
+															.setColor(EMBED_COLOURS.red)
+															.setFooter({ text: 'THIS IS AN AUTOMATED MESSAGE' })
+															.setTimestamp(),
+													],
+												})
+												.catch();
+											await bannedMember.ban({ reason: `Account ${robloxUser.robloxName} permanently banned from ${banData.Place}.` });
+											webhookClient.send({ content: `**${interaction.user.username}** (**${robloxUser.robloxName}**) was flagged during verification for being banned ❌🎮` });
 
-										if (followerRoles.followerRole) {
-											if (followerRoles.followerRole !== 'Follower') {
+											/* Sending AutoMod Log */
+											bot.channels.cache
+												.find((channel: any) => channel.name === '🤖auto-mod')
+												.send({
+													embeds: [
+														new EmbedBuilder() // prettier-ignore
+															.setAuthor({ name: 'Saikou Discord | Auto Moderation', iconURL: bot.user.displayAvatarURL() })
+															.setDescription(`**Account <@${interaction.user.id}> was flagged <t:${parseInt(String(Date.now() / 1000))}:R> during verification.**`)
+															.addFields([
+																{ name: 'Triggered Reason', value: `User verified with Roblox account **[${robloxUser.robloxName}](https://www.roblox.com/users/${robloxUser.robloxID}/profile)** which is permanently banned from ${banData.player.Place} since ${moment.utc(banData.player.Date).format('ll')}\n(${moment(banData.player.Date).fromNow()}).` },
+																{ name: 'Action', value: 'Permanent Ban' },
+															])
+															.setFooter({ text: `Discord Ban • User ID: ${interaction.user.id}` })
+															.setColor(EMBED_COLOURS.red),
+													],
+												});
+										} else {
+											webhookClient.send({ content: `**${interaction.user.username}** passed the verification with account **${robloxUser.robloxName}** ✅` });
+											await verifiedUser.create({
+												robloxName: robloxUser.robloxName,
+												robloxID: robloxUser.robloxID,
+												roleName: followerRoles.followerRole || 'Follower',
+												userID: interaction.user.id,
+											});
+
+											const member = interaction.guild.members.cache.get(interaction.user.id);
+
+											/* Setting Roblox nickname */
+											await member.setNickname(robloxUser.robloxName).catch(() => {});
+
+											if (followerRoles.followerRole) {
+												if (followerRoles.followerRole !== 'Follower') {
+													await member.roles.add(interaction.guild.roles.cache.find((discordRole) => discordRole.name === 'Follower')).catch(() => {});
+												}
+												await member.roles.add(interaction.guild.roles.cache.find((discordRole) => discordRole.name === followerRoles.followerRole)).catch(() => {});
+
+												if (member.roles.cache.some((role) => role.name === 'Unverified')) {
+													member.roles.remove(interaction.guild.roles.cache.find((discordRole) => discordRole.name === 'Unverified')).catch(() => {});
+												}
+											} else {
 												await member.roles.add(interaction.guild.roles.cache.find((discordRole) => discordRole.name === 'Follower')).catch(() => {});
 											}
-											await member.roles.add(interaction.guild.roles.cache.find((discordRole) => discordRole.name === followerRoles.followerRole)).catch(() => {});
 
-											if (member.roles.cache.some((role) => role.name === 'Unverified')) {
-												member.roles.remove(interaction.guild.roles.cache.find((discordRole) => discordRole.name === 'Unverified')).catch(() => {});
-											}
-										} else {
-											await member.roles.add(interaction.guild.roles.cache.find((discordRole) => discordRole.name === 'Follower')).catch(() => {});
+											buttonResponse.update({
+												content: `👋 Welcome to **Saikou**, ${robloxUser.robloxName}! Looking to change your account? Use the /reverify command.`,
+												embeds: [],
+												components: [],
+											});
+
+											const joinEmbed = new EmbedBuilder() // prettier-ignore
+												.setTitle('👋 Welcome to the **Saikou Discord**!')
+												.setDescription(`**[${robloxUser.robloxName}](https://www.roblox.com/users/${robloxUser.robloxID}/profile)** ${choose(WELCOME_MESSAGES)}`)
+												.setColor(EMBED_COLOURS.green)
+												.setFooter({ text: 'User joined' })
+												.setTimestamp();
+
+											await axios
+												.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${robloxUser.robloxID}&size=720x720&format=png`)
+												.then((image: any) => {
+													joinEmbed.setThumbnail(String(image.data.data.map((value: any) => value.imageUrl)));
+												})
+												.catch(() => joinEmbed.setThumbnail('https://saikou.dev/assets/images/discord-bot/broken-avatar.png'));
+
+											// @ts-ignore
+											bot.channels.cache.get(process.env.JOIN_LEAVES_CHANNEL).send({
+												embeds: [joinEmbed],
+											});
+
+											openPrompt.delete(interaction.user.id);
+											usernameCollector.stop();
+											aboutMeCollector.stop();
+											return;
 										}
-
-										buttonResponse.update({
-											content: `👋 Welcome to **Saikou**, ${robloxUser.robloxName}! Looking to change your account? Use the /reverify command.`,
-											embeds: [],
-											components: [],
-										});
-
-										const joinEmbed = new EmbedBuilder() // prettier-ignore
-											.setTitle('👋 Welcome to the **Saikou Discord**!')
-											.setDescription(`**[${robloxUser.robloxName}](https://www.roblox.com/users/${robloxUser.robloxID}/profile)** ${choose(WELCOME_MESSAGES)}`)
-											.setColor(EMBED_COLOURS.green)
-											.setFooter({ text: 'User joined' })
-											.setTimestamp();
-
-										await axios
-											.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${robloxUser.robloxID}&size=720x720&format=png`)
-											.then((image: any) => {
-												joinEmbed.setThumbnail(String(image.data.data.map((value: any) => value.imageUrl)));
-											})
-											.catch(() => joinEmbed.setThumbnail('https://saikou.dev/assets/images/discord-bot/broken-avatar.png'));
-
-										// @ts-ignore
-										bot.channels.cache.get(process.env.JOIN_LEAVES_CHANNEL).send({
-											embeds: [joinEmbed],
-										});
-
-										openPrompt.delete(interaction.user.id);
-										usernameCollector.stop();
-										aboutMeCollector.stop();
-										return;
 									}
 
 									webhookClient.send({ content: `**${interaction.user.username}** failed the verification - Incorrect About Me` });

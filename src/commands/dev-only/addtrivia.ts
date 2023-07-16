@@ -138,6 +138,8 @@ const command: Command = {
 				],
 				components: [],
 			});
+
+			menuCollector.stop();
 		});
 	},
 };
