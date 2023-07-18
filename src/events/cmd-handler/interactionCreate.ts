@@ -4,7 +4,6 @@ import { redBright, bold } from 'chalk';
 import ms from 'ms';
 import blacklisted from '../../models/blacklistedUsers';
 
-import { errorEmbed } from '../../utils/embeds';
 import { choose } from '../../utils/functions';
 import { EMBED_COLOURS, MESSAGE_TIMEOUT, LOWER_COOLDOWN_COMMANDS } from '../../utils/constants';
 
@@ -20,7 +19,16 @@ export = async (bot: Client, interaction: Interaction) => {
 		const commandFile = bot.slashCommands.get(interaction.commandName);
 		const args: any = [];
 
-		if (!commandFile) return errorEmbed(interaction);
+		if (!commandFile)
+			return interaction.followUp({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setTitle('❌ Something went wrong!') // prettier-ignore
+						.setDescription(`Uh oh! Looks like Kaiou has hit some of the wrong buttons, causing an error. You can try... \n\n• Coming back later and trying again\n• Checking out Saikou's social medias whilst you wait 😏`)
+						.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-sad.png')
+						.setColor(EMBED_COLOURS.red),
+				],
+			});
 
 		/* GETTING ARGS */
 		interaction.options.data.map((argument: any) => args.push(argument.value.length > 1024 ? `${argument.value.substring(0, 1021)}...` : argument.value));
@@ -147,21 +155,32 @@ export = async (bot: Client, interaction: Interaction) => {
 			bot.cooldowns.delete(`${interaction.user.id}-${commandName}`);
 		}, Math.round(COOLDOWN_TIME) * 1000);
 
-		commandFile.run({ bot, args, interaction }).catch((errorMessage: Error) => {
-			console.error(errorMessage);
-			errorEmbed(interaction).catch(() => {});
+		try {
+			await commandFile.run({ bot, args, interaction });
+		} catch (error) {
+			console.error(error);
+
+			await interaction.followUp({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setTitle('❌ Something went wrong!') // prettier-ignore
+						.setDescription(`Uh oh! Looks like Kaiou has hit some of the wrong buttons, causing an error. You can try... \n\n• Coming back later and trying again\n• Checking out Saikou's social medias whilst you wait 😏`)
+						.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-sad.png')
+						.setColor(EMBED_COLOURS.red),
+				],
+			});
 
 			webhookClient.send({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
-						.setTitle(`❌ ${errorMessage.name}`)
-						.setDescription(`**Error in the ${commandName} command (slash command)**\n${errorMessage}`)
-						.setFooter({ text: `Error Occured • ${bot.user!.username}` })
+						.setTitle(`❌ Command Error!`)
+						.setDescription(`**Error in the ${commandName} command (slash command)**\n${error}`)
+						.setFooter({ text: `Error Occurred • ${bot.user!.username}` })
 						.setColor(EMBED_COLOURS.red)
 						.setTimestamp(),
 				],
 			});
-		});
+		}
 	}
 
 	/* HANDLING CONTEXT MENUS */
@@ -173,7 +192,16 @@ export = async (bot: Client, interaction: Interaction) => {
 		const commandFile = bot.slashCommands.get(interaction.commandName);
 		const args: any = [];
 
-		if (!commandFile) return errorEmbed(interaction).catch(() => {});
+		if (!commandFile)
+			return interaction.followUp({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setTitle('❌ Something went wrong!') // prettier-ignore
+						.setDescription(`Uh oh! Looks like Kaiou has hit some of the wrong buttons, causing an error. You can try... \n\n• Coming back later and trying again\n• Checking out Saikou's social medias whilst you wait 😏`)
+						.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-sad.png')
+						.setColor(EMBED_COLOURS.red),
+				],
+			});
 
 		/* GETTING ARGS */
 		interaction.options.data.map((argument) => args.push(argument.value));

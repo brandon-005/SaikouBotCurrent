@@ -307,26 +307,24 @@ export = async (bot: Client, interaction: Interaction) => {
 															.setTimestamp(),
 													],
 												})
-												.catch();
+												.catch(() => {});
 											await bannedMember.ban({ reason: `Account ${robloxUser.robloxName} permanently banned from ${banData.Place}.` });
 											webhookClient.send({ content: `**${interaction.user.username}** (**${robloxUser.robloxName}**) was flagged during verification for being banned ❌🎮` });
 
 											/* Sending AutoMod Log */
-											bot.channels.cache
-												.find((channel: any) => channel.name === '🤖auto-mod')
-												.send({
-													embeds: [
-														new EmbedBuilder() // prettier-ignore
-															.setAuthor({ name: 'Saikou Discord | Auto Moderation', iconURL: bot.user.displayAvatarURL() })
-															.setDescription(`**Account <@${interaction.user.id}> was flagged <t:${parseInt(String(Date.now() / 1000))}:R> during verification.**`)
-															.addFields([
-																{ name: 'Triggered Reason', value: `User verified with Roblox account **[${robloxUser.robloxName}](https://www.roblox.com/users/${robloxUser.robloxID}/profile)** which is permanently banned from ${banData.player.Place} since ${moment.utc(banData.player.Date).format('ll')}\n(${moment(banData.player.Date).fromNow()}).` },
-																{ name: 'Action', value: 'Permanent Ban' },
-															])
-															.setFooter({ text: `Discord Ban • User ID: ${interaction.user.id}` })
-															.setColor(EMBED_COLOURS.red),
-													],
-												});
+											(bot.channels.cache.find((channel: any) => channel.name === '🤖auto-mod') as TextChannel).send({
+												embeds: [
+													new EmbedBuilder() // prettier-ignore
+														.setAuthor({ name: 'Saikou Discord | Auto Moderation', iconURL: bot.user.displayAvatarURL() })
+														.setDescription(`**Account <@${interaction.user.id}> was flagged <t:${parseInt(String(Date.now() / 1000))}:R> during verification.**`)
+														.addFields([
+															{ name: 'Triggered Reason', value: `User verified with Roblox account **[${robloxUser.robloxName}](https://www.roblox.com/users/${robloxUser.robloxID}/profile)** which is permanently banned from ${banData.player.Place} since ${moment.utc(banData.player.Date).format('ll')}\n(${moment(banData.player.Date).fromNow()}).` },
+															{ name: 'Action', value: 'Permanent Ban' },
+														])
+														.setFooter({ text: `Discord Ban • User ID: ${interaction.user.id}` })
+														.setColor(EMBED_COLOURS.red),
+												],
+											});
 										} else {
 											webhookClient.send({ content: `**${interaction.user.username}** passed the verification with account **${robloxUser.robloxName}** ✅` });
 											await verifiedUser.create({

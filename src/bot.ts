@@ -11,7 +11,6 @@ import { choose, sendQuestion, awardRole } from './utils/functions';
 import WeeklyTrivia from './models/weeklyTrivia';
 import StatusTimer from './models/statusTimer';
 import birthdays from './staffBirthdays.json';
-import correctTrivia from './models/correctTrivia';
 
 config();
 

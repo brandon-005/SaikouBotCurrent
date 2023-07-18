@@ -291,25 +291,23 @@ const command: Command = {
 							.setTimestamp(),
 					],
 				})
-				.catch();
+				.catch(() => {});
 
 			await member.ban({ reason: `Account ${robloxName} permanently banned from ${args[0]}.` }).catch();
 
-			bot.channels.cache
-				.find((channel: any) => channel.name === '🤖auto-mod')
-				.send({
-					embeds: [
-						new EmbedBuilder() // prettier-ignore
-							.setAuthor({ name: 'Saikou Discord | Auto Moderation', iconURL: bot.user.displayAvatarURL() })
-							.setDescription(`**Account <@${verified.userID}> was flagged <t:${parseInt(String(Date.now() / 1000))}:R> for a ban in a Saikou game.**`)
-							.addFields([
-								{ name: 'Triggered Reason', value: `User linked with Roblox Account **[${robloxName}](https://www.roblox.com/users/${robloxID}/profile)** was permanently banned from ${args[0]}.` },
-								{ name: 'Action', value: 'Discord Ban' },
-							])
-							.setFooter({ text: `Permanent Ban • User ID: ${verified.userID}` })
-							.setColor(EMBED_COLOURS.red),
-					],
-				});
+			(bot.channels.cache.find((channel: any) => channel.name === '🤖auto-mod') as TextChannel).send({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setAuthor({ name: 'Saikou Discord | Auto Moderation', iconURL: bot.user.displayAvatarURL() })
+						.setDescription(`**Account <@${verified.userID}> was flagged <t:${parseInt(String(Date.now() / 1000))}:R> for a ban in a Saikou game.**`)
+						.addFields([
+							{ name: 'Triggered Reason', value: `User linked with Roblox Account **[${robloxName}](https://www.roblox.com/users/${robloxID}/profile)** was permanently banned from ${args[0]}.` },
+							{ name: 'Action', value: 'Discord Ban' },
+						])
+						.setFooter({ text: `Permanent Ban • User ID: ${verified.userID}` })
+						.setColor(EMBED_COLOURS.red),
+				],
+			});
 		}
 
 		return;

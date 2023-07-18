@@ -1,8 +1,6 @@
-import { Command, ApplicationCommandOptionType, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, Interaction, ButtonInteraction, ModalBuilder, ModalActionRowComponentBuilder, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder, StringSelectMenuInteraction } from 'discord.js';
+import { Command, ApplicationCommandOptionType, EmbedBuilder, ActionRowBuilder, ComponentType, Interaction, StringSelectMenuBuilder, StringSelectMenuInteraction } from 'discord.js';
 
 import { EMBED_COLOURS, PROMPT_TIMEOUT } from '../../utils/constants';
-import wyrQuestion from '../../models/wyrQuestion';
-import qotd from '../../models/qotd';
 import trivias from '../../models/trivias';
 import { getRandomInt } from '../../utils/functions';
 
