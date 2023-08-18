@@ -15,7 +15,7 @@ export = async (bot: any, member: GuildMember) => {
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('<:ban:701729757909352538> Member Banned!')
-						.setDescription(`**${ban.user.tag}** has been banned from Saikou by a member of staff!`)
+						.setDescription(`**${ban.user.username}** has been banned from Saikou by a member of staff!`)
 						.setImage('https://media.giphy.com/media/H99r2HtnYs492/giphy.gif')
 						.setColor(EMBED_COLOURS.red)
 						.setFooter({ text: 'User banned' })

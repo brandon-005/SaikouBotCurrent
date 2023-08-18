@@ -461,7 +461,7 @@ export = async (bot: Client, interaction: Interaction) => {
 							{ name: 'My Favourite Colour', value: colour },
 						])
 						.setThumbnail(interaction.user.avatarURL())
-						.setFooter({ text: `${interaction.user.tag} (${interaction.user.id})`, iconURL: interaction.user.avatarURL() })
+						.setFooter({ text: `${interaction.user.username} (${interaction.user.id})`, iconURL: interaction.user.avatarURL() })
 						.setColor(EMBED_COLOURS.blurple),
 				],
 			});

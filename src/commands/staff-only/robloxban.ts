@@ -138,7 +138,7 @@ const command: Command = {
 						embeds: [
 							new EmbedBuilder() // prettier-ignore
 								.setColor(EMBED_COLOURS.green)
-								.setDescription(`✅ Successfully time-banned **${robloxName}**!`),
+								.setDescription(`✅ Successfully time-banned **[${robloxName}](https://www.roblox.com/users/${robloxID}/profile)**!`),
 						],
 					});
 				})
@@ -189,6 +189,20 @@ const command: Command = {
 						],
 					})
 					.catch();
+
+				(bot.channels.cache.find((channel: any) => channel.name === '🤖auto-mod') as TextChannel).send({
+					embeds: [
+						new EmbedBuilder() // prettier-ignore
+							.setAuthor({ name: 'Saikou Discord | Auto Moderation', iconURL: bot.user.displayAvatarURL() })
+							.setDescription(`**Account <@${verified.userID}> was flagged <t:${parseInt(String(Date.now() / 1000))}:R> for a temporary ban in a Saikou game.**`)
+							.addFields([
+								{ name: 'Triggered Reason', value: `User linked with Roblox Account **[${robloxName}](https://www.roblox.com/users/${robloxID}/profile)** was temporarily banned just now.` },
+								{ name: 'Action', value: 'Automatic Notice' },
+							])
+							.setFooter({ text: `Automated Notice • User ID: ${verified.userID}` })
+							.setColor(EMBED_COLOURS.yellow),
+					],
+				});
 			}
 
 			return;
@@ -242,7 +256,7 @@ const command: Command = {
 					embeds: [
 						new EmbedBuilder() // prettier-ignore
 							.setColor(EMBED_COLOURS.green)
-							.setDescription(`✅ Successfully perm-banned **${robloxName}**!`),
+							.setDescription(`✅ Successfully perm-banned **[${robloxName}](https://www.roblox.com/users/${robloxID}/profile)**!`),
 					],
 				});
 			})

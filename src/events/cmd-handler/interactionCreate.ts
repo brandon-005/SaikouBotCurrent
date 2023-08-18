@@ -63,7 +63,7 @@ export = async (bot: Client, interaction: Interaction) => {
 									`The **${commandName}** command is limited to the **${interaction
 										.guild!.channels.cache.filter((channel: any) => channel.name.match(limitedChannel))
 										.map((channel: any) => channel.toString())
-										.join(' or ')}** channel. Try relocating to that channel and trying again!`
+										.join(' or ')}** channel. Try relocating to that channel and trying again!`,
 								)
 								.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
 								.setColor(EMBED_COLOURS.red),
@@ -151,9 +151,12 @@ export = async (bot: Client, interaction: Interaction) => {
 		}
 
 		bot.cooldowns.set(`${interaction.user.id}-${commandName}`, Date.now() + COOLDOWN_TIME * 1000);
-		setTimeout((): void => {
-			bot.cooldowns.delete(`${interaction.user.id}-${commandName}`);
-		}, Math.round(COOLDOWN_TIME) * 1000);
+		setTimeout(
+			(): void => {
+				bot.cooldowns.delete(`${interaction.user.id}-${commandName}`);
+			},
+			Math.round(COOLDOWN_TIME) * 1000,
+		);
 
 		try {
 			await commandFile.run({ bot, args, interaction });

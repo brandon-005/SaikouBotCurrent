@@ -53,7 +53,7 @@ const command: Command = {
 							.addFields([
 								// prettier-ignore
 								{ name: 'Moderator', value: `<@${interaction.user.id}>`, inline: true },
-								{ name: 'User', value: idMember.tag, inline: true },
+								{ name: 'User', value: idMember.username, inline: true },
 								{ name: 'Reason', value: reason },
 							])
 							.setThumbnail(idMember.displayAvatarURL())

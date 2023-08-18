@@ -45,7 +45,7 @@ const command: Command = {
 		userWarns.warnings.forEach((warn: any, count: number) => {
 			const moderator = interaction.guild!.members.cache.get(warn.moderator);
 			// eslint-disable-next-line no-underscore-dangle
-			warningsEmbed.addFields([{ name: `Warning: ${count + 1} | Moderator: ${moderator ? moderator.user.tag : 'SaikouDev'}`, value: `${warn.reason} - ${moment(warn.date).format('MMMM Do YYYY')}` }]);
+			warningsEmbed.addFields([{ name: `Warning: ${count + 1} | Moderator: ${moderator ? moderator.user.username : 'SaikouDev'}`, value: `${warn.reason} - ${moment(warn.date).format('MMMM Do YYYY')}` }]);
 
 			if (interaction.member.permissions.has(PermissionFlagsBits.ManageMessages)) {
 				menuOptions.push({

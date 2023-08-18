@@ -171,7 +171,7 @@ const command: Command = {
 						const reasonSummary = interaction.channel!.createMessageComponentCollector({ filter: (reasonOptionsMenu: any) => reasonOptionsMenu.user.id === interaction.user.id, componentType: ComponentType.StringSelect, time: PROMPT_TIMEOUT });
 
 						reasonSummary.on('collect', async (options: StringSelectMenuInteraction) => {
-							let reasonOptions: string,
+							let reasonOptions: string = '',
 								detailedReason: string,
 								correctiveAction: string,
 								reviewDate: string,

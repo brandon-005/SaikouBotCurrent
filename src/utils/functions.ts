@@ -196,7 +196,7 @@ export async function autoPunish(data: AutoModerationActionExecution, actionReas
 			'Warning',
 			`Hello **${data.user.username}**,\n\nYour account has recently been flagged by a staff member for breaching Saikou's Community Rules.\n\nTo learn more about our server rules, visit <#397797150840324115>\n\nWe take these actions seriously. If you continue to break the rules, we may need to take additional action against your account, which could result in a permanent ban from the Saikou Discord.\n\nPlease check the attached moderator note below for more details.`,
 			`${actionReason} [AUTOMATIC]`,
-			`<@${data.user.id}>, You have been automatically warned for breaking Saikou's rules.\n\n**Infraction:** ${actionReason}`
+			`<@${data.user.id}>, You have been automatically warned for breaking Saikou's rules.\n\n**Infraction:** ${actionReason}`,
 		);
 	}
 
@@ -212,7 +212,7 @@ export async function autoPunish(data: AutoModerationActionExecution, actionReas
 					'Warning',
 					`Hello **${data.user.username}**,\n\nYour account has recently been flagged by a staff member for breaching Saikou's Community Rules.\n\nTo learn more about our server rules, visit <#397797150840324115>\n\nWe take these actions seriously. If you continue to break the rules, we may need to take additional action against your account, which could result in a permanent ban from the Saikou Discord.\n\nPlease check the attached moderator note below for more details.`,
 					`${actionReason} [AUTOMATIC]`,
-					`<@${data.user.id}>, You have been automatically warned for breaking Saikou's rules.\n\n**Infraction:** ${actionReason}`
+					`<@${data.user.id}>, You have been automatically warned for breaking Saikou's rules.\n\n**Infraction:** ${actionReason}`,
 				);
 			} else {
 				await data.member?.timeout(10800000, 'Reached 3 warnings.');
@@ -223,7 +223,7 @@ export async function autoPunish(data: AutoModerationActionExecution, actionReas
 					'Mute',
 					`Hello **${data.user.username}**,\n\nWe noticed your account has recently broke Saikou's Community Rules again. Because of this, your account has received a **3h mute** on our Discord Server.\n\nIf you continue to break the rules, your account will receive further penalties. To learn more about our rules, visit <#397797150840324115>\n\nWe build our games and community for players to have fun. Creating a safe environment and enjoyable experience for everyone is a crucial part of what we're about, and our community rules in place is what we ask and expect players to abide by to achieve this.\n\nPlease check the attached moderator note below for more details.`,
 					`${actionReason} [AUTOMATIC]`,
-					`<@${data.user.id}>, You have been automatically muted for 3 hours for breaking Saikou's rules (Reached 3 warnings).\n\n**Infraction:** ${actionReason}`
+					`<@${data.user.id}>, You have been automatically muted for 3 hours for breaking Saikou's rules (Reached 3 warnings).\n\n**Infraction:** ${actionReason}`,
 				);
 
 				await moderationEmbed(null, bot, '3h Mute', data.member, `User triggered SaikouBot's auto moderation for ${autoModFilter}. (Reached 3 warnings)`, false, null, 'SaikouDev');
@@ -239,7 +239,7 @@ export async function autoPunish(data: AutoModerationActionExecution, actionReas
 					'Warning',
 					`Hello **${data.user.username}**,\n\nYour account has recently been flagged by a staff member for breaching Saikou's Community Rules.\n\nTo learn more about our server rules, visit <#397797150840324115>\n\nWe take these actions seriously. If you continue to break the rules, we may need to take additional action against your account, which could result in a permanent ban from the Saikou Discord.\n\nPlease check the attached moderator note below for more details.`,
 					`${actionReason} [AUTOMATIC]`,
-					`<@${data.user.id}>, You have been automatically warned for breaking Saikou's rules.\n\n**Infraction:** ${actionReason}`
+					`<@${data.user.id}>, You have been automatically warned for breaking Saikou's rules.\n\n**Infraction:** ${actionReason}`,
 				);
 			} else {
 				await data.member?.timeout(259200000, 'Reached 4 warnings.');
@@ -249,7 +249,7 @@ export async function autoPunish(data: AutoModerationActionExecution, actionReas
 					'Mute',
 					`Hello **${data.user.username}**,\n\nWe noticed your account has recently broke Saikou's Community Rules again. Because of this, your account has received a **3d mute** on our Discord Server.\n\nIf you continue to break the rules, your account will receive further penalties. To learn more about our rules, visit <#397797150840324115>\n\nWe build our games and community for players to have fun. Creating a safe environment and enjoyable experience for everyone is a crucial part of what we're about, and our community rules in place is what we ask and expect players to abide by to achieve this.\n\nPlease check the attached moderator note below for more details.`,
 					`${actionReason} [AUTOMATIC]`,
-					`<@${data.user.id}>, You have been automatically muted for 3 days for breaking Saikou's rules (Reached 4 warnings).\n\n**Infraction:** ${actionReason}`
+					`<@${data.user.id}>, You have been automatically muted for 3 days for breaking Saikou's rules (Reached 4 warnings).\n\n**Infraction:** ${actionReason}`,
 				);
 
 				await moderationEmbed(null, bot, '3d Mute', data.member, `User triggered SaikouBot's auto moderation for ${autoModFilter}. (Reached 4 warnings)`, false, null, 'SaikouDev');
@@ -264,7 +264,7 @@ export async function autoPunish(data: AutoModerationActionExecution, actionReas
 				'Kick',
 				`Hello **${data.user.username}**,\n\nWe noticed your account has recently broke Saikou's Community Rules again. Because of this, your account has received a kick from our Discord Server.\n\nIf you continue to break the rules, your account will be permanently banned from accessing the Discord Server. To learn more about our rules, visit <#397797150840324115>\n\nWe build our games and community for players to have fun. Creating a safe environment and enjoyable experience for everyone is a crucial part of what we're about, and our community rules in place is what we ask and expect players to abide by to achieve this.\n\nPlease check the attached moderator note below for more details.`,
 				`${actionReason} [AUTOMATIC]`,
-				`<@${data.user.id}>, You have been automatically kicked for breaking Saikou's rules (Reached 5 warnings).\n\n**Infraction:** ${actionReason}`
+				`<@${data.user.id}>, You have been automatically kicked for breaking Saikou's rules (Reached 5 warnings).\n\n**Infraction:** ${actionReason}`,
 			);
 
 			await moderationEmbed(null, bot, 'Kick', data.member, `User triggered SaikouBot's auto moderation for ${autoModFilter}. (Reached 5 warnings)`, false, null, 'SaikouDev');
@@ -280,7 +280,7 @@ export async function autoPunish(data: AutoModerationActionExecution, actionReas
 				'Ban',
 				`Hello **${data.user.username}**,\n\nWe noticed your account has recently broke Saikou's Community Rules for the final time. Because of this, your account has been permanently banned from the Saikou Discord.\n\nIf you believe this is a mistake, submit an appeal by visiting\nhttps://forms.gle/L98zfzbC8fuAz5We6\n\nWe build our games and community for players to have fun. Creating a safe environment and enjoyable experience for everyone is a crucial part of what we're about, and our community rules in place is what we ask and expect players to abide by to achieve this.\n\nPlease check the attached moderator note below for more details.`,
 				`${actionReason} [AUTOMATIC]`,
-				`<@${data.user.id}>, You have been automatically banned for breaking Saikou's rules (Reached 6 warnings).\n\n**Infraction:** ${actionReason}`
+				`<@${data.user.id}>, You have been automatically banned for breaking Saikou's rules (Reached 6 warnings).\n\n**Infraction:** ${actionReason}`,
 			);
 
 			await moderationEmbed(null, bot, 'Ban', data.member, `User triggered SaikouBot's auto moderation for ${autoModFilter}. (Reached 6 warnings)`, false, null, 'SaikouDev');
@@ -295,7 +295,7 @@ export async function autoPunish(data: AutoModerationActionExecution, actionReas
 				'Warning',
 				`Hello **${data.user.username}**,\n\nYour account has recently been flagged by a staff member for breaching Saikou's Community Rules.\n\nTo learn more about our server rules, visit <#397797150840324115>\n\nWe take these actions seriously. If you continue to break the rules, we may need to take additional action against your account, which could result in a permanent ban from the Saikou Discord.\n\nPlease check the attached moderator note below for more details.`,
 				`${actionReason} [AUTOMATIC]`,
-				`<@${data.user.id}>, You have been automatically warned for breaking Saikou's rules.\n\n**Infraction:** ${actionReason}`
+				`<@${data.user.id}>, You have been automatically warned for breaking Saikou's rules.\n\n**Infraction:** ${actionReason}`,
 			);
 			break;
 	}

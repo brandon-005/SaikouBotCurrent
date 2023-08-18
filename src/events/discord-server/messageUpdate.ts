@@ -42,7 +42,7 @@ export = async (bot: any, oldMessage: Message, newMessage: Message) => {
 				{ name: 'Previous Content', value: `> ${oldMessageShorten}` || '> None' },
 				{ name: 'New Content', value: `> ${newMessageShorten}` },
 			])
-			.setFooter({ text: `${newMessage.author.tag} (${newMessage.author.id})`, iconURL: newMessage.author.avatarURL() })
+			.setFooter({ text: `${newMessage.author.username} (${newMessage.author.id})`, iconURL: newMessage.author.avatarURL() })
 			.setTimestamp();
 
 		if (newMessage.attachments.size > 0) {
