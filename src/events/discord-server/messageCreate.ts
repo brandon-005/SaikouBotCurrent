@@ -35,7 +35,7 @@ export = async (bot: any, message: Message) => {
 
 	/* If user @mentions bot */
 	if (message.content === `<@${bot.user!.id}>` || message.content === `<@!${bot.user!.id}>`) {
-		return message.channel
+		message.channel
 			.send({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
@@ -46,7 +46,7 @@ export = async (bot: any, message: Message) => {
 			.then((msg: any) =>
 				setTimeout(() => {
 					if (msg.deletable) msg.delete();
-				}, MESSAGE_TIMEOUT)
+				}, MESSAGE_TIMEOUT),
 			);
 	}
 
@@ -89,7 +89,7 @@ export = async (bot: any, message: Message) => {
 			.then((msg: any) =>
 				setTimeout(() => {
 					if (msg.deletable) msg.delete();
-				}, MESSAGE_TIMEOUT)
+				}, MESSAGE_TIMEOUT),
 			);
 	}
 
