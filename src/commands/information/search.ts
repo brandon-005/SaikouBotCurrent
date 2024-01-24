@@ -13,6 +13,7 @@ const command: Command = {
 		commandAliases: ['rbxsearch', 'rbx', 'roblox', 'accscan', 'accountscan'],
 		commandDescription: 'Gain information about a Roblox player.',
 		commandUsage: '<roblox_username>',
+		COOLDOWN_TIME: 30,
 		slashOptions: [
 			{
 				name: 'roblox-user',
