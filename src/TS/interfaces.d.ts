@@ -6,6 +6,7 @@ export interface SuggestionTypes extends Document {
 	channelID: string;
 	messageID: string;
 	featured: boolean;
+	featuredMessageID?: string;
 	userID: string;
 }
 
@@ -15,6 +16,7 @@ export interface TriviaTypes extends Document {
 	options: string[];
 	answer: string;
 	points: number;
+	difficulty: string;
 }
 
 // --- Correct Trivias Schema ---
@@ -101,4 +103,18 @@ export interface QuestionTypes extends Document {
 // --- QOTD Schema ---
 export interface QOTDTypes extends Document {
 	question: string;
+}
+
+// --- Verified User Schema ---
+export interface VerifyTypes extends Document {
+	robloxName: string;
+	robloxID: string;
+	userID: string;
+	roleName: string;
+}
+
+// --- TweetID Schema ---
+export interface TweetTypes extends Document {
+	identifier: number;
+	tweetID: string;
 }

@@ -1,4 +1,4 @@
-import { Command, ApplicationCommandOptionType, GuildMember, EmbedBuilder, TextChannel } from 'discord.js';
+import { Command, ApplicationCommandOptionType, EmbedBuilder } from 'discord.js';
 
 import triviaUsers from '../../models/correctTrivia';
 import weeklyTrivia from '../../models/weeklyTrivia';
@@ -36,7 +36,7 @@ const command: Command = {
 			},
 		],
 	},
-	run: async ({ bot, interaction, args }) => {
+	run: async ({ interaction, args }) => {
 		const numbers = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'keycap_ten'];
 		let number = '';
 		let tenUsers = '';
@@ -48,14 +48,14 @@ const command: Command = {
 			.setFooter({ text: `${interaction.guild!.name}`, iconURL: interaction.guild?.iconURL()! })
 			.setTimestamp();
 
-		if (args[0] && !Number.isNaN(Number(args[0]))) {
-			leaderboard.setDescription(`Displaying the **top ${args[0]}** users with the most trivia points.`);
+		if (args[1] && !Number.isNaN(Number(args[1]))) {
+			leaderboard.setDescription(`Displaying the **top ${args[1]}** users with the most trivia points.`);
 
 			if (args[0] === 'Weekly Champion 🌅') {
 				leaderboard.setTitle('🌅 Weekly Trivia Leaderboard');
-				triviaData = await weeklyTrivia.find({}).sort({ answersCorrect: -1 }).limit(Number(args[0]));
+				triviaData = await weeklyTrivia.find({}).sort({ answersCorrect: -1 }).limit(Number(args[1]));
 			} else {
-				triviaData = await triviaUsers.find({}).sort({ answersCorrect: -1 }).limit(Number(args[0]));
+				triviaData = await triviaUsers.find({}).sort({ answersCorrect: -1 }).limit(Number(args[1]));
 			}
 		} else {
 			leaderboard.setDescription('Displaying the **top 10** users with the most trivia points.');
@@ -88,7 +88,7 @@ const command: Command = {
 					number = numbers[count] ? `:${numbers[count]}:` : `**${count + 1}**`;
 					break;
 			}
-			tenUsers += `${number} <@${user.userID}> | **${user.answersCorrect.toLocaleString()} Points**\n`;
+			tenUsers += `${number} ${interaction.guild?.members.cache.get(user.userID)?.displayName || 'Member Left'} | **${user.answersCorrect.toLocaleString()} Points**\n`;
 		});
 
 		try {
@@ -99,43 +99,13 @@ const command: Command = {
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('❌ Too many users!')
 						.setDescription('There is too many users to display this embed, try providing less.')
-						.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+						.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
 						.setColor(EMBED_COLOURS.red),
 				],
 			});
 		}
 
 		interaction.editReply({ embeds: [leaderboard] });
-
-		const topUser = args[0] === 'Weekly Champion 🌅' ? await weeklyTrivia.find({}, '-_id').sort({ answersCorrect: -1 }).limit(1) : await triviaUsers.find({}, '-_id').sort({ answersCorrect: -1 }).limit(1);
-
-		const kingUsers = interaction.guild!.roles.cache.find((role: any) => role.name === args[0])!.members.map((member: GuildMember) => member.user.id);
-		const topUserInServer = interaction.guild?.members.cache.get(`${BigInt(Object.values(topUser)[0]!.userID)}`);
-
-		if (kingUsers.length === 0 && topUserInServer) {
-			topUserInServer.roles.add(interaction.guild!.roles.cache.find((role: any) => role.name === args[0])!, 'New Leaderboard King!');
-			(bot.channels.cache.get(process.env.OFFTOPIC_CHANNEL) as TextChannel).send({
-				content: args[0] === 'Weekly Champion 🌅' ? `<@${Object.values(topUser)[0]!.userID}> is the new weekly trivia champion! 🌅` : `<@${Object.values(topUser)[0]!.userID}> is the new trivia leaderboard king! 👑`,
-			});
-		}
-
-		kingUsers.forEach(async (userID: string) => {
-			const oldTopUserInServer = interaction.guild?.members.cache.get(`${BigInt(userID)}`);
-
-			if (topUserInServer && oldTopUserInServer) {
-				if (String(userID) !== String(Object.values(topUser)[0]!.userID)) {
-					/* Removing Role from old leaderboard king */
-					oldTopUserInServer.roles.remove(interaction.guild!.roles.cache.find((role: any) => role.name === args[0])!, 'New Leaderboard King!').catch(() => {});
-
-					/* Adding Role to new leaderboard king */
-					topUserInServer.roles.add(interaction.guild!.roles.cache.find((role: any) => role.name === args[0])!, 'New Leaderboard King!').catch(() => {});
-
-					(bot.channels.cache.get(process.env.OFFTOPIC_CHANNEL) as TextChannel).send({
-						content: args[0] === 'Weekly Champion 🌅' ? `<@${Object.values(topUser)[0]!.userID}> is the new weekly trivia champion! 🌅` : `<@${Object.values(topUser)[0]!.userID}> is the new trivia leaderboard king! 👑`,
-					});
-				}
-			}
-		});
 	},
 };
 

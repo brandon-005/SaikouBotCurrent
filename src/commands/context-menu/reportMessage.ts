@@ -22,7 +22,7 @@ const menu: ContextMenu = {
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('🐌 Whoah there! Slow down.')
 						.setDescription(`You can only report someone every **5 minutes**, please try again later.`)
-						.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+						.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
 						.setColor(EMBED_COLOURS.red),
 				],
 			});
@@ -86,7 +86,7 @@ const menu: ContextMenu = {
 					embeds: [
 						new EmbedBuilder() // prettier-ignore
 							.setTitle(`🛡 New report!`)
-							.setDescription(`**Platform:** Discord\n**Reported User:** ${selectedMessage.author.tag}\n**Reason**: Infringing Server Rules`)
+							.setDescription(`**Platform:** Discord\n**Reported User:** ${selectedMessage.author.username}\n**Reason**: Infringing Server Rules`)
 							.setThumbnail(interaction.user.displayAvatarURL())
 							.setFooter({ text: `Reported by ${interaction.guild?.members.cache.get(interaction.user.id)?.displayName}`, iconURL: interaction.user.displayAvatarURL() })
 							.setColor(EMBED_COLOURS.blurple)

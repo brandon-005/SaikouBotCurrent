@@ -104,17 +104,17 @@ export const WELCOME_MESSAGES: string[] = [
 	'welcome to Saikou! Make sure to check out our <#692066565327421442> channel for some additional information.',
 	'thanks for joining us on our journey! Looking to report an exploiter? You can use our <#675459553122451456> channel.',
 	'welcome to our server! Looking to get started here? Check out <#397797150840324115> and <#692066565327421442>!',
-];
-
-export const WEALTH_STATUS: string[] = [
-	// prettier-ignore
-	'Very Poor',
-	'Broke',
-	'Sustainable',
-	'Wealthy',
-	'Very Wealthy',
-	'Rich',
-	'Filthy Rich',
+	"welcome to the Saikou community! We hope you'll enjoy your stay with us.",
+	"welcome to Saikou! We're thrilled to have you here!",
+	"welcome to Saikou! We're glad to have you here, and can't wait to get to know you!",
+	'thanks for stopping by the Saikou community! We hope you have a great time here, and make some new friends!',
+	"we're delighted to welcome you to Saikou! We hope you feel at home here, and that you make some great connections with our community members!",
+	"welcome to our server! We're glad you're here, and we hope you have an amazing time getting to know our community!",
+	'has just joined the server, we hope you find this server to be a welcoming and fun place to hang out!',
+	'thanks for joining Saikou! We hope you feel the warmth and positivity of our community, and enjoy your time with us!',
+	"we're delighted to welcome you to Saikou! We hope you'll enjoy being a part of our community and making new memories with us.",
+	"welcome to Saikou! We hope you'll find this server to be a safe and welcoming space, and we can't wait to see all the great things you'll do here.",
+	"welcome to the Saikou Discord! We're always on the lookout for fresh perspectives and new ideas and can't wait to see what you bring to our community!",
 ];
 
 export const WHITELISTED_WORDS: string[] = [
@@ -230,7 +230,7 @@ export const MWT_WEAPONS = [
 	'Sawed-Off Shotgun',
 	'M1 Garand Rifle',
 	'Marksman Rifle',
-	'Flamethrower',
+	'Dual SMGs',
 	'LMG',
 	'AK-47',
 	'Crossbow',
@@ -266,25 +266,11 @@ export const MWT_WEAPONS = [
 	'Golden AK-47',
 ];
 
-export const BAD_PERMISSIONS = [
-	// prettier-ignore
-	'Administrator',
-	'ManageChannels',
-	'ManageGuild',
-	'ManageMessages',
-	'ManageNicknames',
-	'ManageRoles',
-	'ManageWebhooks',
-	'BanMembers',
-	'KickMembers',
-	'MentionEveryone',
-];
-
 export const MWT_MISSIONS = [
 	// prettier-ignore
 	"Get **7** kills in one play session with the `Default Knife`.",
 	'Raid **3** players bases by using the `back enterance`.',
-	'Get **10** kills in one play session with the `flamethrower`.',
+	'Get **10** kills in one play session with the `Dual SMGs`.',
 	'Get **20** kills in one play session with the `Light Machine Gun`.',
 	'**Complete** your base in 30 minutes of `one play session`.',
 	'Get **5** kills whilst playing on `max sensitivity`.',
@@ -355,7 +341,7 @@ export const QUESTION_ANSWERS = [
 		answer: 'Wait for staff applications to open. Those that stand out in the community will be selected and offered staff positions when needed.',
 	},
 	{
-		question: 'How do I become a Dedicated Follower',
+		question: 'How do I get Dedicated Follower',
 		answer: 'Earn xp and achieve a certain level, e.g. level 10 for Dedicated Follower. XP can be earned by chatting in any of the text channels or by participating in events. Check <#692066565327421442> for the full rewards table.',
 	},
 	{
@@ -364,10 +350,99 @@ export const QUESTION_ANSWERS = [
 	},
 	{
 		question: 'How do I report',
-		answer: 'You can report exploiters or rule breakers in <#675459553122451456>. Make sure to do /report so the bot can DM you further instructions.',
+		answer: 'You can report exploiters or rule breakers in <#675459553122451456>. Make sure to do </report:1016682656198570024> so the bot can DM you further instructions.',
 	},
 	{
 		question: 'How do I get elite soldier',
 		answer: 'To gain the Elite Soldier badge, players must embark on an adventure to find and kill the owner of Military Warfare Tycoon, granting them with the legendary Golden Katana!',
+	},
+	{
+		question: 'How do I get the golden railgun',
+		answer: 'To gain the Golden Railgun in Military Warfare Tycoon, you need to boost the Saikou Discord server. You will then receive a booster token, which can be used in conjunction with our </redeem:1016682656123080723> command to receive the Golden Railgun in-game.',
+	},
+	{
+		question: 'I found a hacker',
+		answer: 'To report an individual to the staff team, please use our <#675459553122451456> channel. From there a member of staff will review the report and take any necessary actions against the player.',
+	},
+];
+
+export const LOWER_COOLDOWN_COMMANDS = [
+	// prettier-ignore
+	"trivia",
+];
+
+export const VERIFICATION_PHRASES = [
+	// prettier-ignore
+	"Elephant Giraffe Rhino Lion Zebra",
+	'Pizza Pasta Salad Soup Burger',
+	'Guitar Drums Piano Bass Trumpet',
+	'Sun Moon Stars Sky Clouds',
+	'Happy Sad Angry Excited Tired',
+	'Apple Banana Orange Mango Pineapple',
+	'Beach Ocean Sand Waves Sunscreen',
+	'Love Hate Jealousy Envy Trust',
+	'Chair Table Desk Sofa Bed',
+	'Red Blue Green Yellow Purple',
+	'Summer Fall Winter Spring Season',
+	'Dog Cat Bird Fish Hamster',
+	'Hat Cap Scarf Gloves Socks',
+	'Laugh Cry Smile Frown Wink',
+	'Car Truck Bus Train Bicycle',
+	'Coffee Tea Juice Soda Water',
+	'Movie Music Book Game Show',
+	'Friend Enemy Acquaintance Stranger Family',
+	'School College University Education Learning',
+	'Camera Phone Computer Tablet Television',
+	'apple tomato orange blue ocean',
+];
+
+export const ROBLOXBAN_CHOICES: any = [
+	{
+		name: 'Exploiting',
+		value: 'Exploiting.',
+	},
+	{
+		name: 'Bypassing the Roblox chat filter',
+		value: 'Bypassing the Roblox chat filter.',
+	},
+	{
+		name: 'Bypassing the Roblox chat filter (Abusive/Insulting)',
+		value: 'Bypassing the Roblox chat filter (Abusive/Insulting).',
+	},
+	{
+		name: 'Sexually derogatory comments',
+		value: 'Bypassing the chat filter to post inappropriate messages.',
+	},
+	{
+		name: 'Wall glitching',
+		value: 'Wall glitching.',
+	},
+	{
+		name: 'Excessive toxicity/insulting',
+		value: 'Excessive toxicity/insulting.',
+	},
+	{
+		name: 'Racial Slurs/Hate Speech',
+		value: 'Inappropriate remarks, hate speech.',
+	},
+	{
+		name: 'Impersonation',
+		value: 'Impersonating someone to mislead others.',
+	},
+	{
+		name: 'Exploit Threats or remarks',
+		value: 'Threatening to exploit/making exploit remarks.',
+	},
+	{
+		name: 'Scamming or phishing',
+		value: 'Scamming other players and/or phishing attempt.',
+	},
+	{
+		name: 'Child endangerment (grooming, sexuality, paedophilia)',
+		value: 'Endangerment - Inappropriate remarks to other players on a serious level. ',
+	},
+	{
+		name: 'Ban Evading',
+		value: 'Ban Evading. ',
 	},
 ];

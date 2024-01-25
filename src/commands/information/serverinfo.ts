@@ -17,8 +17,8 @@ const command: Command = {
 		return interaction.editReply({
 			embeds: [
 				new EmbedBuilder() //
-					.setAuthor({ name: guild.name, iconURL: `${guild.iconURL() ? guild.iconURL() : 'https://i.ibb.co/mGBw946/image.png'}` })
-					.setThumbnail(`${guild.iconURL() ? guild.iconURL() : 'https://i.ibb.co/mGBw946/image.png'}`)
+					.setAuthor({ name: guild.name, iconURL: `${guild.iconURL() ? guild.iconURL() : 'https://saikou.dev/assets/images/discord-bot/discord-avatar.png'}` })
+					.setThumbnail(`${guild.iconURL() ? guild.iconURL() : 'https://saikou.dev/assets/images/discord-bot/discord-avatar.png'}`)
 					.addFields([
 						// prettier-ignore
 						{ name: 'Owner', value: `${(await guild.fetchOwner()).nickname}`, inline: true },

@@ -26,7 +26,7 @@ export = async (bot: any, message: Message) => {
 		const messageDeletedEmbed = new EmbedBuilder() //
 			.setTitle(':warning: Warning!')
 			.setColor(EMBED_COLOURS.yellow)
-			.setFooter({ text: `${message.author.tag} (${message.author.id})`, iconURL: message.author.avatarURL() })
+			.setFooter({ text: `${message.author.username} (${message.author.id})`, iconURL: message.author.avatarURL() })
 			.setTimestamp();
 
 		if (message.attachments.first()) {

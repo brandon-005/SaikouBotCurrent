@@ -34,7 +34,37 @@ const command: Command = {
 		const member = interaction.options.getMember('user');
 		const reason = args[1];
 
-		if (!member) return noUser(interaction, false);
+		if (!member && args[0]) {
+			const idMember = await bot.users.fetch(`${BigInt(args[0])}`);
+
+			return interaction.guild.members.ban(idMember.id).then(() => {
+				interaction.editReply({
+					embeds: [
+						new EmbedBuilder() // prettier-ignore
+							.setDescription(`✅ **${idMember.username} has been banned.**`)
+							.setColor(EMBED_COLOURS.green),
+					],
+				});
+
+				(bot.channels.cache.get(String(process.env.MODERATION_CHANNEL)) as TextChannel).send({
+					embeds: [
+						new EmbedBuilder() // prettier-ignore
+							.setAuthor({ name: `Saikou Discord | Ban`, iconURL: idMember.displayAvatarURL() })
+							.addFields([
+								// prettier-ignore
+								{ name: 'Moderator', value: `<@${interaction.user.id}>`, inline: true },
+								{ name: 'User', value: idMember.username, inline: true },
+								{ name: 'Reason', value: reason },
+							])
+							.setThumbnail(idMember.displayAvatarURL())
+							.setColor(EMBED_COLOURS.green)
+							.setFooter({ text: 'Ban' })
+							.setTimestamp(),
+					],
+				});
+			});
+		}
+
 		if (member.permissions && member.permissions.has(PermissionFlagsBits.ManageEvents)) return equalPerms(interaction, 'Manage Events');
 
 		/* DELETE MESSAGE HISTORY PROMPT */
@@ -79,7 +109,7 @@ const command: Command = {
 					await moderationDmEmbed(member, 'Ban', `Hello **${member.user.username}**,\n\nWe noticed your account has recently broke Saikou's Community Rules for the final time. Because of this, your account has been permanently banned from the Saikou Discord.\n\nIf you believe this is a mistake, submit an appeal by visiting:\nhttps://forms.gle/L98zfzbC8fuAz5We6\n\nWe build our games and community for players to have fun. Creating a safe environment and enjoyable experience for everyone is a crucial part of what we're about, and our community rules in place is what we ask and expect players to abide by to achieve this.\n\nPlease check the attached moderator note below for more details.`, reason);
 
 					try {
-						member.ban({ deleteMessageDays: 7, reason });
+						member.ban({ deleteMessageSeconds: 604800, reason });
 					} catch (err) {
 						interaction.guild?.members.ban(member);
 					}

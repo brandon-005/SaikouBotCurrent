@@ -1,4 +1,4 @@
-import { EmbedBuilder, Message, Client, CommandInteraction, WebhookClient } from 'discord.js';
+import { EmbedBuilder, Message, Client, CommandInteraction, WebhookClient, AutoModerationActionExecution } from 'discord.js';
 
 import { EMBED_COLOURS } from './constants';
 
@@ -6,7 +6,7 @@ export function cancel(interaction: CommandInteraction, dm: Boolean) {
 	const embed = new EmbedBuilder() // prettier-ignore
 		.setTitle('✅ Cancelled!')
 		.setDescription('The prompt has been cancelled successfully.')
-		.setThumbnail('https://i.ibb.co/kxJqM6F/mascot-Success.png')
+		.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-success.png')
 		.setColor(EMBED_COLOURS.green);
 
 	if (dm === true) return interaction.user.send({ embeds: [embed] });
@@ -17,7 +17,7 @@ export function noContent(interaction: CommandInteraction) {
 	const embed = new EmbedBuilder() // prettier-ignore
 		.setTitle('❌ No Content!')
 		.setDescription("You didn't input any message content for this prompt. Please ensure you're not submitting videos or images and re-run the prompt again.")
-		.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+		.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
 		.setColor(EMBED_COLOURS.red);
 
 	return interaction.user.send({ embeds: [embed] });
@@ -27,7 +27,7 @@ export function timeout(interaction: CommandInteraction, dm: Boolean) {
 	const embed = new EmbedBuilder() // prettier-ignore
 		.setTitle('❌ Cancelled!')
 		.setDescription("You didn't input in time, please try again.")
-		.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+		.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
 		.setColor(EMBED_COLOURS.red);
 
 	if (dm === true) return interaction.user.send({ embeds: [embed] });
@@ -54,6 +54,25 @@ export function equalPerms(interaction: CommandInteraction, perms: string): Prom
 		.setFooter({ text: `Equal Permission(s): ${perms}` });
 
 	return interaction?.editReply({ embeds: [embed] });
+}
+
+export function autoModDmEmbed(data: AutoModerationActionExecution, member: any, punishment: string, description: string, reason: string, channelMsg: string) {
+	return member
+		.send({
+			embeds: [
+				new EmbedBuilder() // prettier-ignore
+					.setTitle(`${punishment} Received!`)
+					.setDescription(description)
+					.addFields([{ name: 'Moderator Note', value: reason, inline: false }])
+					.setColor(EMBED_COLOURS.red)
+					.setFooter({ text: 'THIS IS AN AUTOMATED MESSAGE' })
+					.setTimestamp(),
+			],
+		})
+		.catch(() => {
+			/* If cant send message to DM */
+			data.channel.send({ content: channelMsg });
+		});
 }
 
 export function moderationDmEmbed(member: any, punishment: string, description: string, reason: string) {
@@ -113,16 +132,6 @@ export function moderationEmbed(message: any, bot: any, punishment: string, memb
 	return bot.channels.cache.get(String(process.env.MODERATION_CHANNEL)).send({
 		embeds: [embed],
 	});
-}
-
-export function errorEmbed(interaction?: CommandInteraction) {
-	const embed = new EmbedBuilder() // prettier-ignore
-		.setTitle('❌ Something went wrong!') // prettier-ignore
-		.setDescription(`Uh oh! Looks like Kaiou has hit some of the wrong buttons, causing an error. You can try... \n\n• Coming back later and trying again\n• Checking out Saikou's social medias whilst you wait 😏`)
-		.setThumbnail('https://i.ibb.co/C5YvkJg/4-128.png')
-		.setColor(EMBED_COLOURS.red);
-
-	return interaction?.editReply({ embeds: [embed] });
 }
 
 export function devErrorEmbed(bot: Client, title: string, errorMessage: string) {

@@ -1,9 +1,6 @@
-import axios from 'axios';
-import { Message, EmbedBuilder, ChannelType, ActivityType, TextChannel, MessageMentions } from 'discord.js';
+import { Message, EmbedBuilder, ChannelType, ActivityType, TextChannel } from 'discord.js';
 import { google } from 'googleapis';
 import { Types } from 'mongoose';
-import urlRegex from 'url-regex';
-import getUrls from 'get-urls';
 
 import { EMBED_COLOURS, WHITELISTED_WORDS } from './constants';
 import { moderationDmEmbed, moderationEmbed } from './embeds';
@@ -21,7 +18,7 @@ export async function autoPunish(ifStatement: any, message: Message, autoModEmbe
 		const autoModEmbed = new EmbedBuilder() // prettier-ignore
 			.setAuthor({ name: message.member ? message.member.displayName : message.author.username, iconURL: message.author.displayAvatarURL() })
 			.setDescription(`**${message.author.username} has triggered the auto moderation for ${autoModEmbedReason}**.`)
-			.addFields([{ name: 'Triggered Content', value: `${message.cleanContent} [[Jump to message]](${message.url})` }])
+			.addFields([{ name: 'Triggered Content', value: `${message.content.length > 1020 ? `${message.cleanContent.substring(0, 1019)}...` : message.cleanContent} [[Jump to message]](${message.url})` }])
 			.setFooter({ text: `User ID: ${message.author.id}` })
 			.setTimestamp()
 			.setColor(EMBED_COLOURS.red);
@@ -92,7 +89,7 @@ export async function autoPunish(ifStatement: any, message: Message, autoModEmbe
 				bot.channels.cache.find((channel: TextChannel) => channel.name === '📂moderation').send({ content: `**<t:${Math.floor(Date.now() / 1000)}:F> | ${message.author.username}**\nContent: ${message.cleanContent}` });
 
 				message.channel.send({ content: `<@${message.author.id}>, You have been automatically banned for breaking Saikou's rules (Reached 6 warnings).\n\n**Infraction:** ${reason}` });
-				message.member!.ban({ deleteMessageDays: 7, reason: 'Reached 6 warnings.' });
+				message.member!.ban({ deleteMessageSeconds: 604800, reason: 'Reached 6 warnings.' });
 				break;
 			default:
 				await moderationDmEmbed(message.author, 'Warning', `Hello **${message.author.username}**,\n\nYour account has recently been flagged by a staff member for breaching Saikou's Community Rules.\n\nTo learn more about our server rules, visit <#397797150840324115>\n\nWe take these actions seriously. If you continue to break the rules, we may need to take additional action against your account, which could result in a permanent ban from the Saikou Discord.\n\nPlease check the attached moderator note below for more details.`, `${reason} [AUTOMATIC]`);
@@ -105,14 +102,12 @@ export async function autoPunish(ifStatement: any, message: Message, autoModEmbe
 }
 
 /* Swear Filter */
-export async function swearCheck(bot: any, message: Message) {
+export async function insultCheck(message: Message) {
 	if (message.author.bot || message.system === true || message.channel.type === ChannelType.DM || message.content === '') return;
 
 	const data: any = {};
 	const requestedAttributes: any = {};
 	const attributeThresholds: any = {
-		PROFANITY: 0.65,
-		SEXUALLY_EXPLICIT: 0.95,
 		TOXICITY: 0.8,
 		INSULT: 0.8,
 	};
@@ -122,14 +117,6 @@ export async function swearCheck(bot: any, message: Message) {
 	for (const attribute in attributeThresholds) {
 		requestedAttributes[attribute] = {};
 	}
-
-	for await (const word of WHITELISTED_WORDS) {
-		if (message.content.toLowerCase().includes(word)) {
-			filteredContent = filteredContent ? filteredContent.toLowerCase().replace(word, '') : message.content.toLowerCase().replace(word, '');
-		}
-	}
-
-	if (filteredContent === '') return;
 
 	google
 		.discoverAPI('https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1')
@@ -147,18 +134,16 @@ export async function swearCheck(bot: any, message: Message) {
 				data[key] = res.data.attributeScores[key].summaryScore.value > attributeThresholds[key];
 			}
 
-			if ((data.INSULT === true && data.PROFANITY !== true) || (data.TOXICITY === true && data.PROFANITY !== true)) {
+			if (data.INSULT === true || data.TOXICITY === true) {
 				message.channel.send({
 					embeds: [
 						new EmbedBuilder() // prettier-ignore
 							.setDescription("We've detected some behaviour that may be toxic or insulting.\n\n🔎 **Looking on how to quick report? Follow below.**")
-							.setImage('https://i.ibb.co/HFcn5k4/image.png')
+							.setImage('https://saikou.dev/assets/images/discord-bot/report-help.png')
 							.setColor(EMBED_COLOURS.red),
 					],
 				});
 			}
-
-			await autoPunish(data.PROFANITY === true || data.SEXUALLY_EXPLICIT === true, message, data.PROFANITY ? 'PROFANITY' : 'SEXUALLY_EXPLICIT', `\`1.3\` - Swearing, bypassing the bot filter in any way, and all NSFW content is strictly forbidden.`, bot);
 		})
 		.catch(() => {});
 }
@@ -171,77 +156,6 @@ export async function inviteLinkCheck(bot: any, message: Message) {
 		if (message.content.toLowerCase().includes(`${invite}/saikou`)) return;
 
 		autoPunish(message.content.includes(invite), message, 'INVITE_LINK', `\`1.8\` - All forms of **advertising**, selling, scamming are forbidden.`, bot);
-	}
-}
-
-/* Banning users who post malicious links */
-export async function maliciousLinkCheck(bot: any, message: Message) {
-	if (message.content === '' || message.system || urlRegex().test(message.content) === false) return;
-	const links: any = [];
-	let maliciousLinkType;
-
-	getUrls(message.content).forEach((foundURL: string) => links.push({ url: foundURL }));
-
-	await axios({
-		method: 'POST',
-		url: `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${process.env.SAFE_BROWSING_KEY}`,
-		data: {
-			client: {
-				clientId: 'saikoubot',
-				clientVersion: '3.0.0',
-			},
-			threatInfo: {
-				threatTypes: ['MALWARE', 'SOCIAL_ENGINEERING', 'UNWANTED_SOFTWARE', 'MALICIOUS_BINARY'],
-				platformTypes: ['ANY_PLATFORM'],
-				threatEntryTypes: ['URL'],
-				threatEntries: links,
-			},
-		},
-	})
-		.then((response: any) => {
-			if (response.data.matches) {
-				maliciousLinkType = response.data.matches[0].threatType;
-			}
-		})
-		.catch((err) => console.error(err));
-
-	if (maliciousLinkType) {
-		await message.author
-			.send({
-				embeds: [
-					new EmbedBuilder() // prettier-ignore
-						.setTitle('Softban Received!')
-						.setDescription(`Hello **${message.author.username}**,\n\nWe noticed your account has recently broke Saikou's Community Rules. Because of this, your account has been soft banned from the Saikou Discord.\n\nIf you believe this is a mistake, submit an appeal by visiting\nhttps://forms.gle/L98zfzbC8fuAz5We6\n\nWe build our games and community for players to have fun. Creating a safe environment and enjoyable experience for everyone is a crucial part of what we're about, and our community rules in place is what we ask and expect players to abide by to achieve this.\n\nPlease check the attached moderator note below for more details.`)
-						.addFields([{ name: 'Moderator Note', value: `Triggered Saikou's auto moderation for malicious links.\n\n**Type:** ${maliciousLinkType}\n**Message Content:** ${message.content}\n**Content Type:** URL\n\nList of unsafe links provided by the Google Safe Browsing API.`, inline: false }])
-						.setColor(EMBED_COLOURS.red)
-						.setFooter({ text: 'THIS IS AN AUTOMATED MESSAGE' })
-						.setTimestamp(),
-				],
-			})
-			.catch(() => {});
-
-		const bannedUserID = message.member!.id;
-		message.member?.ban({ deleteMessageDays: 7, reason: 'Softban - User triggered auto moderation for posting scam links.' }).then(() => message.guild!.members.unban(bannedUserID));
-
-		bot.channels.cache
-			.find((channel: TextChannel) => channel.name === '📂moderation')
-			.send({
-				embeds: [
-					new EmbedBuilder() // prettier-ignore
-						.addFields([
-							// prettier-ignore
-							{ name: 'Moderator', value: 'SaikouBot', inline: true },
-							{ name: 'User', value: `<@${message.author.id}>`, inline: true },
-							{ name: 'Reason', value: "Triggered Saikou's auto moderation for malicious links. [AUTOMATIC SOFTBAN]", inline: false },
-						])
-						.setAuthor({ name: 'Saikou Discord | Soft Ban', iconURL: message.member!.user.displayAvatarURL() })
-						.setThumbnail(message.member!.user.displayAvatarURL())
-						.setColor(EMBED_COLOURS.green)
-						.setFooter({ text: 'Soft Ban' })
-						.setTimestamp(),
-				],
-			});
-		bot.channels.cache.find((channel: TextChannel) => channel.name === '📂moderation').send({ content: `**<t:${Math.floor(Date.now() / 1000)}:F> | ${message.author.username}**\nContent: ${message.content}` });
 	}
 }
 
@@ -319,12 +233,6 @@ export async function statusCheck(bot: any, message: Message) {
 				.catch(() => {});
 		}
 	}
-}
-
-/* Warning users who mass mention */
-export async function massMentionCheck(bot: any, message: Message) {
-	if (message.author.bot || !message.content.match(MessageMentions.UsersPattern)) return;
-	await autoPunish(message.content.match(MessageMentions.UsersPattern)!.length >= 4, message, 'MASS_MENTIONS', `\`1.6\` -  Spam of all kinds (emojis, **pings**, and chats), chat flooding, and text walls are not allowed.`, bot, true);
 }
 
 /* Warning users who attempt to mention @here or @everyone */

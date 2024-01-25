@@ -41,7 +41,7 @@ const command: Command = {
 						.setTitle('Prompt Open! 📂')
 						.setDescription('You already have an active prompt, please exit to gain options.')
 						.setColor(EMBED_COLOURS.red)
-						.setThumbnail('https://i.ibb.co/C5YvkJg/4-128.png'),
+						.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-sad.png'),
 				],
 			});
 		}
@@ -171,7 +171,7 @@ const command: Command = {
 						const reasonSummary = interaction.channel!.createMessageComponentCollector({ filter: (reasonOptionsMenu: any) => reasonOptionsMenu.user.id === interaction.user.id, componentType: ComponentType.StringSelect, time: PROMPT_TIMEOUT });
 
 						reasonSummary.on('collect', async (options: StringSelectMenuInteraction) => {
-							let reasonOptions: string,
+							let reasonOptions: string = '',
 								detailedReason: string,
 								correctiveAction: string,
 								reviewDate: string,

@@ -80,14 +80,14 @@ const command: Command = {
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('❌ Incorrect Message ID!')
 						.setDescription("Uh oh! Looks like that ID doesn't exist or an unknown error occurred. To copy the Message ID, follow below...")
-						.setImage('https://i.ibb.co/FVbyLQC/image.png')
+						.setImage('https://saikou.dev/assets/images/discord-bot/suggest-help.png')
 						.setColor(EMBED_COLOURS.red),
 				],
 			});
 		}
 
 		const reporter = await reportData.findOne({ messageID: args[1] });
-		const suggester = await suggestData.findOne({ messageID: args[1] });
+		const suggester = (await suggestData.findOne({ messageID: args[1] })) ? await suggestData.findOne({ messageID: args[1] }) : await suggestData.findOne({ featuredMessageID: args[1] });
 		const oldEmbed = targetMsg.embeds[0];
 
 		if (!suggester && !reporter)
@@ -150,7 +150,7 @@ const command: Command = {
 			.setDescription(`Hey, **${interaction.guild?.members.cache.get(suggester.userID)?.displayName}**!\n\nThank you for submitting a suggestion for Saikou Development. We appreciate you offering your feedback, comments and ideas in order for our team to create the best version of Saikou.\n\nAttached to this automated message will include the staff note, including the reasoning behind the status of your suggestion. Please note that if one wasn't included, we may not be able to provide information regarding our decisions due to confidentiality.`)
 			.addFields(
 				{ name: 'Staff Note', value: args[3] || 'None Provided.' }, // prettier-ignore
-				{ name: 'Your Suggestion', value: suggester.suggestionMessage }
+				{ name: 'Your Suggestion', value: suggester.suggestionMessage },
 			)
 			.setFooter({ text: 'THIS IS AN AUTOMATED MESSAGE' })
 			.setTimestamp();

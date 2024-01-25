@@ -1,19 +1,33 @@
 import { Message, EmbedBuilder, ChannelType, PermissionFlagsBits } from 'discord.js';
-import urlRegex from 'url-regex';
+import urlRegex from 'url-regex-safe';
 import stringSimilarity from 'string-similarity';
 
 import { EMBED_COLOURS, MESSAGE_TIMEOUT, QUESTION_ANSWERS } from '../../utils/constants';
-import { swearCheck, maliciousLinkCheck, inviteLinkCheck, statusCheck, massMentionCheck, everyoneMention, devMention, personalInfoCheck } from '../../utils/autoMod';
+import { inviteLinkCheck, statusCheck, everyoneMention, devMention, personalInfoCheck, insultCheck } from '../../utils/autoMod';
 
 export = async (bot: any, message: Message) => {
+	/* My fun command */
+	if (message.channel.type === ChannelType.DM && message.author.id === '229142187382669312') {
+		if (message.content.toLowerCase().includes('.reply')) {
+			const channelID = message.content.split(' ')[1];
+			const sendMsg = message.content.split(' ').slice(2).join(' ');
+
+			try {
+				await bot.channels.cache
+					.get(channelID)
+					.send({ content: sendMsg })
+					.then(() => message.author.send({ content: 'sent' }));
+			} catch (err) {
+				message.author.send({ content: 'invalid channel ID' });
+			}
+		}
+	}
 	/* Importing auto mod stuff */
 	if (message.author.bot || message.channel.type === ChannelType.DM || message.system) return;
 
 	if (!message.member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
-		await swearCheck(bot, message);
-		await maliciousLinkCheck(bot, message);
+		await insultCheck(message);
 		await inviteLinkCheck(bot, message);
-		await massMentionCheck(bot, message);
 		await everyoneMention(bot, message);
 		await devMention(bot, message);
 		await personalInfoCheck(bot, message);
@@ -21,7 +35,7 @@ export = async (bot: any, message: Message) => {
 
 	/* If user @mentions bot */
 	if (message.content === `<@${bot.user!.id}>` || message.content === `<@!${bot.user!.id}>`) {
-		return message.channel
+		message.channel
 			.send({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
@@ -32,7 +46,7 @@ export = async (bot: any, message: Message) => {
 			.then((msg: any) =>
 				setTimeout(() => {
 					if (msg.deletable) msg.delete();
-				}, MESSAGE_TIMEOUT)
+				}, MESSAGE_TIMEOUT),
 			);
 	}
 
@@ -40,7 +54,7 @@ export = async (bot: any, message: Message) => {
 	if ((message.channel.type === ChannelType.GuildText && message.channel.parent!.name === '🔖 | Feedback & reports') || (message.channel.type === ChannelType.GuildText && message.channel.name === '👋introductions')) {
 		try {
 			setTimeout(() => {
-				if (message.deletable) message.delete();
+				if (message.deletable) message.delete().catch(() => {});
 			}, 500);
 		} catch (err) {
 			return;
@@ -50,7 +64,7 @@ export = async (bot: any, message: Message) => {
 	/* Deleting content that isn't a discord attachment in memes and art */
 	if ((message.channel.type === ChannelType.GuildText && message.channel.name.match('memes')) || (message.channel.type === ChannelType.GuildText && message.channel.name.match('art'))) {
 		if (!(message.attachments.size > 0 || urlRegex({ exact: false }).test(message.content))) {
-			if (message.deletable) return message.delete();
+			if (message.deletable) return message.delete().catch(() => {});
 			return;
 		}
 
@@ -75,7 +89,7 @@ export = async (bot: any, message: Message) => {
 			.then((msg: any) =>
 				setTimeout(() => {
 					if (msg.deletable) msg.delete();
-				}, MESSAGE_TIMEOUT)
+				}, MESSAGE_TIMEOUT),
 			);
 	}
 
@@ -88,7 +102,7 @@ export = async (bot: any, message: Message) => {
 		const similarity = stringSimilarity.compareTwoStrings(message.content.toLowerCase(), question.toLowerCase());
 
 		// If the message is similar enough to the pre-defined question, send the pre-defined answer
-		if (similarity > 0.6) {
+		if (similarity > 0.7) {
 			return message.channel.send(answer);
 		}
 	}

@@ -3,6 +3,8 @@ import { Command, ApplicationCommandOptionType, EmbedBuilder, Role, PermissionFl
 import moment from 'moment';
 import { EMBED_COLOURS } from '../../utils/constants';
 import { noUser } from '../../utils/embeds';
+import verifiedUser from '../../models/verifiedUser';
+import axios from 'axios';
 
 const command: Command = {
 	config: {
@@ -24,9 +26,10 @@ const command: Command = {
 		if (!interaction.inCachedGuild()) return noUser(interaction, false);
 
 		const member = interaction.options.getMember('user') || interaction.member;
+		const robloxUser = await verifiedUser.findOne({ userID: member.id });
 
 		const userinfoEmbed = new EmbedBuilder() // prettier-ignore
-			.setAuthor({ name: member.user.tag, iconURL: member.user.displayAvatarURL({ extension: 'webp', size: 64 }) })
+			.setAuthor({ name: member.user.username, iconURL: member.user.displayAvatarURL({ extension: 'webp', size: 64 }) })
 			.setThumbnail(member.user.displayAvatarURL({ extension: 'webp' }))
 			.setDescription(member.toString())
 			.addFields([
@@ -40,6 +43,23 @@ const command: Command = {
 				{ name: '\u200b', value: '\u200b' },
 			]);
 
+		if (robloxUser) {
+			await axios
+				.get(`https://users.roblox.com/v1/users/${robloxUser.robloxID}`)
+				.then((response) => {
+					userinfoEmbed.addFields([
+						{ name: 'Roblox Name', value: `[${robloxUser.robloxName}](https://www.roblox.com/users/${robloxUser.robloxID}/profile)`, inline: true },
+						{ name: 'Display Name', value: response.data.displayName, inline: true },
+						{ name: 'Creation Date', value: `${moment.utc(response.data.created).format('ll')}\n(${moment(response.data.created).fromNow()})`, inline: true },
+						{ name: 'Roblox ID', value: robloxUser.robloxID, inline: true },
+						{ name: 'Terminated', value: `${response.data.isBanned ? 'Yes' : 'No'}`, inline: true },
+						{ name: 'Verified Badge', value: `${response.data.hasVerifiedBadge ? 'Yes' : 'No'}`, inline: true },
+						{ name: '\u200b', value: '\u200b' },
+					]);
+				})
+				.catch();
+		}
+
 		userinfoEmbed.addFields([
 			{
 				name: `Roles (${member.roles.cache.filter((role: Role) => role.id !== member.guild.id).size})`,
@@ -51,6 +71,7 @@ const command: Command = {
 						.join(', ') || 'None',
 			},
 		]);
+
 		userinfoEmbed.setColor(EMBED_COLOURS.blurple);
 		userinfoEmbed.setFooter({ text: `User ID: ${member.id}` });
 		userinfoEmbed.setTimestamp();

@@ -2,7 +2,7 @@ import { Command, ApplicationCommandOptionType, CommandInteraction, Interaction,
 import { Types } from 'mongoose';
 
 import { equalPerms, moderationDmEmbed, moderationEmbed, noUser } from '../../utils/embeds';
-import { EMBED_COLOURS } from '../../utils/constants';
+import { EMBED_COLOURS, RULE_CHOICES } from '../../utils/constants';
 
 import warnData from '../../models/warnings';
 
@@ -27,6 +27,7 @@ const command: Command = {
 				description: 'The reason for the warn.',
 				type: ApplicationCommandOptionType.String,
 				required: true,
+				choices: RULE_CHOICES,
 			},
 		],
 	},
@@ -131,7 +132,7 @@ const command: Command = {
 					switch (clickedButton.first()!.customId) {
 						case 'Yes':
 							try {
-								member.ban({ deleteMessageDays: 7, reason });
+								member.ban({ deleteMessageSeconds: 604800, reason });
 							} catch (err) {
 								if (!message) {
 									interaction.guild?.members.ban(member);

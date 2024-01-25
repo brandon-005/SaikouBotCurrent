@@ -1,6 +1,6 @@
 import { Command, Message, ActionRowBuilder, StringSelectMenuBuilder, Interaction, ComponentType, StringSelectMenuInteraction, ButtonStyle, ButtonBuilder, EmbedBuilder, ButtonInteraction, ModalBuilder, TextInputBuilder, ModalActionRowComponentBuilder, TextInputStyle, MessageCollector, AttachmentBuilder } from 'discord.js';
 import axios from 'axios';
-import urlRegex from 'url-regex';
+import urlRegex from 'url-regex-safe';
 
 import { EMBED_COLOURS, PROMPT_TIMEOUT, MESSAGE_TIMEOUT, VIDEO_FILE_TYPES } from '../../utils/constants';
 import reportData from '../../models/reports';
@@ -82,7 +82,7 @@ const command: Command = {
 						new EmbedBuilder() // prettier-ignore
 							.setTitle('❌ Unable to DM!')
 							.setDescription("Please ensure your DM's are enabled in order for the bot to message you the prompt.")
-							.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+							.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
 							.setColor(EMBED_COLOURS.red),
 					],
 				})
@@ -134,7 +134,7 @@ const command: Command = {
 								new EmbedBuilder() // prettier-ignore
 									.setTitle('✅ Cancelled!')
 									.setDescription('The prompt has been cancelled successfully.')
-									.setThumbnail('https://i.ibb.co/kxJqM6F/mascot-Success.png')
+									.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-success.png')
 									.setColor(EMBED_COLOURS.green),
 							],
 							components: [],
@@ -241,7 +241,7 @@ const command: Command = {
 										new EmbedBuilder() // prettier-ignore
 											.setTitle('✅ Cancelled!')
 											.setDescription('The prompt has been cancelled successfully.')
-											.setThumbnail('https://i.ibb.co/kxJqM6F/mascot-Success.png')
+											.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-success.png')
 											.setColor(EMBED_COLOURS.green),
 									],
 								});
@@ -259,7 +259,7 @@ const command: Command = {
 											.setTitle('📎 Provide Attachment!')
 											.setDescription('You must provide at least **one** attachment or link before submitting this report.')
 											.setColor(EMBED_COLOURS.red)
-											.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png'),
+											.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png'),
 									],
 								});
 							}
@@ -271,7 +271,7 @@ const command: Command = {
 											.setTitle('🗃️ Maximum Uploads!')
 											.setDescription("You have reached the maximum upload limit for this report (5 attachments).\n\n**🔎 Looking where to go next?**\nYou'll need to either `cancel` this report to upload different attachments, or say `done` to submit.")
 											.setColor(EMBED_COLOURS.red)
-											.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png'),
+											.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png'),
 									],
 								});
 							}
@@ -280,7 +280,19 @@ const command: Command = {
 
 							if (collectedMsg.attachments.size > 0) {
 								collectedMsg.attachments.forEach((attachment) => {
-									fetchedAttachments.push({ content: collectedMsg.content ? collectedMsg.content : '', url: attachment.url });
+									if (attachment.size >= 100000000) {
+										interaction.user.send({
+											embeds: [
+												new EmbedBuilder() // prettier-ignore
+													.setTitle('🗃️ Maximum File Size!')
+													.setDescription("You are posting files that are too large for SaikouBot to re-upload.\n\n**🔎 Looking where to go next?**\nYou'll need to submit files that are below 100MB in order for them to be posted.")
+													.setColor(EMBED_COLOURS.red)
+													.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png'),
+											],
+										});
+									} else {
+										fetchedAttachments.push({ content: collectedMsg.content ? collectedMsg.content : '', url: attachment.url });
+									}
 								});
 							}
 
@@ -375,7 +387,7 @@ const command: Command = {
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('❌ Cancelled!')
 						.setDescription("You didn't input in time, please try again.")
-						.setThumbnail('https://i.ibb.co/FD4CfKn/NoBolts.png')
+						.setThumbnail('https://saikou.dev/assets/images/discord-bot/mascot-error.png')
 						.setColor(EMBED_COLOURS.red),
 				],
 				components: [],

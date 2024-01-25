@@ -22,8 +22,8 @@ const menu: ContextMenu = {
 				new EmbedBuilder() // prettier-ignore
 					.addFields([
 						// prettier-ignore
-						{ name: 'Original Content', value: messageContent },
-						{ name: 'Translated Content', value: result.text },
+						{ name: 'Original Content', value: messageContent.length > 1020 ? `${messageContent.substring(0, 1019)}...` : messageContent },
+						{ name: 'Translated Content', value: result.text.length > 1020 ? `${result.text.substring(0, 1019)}...` : result.text },
 					])
 					.setColor(EMBED_COLOURS.blurple)
 					.setFooter({ text: `Auto corrected: ${result.from.text.autoCorrected ? 'Yes' : 'No'}` }),

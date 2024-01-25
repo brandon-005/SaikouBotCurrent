@@ -11,24 +11,13 @@ const command: Command = {
 			{
 				name: 'role',
 				description: 'The name of the role.',
-				type: ApplicationCommandOptionType.String,
+				type: ApplicationCommandOptionType.Role,
 				required: true,
 			},
 		],
 	},
 	run: async ({ interaction, args }) => {
-		const role = interaction.guild?.roles.cache.find((serverRoles: Role) => serverRoles.name.toLowerCase() === args[0]?.toLowerCase());
-
-		if (!role) {
-			return interaction.editReply({
-				embeds: [
-					new EmbedBuilder() // prettier-ignore
-						.setTitle('🗄️ Invalid Role!')
-						.setDescription('Unable to find the specified role.')
-						.setColor(EMBED_COLOURS.red),
-				],
-			});
-		}
+		const role = interaction.guild?.roles.cache.find((serverRoles: Role) => serverRoles.id === args[0]);
 
 		return interaction.editReply({
 			embeds: [

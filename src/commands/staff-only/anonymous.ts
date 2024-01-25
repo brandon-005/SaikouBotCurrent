@@ -22,10 +22,18 @@ const command: Command = {
 	},
 	run: async ({ bot, args, interaction }) => {
 		const inputtedID = args[0];
-		const data = await suggestData.findOne({ messageID: inputtedID });
+		const data = (await suggestData.findOne({ messageID: inputtedID })) ? await suggestData.findOne({ messageID: inputtedID }) : await suggestData.findOne({ featuredMessageID: inputtedID });
 
 		if (!data) {
-			return interaction.editReply({ content: 'Inputted ID does not exist! ' });
+			return interaction.editReply({
+				embeds: [
+					new EmbedBuilder() // prettier-ignore
+						.setTitle('❌ Incorrect Message ID!')
+						.setDescription("Uh oh! Looks like that ID doesn't exist or an unknown error occurred. To copy the Message ID, follow below...")
+						.setImage('https://saikou.dev/assets/images/discord-bot/suggest-help.png')
+						.setColor(EMBED_COLOURS.red),
+				],
+			});
 		}
 
 		const fetchedUser = await bot.users.fetch(`${BigInt(data!.userID)}`);

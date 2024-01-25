@@ -14,7 +14,7 @@ const command: Command = {
 	run: async ({ interaction }) => {
 		const gamefactEmbed = new EmbedBuilder() // prettier-ignore
 			.setTitle('ℹ Game fact')
-			.setThumbnail('https://i.ibb.co/FqgT3fp/Group-1.png')
+			.setThumbnail('https://saikou.dev/assets/images/discord-bot/saikou-games.png')
 			.setColor(EMBED_COLOURS.blurple)
 			.setFooter({ text: `Requested by: ${interaction.user.username}`, iconURL: interaction.user.displayAvatarURL() });
 

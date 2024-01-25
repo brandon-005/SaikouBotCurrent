@@ -13,6 +13,7 @@ const command: Command = {
 		commandAliases: ['rbxsearch', 'rbx', 'roblox', 'accscan', 'accountscan'],
 		commandDescription: 'Gain information about a Roblox player.',
 		commandUsage: '<roblox_username>',
+		COOLDOWN_TIME: 30,
 		slashOptions: [
 			{
 				name: 'roblox-user',
@@ -93,7 +94,7 @@ const command: Command = {
 				// prettier-ignore
 				{ name: 'About Me', value: response.data.description ? response.data.description : 'None' },
 				{ name: 'Display Name', value: response.data.displayName, inline: true },
-				{ name: 'Banned', value: response.data.isBanned ? 'Yes' : 'No', inline: true },
+				{ name: 'Terminated', value: response.data.isBanned ? 'Yes' : 'No', inline: true },
 				{ name: 'Last Online', value: moment(lastOnline).fromNow(), inline: true },
 			]);
 
@@ -157,7 +158,12 @@ const command: Command = {
 							},
 						})
 							.then((response: any) => {
-								if (response.data.banned === true) return `:warning: Permanently banned from Saikou's games (Banned by ${response.data.player.Moderator})\n`;
+								if (response.data.banned === true) {
+									if (response.data.type === 'timeban') {
+										return `:warning: Temporarily banned from Saikou's games for ${moment.duration(response.data.player.Duration).asDays()} days (Banned by ${response.data.player.Moderator})\n`;
+									}
+									return `:warning: Permanently banned from Saikou's games (Banned by ${response.data.player.Moderator})\n`;
+								}
 								return false;
 							})
 							.catch((err) => {
