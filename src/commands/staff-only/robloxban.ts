@@ -15,7 +15,7 @@ const command: Command = {
 		commandUsage: '<game> <player> <reason> [duration]',
 		userPermissions: 'ManageMessages',
 		limitedChannel: '🤖staff-cmds',
-		COOLDOWN_TIME: 60,
+		COOLDOWN_TIME: 15,
 		slashOptions: [
 			{
 				name: 'game',

@@ -27,7 +27,8 @@ const command: Command = {
 			for (const userID of Object.entries(category)) {
 				// eslint-disable-next-line no-await-in-loop
 				const fetchedUser = await bot.users.fetch(`${BigInt(userID[0])}`);
-				returnedUsers += `**${fetchedUser.username}#${fetchedUser.discriminator}** \`[${userID[1]}]\`\n`;
+				returnedUsers += `**${fetchedUser.username} (${fetchedUser.globalName ? fetchedUser.globalName : 'N/A'})** \`[${userID[1]}]\`\n`;
+				console.log(fetchedUser)
 			}
 			return returnedUsers;
 		}

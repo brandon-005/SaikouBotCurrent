@@ -66,18 +66,6 @@ const command: Command = {
 			return noUser(interaction, false);
 		}
 
-		/* Fetching online status */
-		let lastOnline: Date;
-		await axios({
-			method: 'post',
-			url: 'https://presence.roblox.com/v1/presence/last-online',
-			data: {
-				userIds: robloxID,
-			},
-		}).then((res: any) => {
-			lastOnline = res.data.lastOnlineTimestamps[0].lastOnline;
-		});
-
 		const infoEmbed = new EmbedBuilder() // prettier-ignore
 			.setColor(EMBED_COLOURS.blurple);
 
@@ -95,7 +83,6 @@ const command: Command = {
 				{ name: 'About Me', value: response.data.description ? response.data.description : 'None' },
 				{ name: 'Display Name', value: response.data.displayName, inline: true },
 				{ name: 'Terminated', value: response.data.isBanned ? 'Yes' : 'No', inline: true },
-				{ name: 'Last Online', value: moment(lastOnline).fromNow(), inline: true },
 			]);
 
 			infoEmbed.setFooter({ text: `User ID: ${robloxID} • Join Date: ${moment(response.data.created).format('ll')}` });
@@ -225,7 +212,7 @@ const command: Command = {
 										.setDescription(`We did multiple checks on **${args[0]}** and found nothing of concern.`)
 										.addFields([{ name: 'Passed Checks', value: "✅ Not friends with a banned player\n✅ Account age older than 6 months\n✅ Not currently serving a Saikou perm-ban\n✅ No records of being a registered exploit owner\n✅ No records of exploiting in other checkable games\n✅ In multiple groups or only joined group isn't Saikou" }])
 										.setColor(EMBED_COLOURS.green)
-										.setFooter({ text: `Roblox ID: ${robloxID} • Last Online: ${moment(lastOnline).fromNow()}` }),
+										.setFooter({ text: `Roblox ID: ${robloxID}` }),
 								],
 							});
 							collector.stop();
@@ -236,7 +223,7 @@ const command: Command = {
 							.setTitle('Data Fetched!')
 							.setDescription(`We did multiple checks on **${args[0]}** and found some flags of concern.`)
 							.setColor(EMBED_COLOURS.blurple)
-							.setFooter({ text: `Roblox ID: ${robloxID} • Last Online: ${moment(lastOnline).fromNow()}` });
+							.setFooter({ text: `Roblox ID: ${robloxID}` });
 
 						/* AGE CHECK */
 						if (oofdData.AccountAge <= 182) {

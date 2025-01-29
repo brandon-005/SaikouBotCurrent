@@ -1,6 +1,6 @@
-import { Client, CommandInteraction, Interaction, EmbedBuilder, ChannelType, WebhookClient, PermissionFlagsBits, Role, GuildMember } from 'discord.js';
+import { MessageFlags, Client, CommandInteraction, Interaction, EmbedBuilder, ChannelType, WebhookClient, PermissionFlagsBits, Role, GuildMember } from 'discord.js';
 import { readdirSync } from 'fs';
-import { redBright, bold } from 'chalk';
+import chalk from 'chalk';
 import ms from 'ms';
 import blacklisted from '../../models/blacklistedUsers';
 
@@ -93,7 +93,7 @@ export = async (bot: Client, interaction: Interaction) => {
 
 		/* --- DEVELOPER ONLY CONFIGURATION --- */
 		if (!developerOnly && readdirSync('dist/commands/dev-only').indexOf(`${commandName}.js`) > -1) {
-			return console.error(`${redBright('ERROR!')} DevOnly config option not found in command "${commandName}".\n${redBright('ERROR!')} Add the following to your config options... ${bold('developerOnly: true/false')}`);
+			return console.error(`${chalk.redBright('ERROR!')} DevOnly config option not found in command "${commandName}".\n${chalk.redBright('ERROR!')} Add the following to your config options... ${chalk.bold('developerOnly: true/false')}`);
 		}
 
 		if (developerOnly === true && interaction.user.id !== '229142187382669312') {
@@ -188,7 +188,7 @@ export = async (bot: Client, interaction: Interaction) => {
 
 	/* HANDLING CONTEXT MENUS */
 	if (interaction.isContextMenuCommand()) {
-		await interaction.deferReply({ ephemeral: true }).catch(() => {});
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => {});
 
 		if (!interaction.inGuild()) return (interaction as CommandInteraction).followUp({ content: 'Slash commands can only be ran in the server.' });
 

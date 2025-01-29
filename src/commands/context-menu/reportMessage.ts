@@ -1,4 +1,4 @@
-import { ApplicationCommandType, ContextMenu, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ComponentType, StringSelectMenuInteraction, Message, TextChannel } from 'discord.js';
+import { MessageFlags, ApplicationCommandType, ContextMenu, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ComponentType, StringSelectMenuInteraction, Message, TextChannel } from 'discord.js';
 import { generateFromMessages } from 'discord-html-transcripts';
 
 import reportData from '../../models/reports';
@@ -65,7 +65,7 @@ const menu: ContextMenu = {
 							]),
 					]),
 			],
-			ephemeral: true,
+			flags: MessageFlags.Ephemeral,
 		});
 
 		const collector = interaction.channel.createMessageComponentCollector({ filter: (menuInteraction: any) => menuInteraction.user.id === interaction.user.id, componentType: ComponentType.StringSelect, time: PROMPT_TIMEOUT });

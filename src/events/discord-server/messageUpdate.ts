@@ -6,25 +6,16 @@ import { insultCheck, inviteLinkCheck, everyoneMention, devMention, personalInfo
 export = async (bot: any, oldMessage: Message, newMessage: Message) => {
 	if (oldMessage.channel.type !== ChannelType.DM && !newMessage.partial && !oldMessage.partial && !newMessage.author.bot && newMessage.channel.type !== ChannelType.DM) {
 		switch (oldMessage.channel.parent!.name) {
-			case '👑 | Staff channels':
+			case '👑 Staff channels':
 				return;
-			case '🧰 | Development channels':
+			case '🧰 Development channels':
 				return;
-			case '📁 | STAFF LOGS':
+			case '📁 STAFF LOGS':
 				return;
-			case '📒 | Staff Archive':
+			case '📒 Staff Archive':
 				return;
 			default:
 				break;
-		}
-
-		if (oldMessage.channel.name.match('memes') || oldMessage.channel.name.match('art')) {
-			if (newMessage.attachments.size === 0) {
-				if (newMessage.deletable) {
-					return newMessage.delete();
-				}
-				return;
-			}
 		}
 
 		if (oldMessage.content === newMessage.content) return;

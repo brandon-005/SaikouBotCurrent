@@ -1,4 +1,4 @@
-import { ButtonInteraction, Command, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle, ComponentType } from 'discord.js';
+import { User, ButtonInteraction, Command, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle, ComponentType, GuildMember, PermissionFlagsBits } from 'discord.js';
 import { connection } from 'mongoose';
 import { EMBED_COLOURS, PROMPT_TIMEOUT } from '../../utils/constants';
 
@@ -134,7 +134,7 @@ const command: Command = {
 			.setColor(EMBED_COLOURS.blurple);
 
 		/* Restart Button */
-		if (interaction.user.id === '229142187382669312') {
+		if ((interaction.member as GuildMember)?.permissions.has(PermissionFlagsBits.Administrator)) {
 			/* IF USER HAS PROMPT OPEN */
 			if (activeInteraction.has(interaction.user.id)) {
 				statusEmbed.setFooter({ text: 'Exit previous uptime prompt to receive the option to restart.' });

@@ -1,5 +1,5 @@
 import { readdirSync } from 'fs';
-import { redBright } from 'chalk';
+import chalk from 'chalk';
 import { Client } from 'discord.js';
 
 const arrayOfSlashCommands: any = [];
@@ -11,13 +11,13 @@ export = (bot: Client) => {
 		try {
 			commands = readdirSync(`${__dirname}/../commands/${directories}/`).filter((directoryFile: string) => directoryFile.endsWith('.js'));
 		} catch {
-			return console.error(`${redBright('ERROR!')} The command folder "${directories}" couldn't be loaded.\n${redBright('ERROR!')} Please ensure a file is added in it to be loaded.`);
+			return console.error(`${chalk.redBright('ERROR!')} The command folder "${directories}" couldn't be loaded.\n${chalk.redBright('ERROR!')} Please ensure a file is added in it to be loaded.`);
 		}
 
 		for (const commandFile of commands) {
 			const command = require(`${__dirname}/../commands/${directories}/${commandFile}`);
 
-			if (!command.config) return console.error(`${redBright('ERROR!')} The command file "${commandFile}" couldn't be loaded.\n${redBright('ERROR!')} Please ensure the config options are added for it to be loaded.`);
+			if (!command.config) return console.error(`${chalk.redBright('ERROR!')} The command file "${commandFile}" couldn't be loaded.\n${chalk.redBright('ERROR!')} Please ensure the config options are added for it to be loaded.`);
 
 			/* CONTEXT MENU HANDLER */
 			if (command.config.type) {
@@ -42,7 +42,7 @@ export = (bot: Client) => {
 			}
 		}
 	};
-	['fun', 'dev-only', 'staff-only', 'information', 'context-menu', 'verification'].forEach((folder) => load(folder));
+	['fun', 'dev-only', 'staff-only', 'information', 'context-menu'].forEach((folder) => load(folder));
 
 	bot.on('ready', async () => {
 		if (process.env.TEST === 'true') {

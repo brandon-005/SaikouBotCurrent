@@ -2,50 +2,25 @@ import { Command, ApplicationCommandOptionType, EmbedBuilder, TextChannel, Messa
 
 import { EMBED_COLOURS } from '../../utils/constants';
 import reportData from '../../models/reports';
-import suggestData from '../../models/suggestions';
 
 const command: Command = {
 	config: {
 		commandName: 'update',
-		commandAliases: ['ui', 'upidea', 'updatesuggestion', 'updatereport'],
+		commandAliases: ['updatereport'],
 		commandDescription: 'Approve/deny reports & suggestions.',
 		commandUsage: '<channel> <message-id> <status> [note]',
 		userPermissions: 'ManageMessages',
 		limitedChannel: '🤖staff-cmds',
 		slashOptions: [
 			{
-				name: 'channel',
-				description: 'The channel of the suggestion/report to update.',
-				type: ApplicationCommandOptionType.String,
-				required: true,
-				choices: [
-					{
-						name: '#📝report-abuse',
-						value: '📝report-abuse',
-					},
-					{
-						name: '#📬featured-suggestions',
-						value: '📬featured-suggestions',
-					},
-					{
-						name: '#🔥suggestions-nitro',
-						value: '🔥suggestions-nitro',
-					},
-					{
-						name: '#💡suggestions',
-						value: '💡suggestions',
-					},
-				],
-			},
-			{
 				name: 'message-id',
-				description: 'The message ID of the report/suggestion.',
+				description: 'The message ID of the report.',
 				type: ApplicationCommandOptionType.String,
 				required: true,
 			},
 			{
 				name: 'status',
-				description: 'Approve or deny the report/suggestion.',
+				description: 'Approve or deny the report.',
 				type: ApplicationCommandOptionType.String,
 				required: true,
 				choices: [
@@ -68,12 +43,12 @@ const command: Command = {
 		],
 	},
 	run: async ({ bot, args, interaction }) => {
-		let targetChannel: TextChannel;
+		let targetChannel;
 		let targetMsg: Message;
 
 		try {
-			targetChannel = interaction.guild.channels.cache.find((channel: any) => channel.name.match(args[0])) as TextChannel;
-			targetMsg = await targetChannel.messages.fetch(args[1]);
+			targetChannel = interaction.guild.channels.cache.find((channel: any) => channel.name.match('📝report-abuse')) as TextChannel;
+			targetMsg = await targetChannel.messages.fetch(args[0]);
 		} catch (err) {
 			return interaction.editReply({
 				embeds: [
@@ -86,16 +61,15 @@ const command: Command = {
 			});
 		}
 
-		const reporter = await reportData.findOne({ messageID: args[1] });
-		const suggester = (await suggestData.findOne({ messageID: args[1] })) ? await suggestData.findOne({ messageID: args[1] }) : await suggestData.findOne({ featuredMessageID: args[1] });
+		const reporter = await reportData.findOne({ messageID: args[0] });
 		const oldEmbed = targetMsg.embeds[0];
 
-		if (!suggester && !reporter)
+		if (!reporter)
 			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('❌ Unable to update!')
-						.setDescription('There is no data found for this suggestion/report.')
+						.setDescription('There is no data found for this report.')
 						.setColor(EMBED_COLOURS.red),
 				],
 			});
@@ -110,7 +84,6 @@ const command: Command = {
 		});
 
 		/* ACCEPTING AND DENYING REPORTS */
-		if (targetChannel.name === '📝report-abuse') {
 			const newReportEmbed = new EmbedBuilder() // prettier-ignore
 				.setDescription(oldEmbed.description)
 				.setThumbnail(oldEmbed.thumbnail.url);
@@ -137,49 +110,6 @@ const command: Command = {
 
 			bot.users.send(reporter.userID, { embeds: [dmEmbed] }).catch(() => {});
 			return targetMsg.edit({ embeds: [newReportEmbed] });
-		}
-
-		/* ACCEPTING AND DENYING SUGGESTIONS */
-		const newEmbed = new EmbedBuilder() // prettier-ignore
-			.setTitle(oldEmbed.title)
-			.setAuthor({ name: `${oldEmbed.author.name}`, iconURL: oldEmbed.author.iconURL })
-			.setDescription(oldEmbed.description)
-			.setTimestamp();
-
-		const dmEmbed = new EmbedBuilder() // prettier-ignore
-			.setDescription(`Hey, **${interaction.guild?.members.cache.get(suggester.userID)?.displayName}**!\n\nThank you for submitting a suggestion for Saikou Development. We appreciate you offering your feedback, comments and ideas in order for our team to create the best version of Saikou.\n\nAttached to this automated message will include the staff note, including the reasoning behind the status of your suggestion. Please note that if one wasn't included, we may not be able to provide information regarding our decisions due to confidentiality.`)
-			.addFields(
-				{ name: 'Staff Note', value: args[3] || 'None Provided.' }, // prettier-ignore
-				{ name: 'Your Suggestion', value: suggester.suggestionMessage },
-			)
-			.setFooter({ text: 'THIS IS AN AUTOMATED MESSAGE' })
-			.setTimestamp();
-
-		if (args[3]) {
-			newEmbed.addFields([{ name: 'Staff Note', value: args[3] }]);
-		}
-
-		if (args[2] === 'false') {
-			newEmbed.addFields([{ name: 'Status', value: "❌ We're not interested in this suggestion at the moment." }]);
-			newEmbed.setColor(EMBED_COLOURS.red);
-			newEmbed.setFooter({ text: 'Suggestion Denied' });
-
-			dmEmbed.setTitle('❌ Suggestion Denied!');
-			dmEmbed.setColor(EMBED_COLOURS.red);
-
-			bot.users.send(suggester.userID, { embeds: [dmEmbed] }).catch(() => {});
-			return targetMsg.edit({ embeds: [newEmbed] });
-		}
-
-		newEmbed.addFields([{ name: 'Status', value: '✅ Expect to see this suggestion as a reality soon!' }]);
-		newEmbed.setColor(EMBED_COLOURS.green);
-		newEmbed.setFooter({ text: 'Suggestion Accepted' });
-
-		dmEmbed.setTitle('✅ Suggestion Accepted!');
-		dmEmbed.setColor(EMBED_COLOURS.green);
-
-		bot.users.send(suggester.userID, { embeds: [dmEmbed] }).catch(() => {});
-		return targetMsg.edit({ embeds: [newEmbed] });
 	},
 };
 

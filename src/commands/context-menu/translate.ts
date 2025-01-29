@@ -1,4 +1,4 @@
-import { ApplicationCommandType, ContextMenu, EmbedBuilder, GuildMember, PermissionFlagsBits } from 'discord.js';
+import { MessageFlags, ApplicationCommandType, ContextMenu, EmbedBuilder, GuildMember, PermissionFlagsBits } from 'discord.js';
 import translate from '@iamtraction/google-translate';
 
 import { EMBED_COLOURS } from '../../utils/constants';
@@ -10,7 +10,7 @@ const menu: ContextMenu = {
 	},
 	run: async ({ interaction }) => {
 		if (!(interaction.member as GuildMember)?.permissions.has(PermissionFlagsBits.ManageMessages)) {
-			return interaction.editReply({ content: 'Staff only feature.', ephemeral: true });
+			return interaction.editReply({ content: 'Staff only feature.', flags: MessageFlags.Ephemeral });
 		}
 
 		// @ts-ignore
@@ -28,7 +28,7 @@ const menu: ContextMenu = {
 					.setColor(EMBED_COLOURS.blurple)
 					.setFooter({ text: `Auto corrected: ${result.from.text.autoCorrected ? 'Yes' : 'No'}` }),
 			],
-			ephemeral: true,
+			flags: MessageFlags.Ephemeral,
 		});
 	},
 };

@@ -6,20 +6,20 @@ import { EMBED_COLOURS } from '../../utils/constants';
 export = async (bot: any, message: Message) => {
 	if (message.channel.type !== ChannelType.DM && !message.partial && !message.author.bot) {
 		switch (message.channel.parent.name) {
-			case '👑 | Staff channels':
+			case '👑 Staff channels':
 				return;
-			case '🧰 | Development channels':
+			case '🧰 Development channels':
 				return;
-			case '📁 | STAFF LOGS':
+			case '📁 STAFF LOGS':
 				return;
-			case '📒 | Staff Archive':
+			case '📒 Staff Archive':
 				return;
 			default:
 				break;
 		}
 
 		/* GHOST PING AUTO MOD */
-		if (message.member && !message.member.permissions.has(PermissionFlagsBits.ManageMessages) && message.channel.name !== '🎨art' && message.channel.name !== '📝report-abuse' && message.channel.name !== '🐞bug-reports' && message.channel.name !== '💡suggestions' && message.channel.name !== '🐸memes') {
+		if (message.member && !message.member.permissions.has(PermissionFlagsBits.ManageMessages) && message.channel.name !== '📝report-abuse') {
 			await autoPunish(message.content.match(MessageMentions.UsersPattern), message, 'GHOST_PING', `\`1.13\` - Do not ping the staff team for baseless reasons, as well as members. Ghost pings are also forbidden. `, bot, true);
 		}
 

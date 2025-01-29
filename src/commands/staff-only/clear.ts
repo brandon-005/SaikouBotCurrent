@@ -32,7 +32,7 @@ const command: Command = {
 
 		const deleteAmount = args[0];
 		const member = interaction.options.getMember('user');
-		if (!member) return noUser(interaction, false);
+		//if (!member) return noUser(interaction, false);
 
 		if (isNaN(Number(deleteAmount)) || parseInt(String(deleteAmount), 10) <= 0) {
 			return interaction.editReply({

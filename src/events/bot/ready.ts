@@ -1,12 +1,12 @@
 import { connect, set } from 'mongoose';
 import { Client, ActivityType } from 'discord.js';
-import { green } from 'chalk';
+import chalk from 'chalk';
 
 export = async (bot: Client) => {
-	console.log(green(`\n[discord] ${bot.user!.username} is online!`));
+	console.log(chalk.green(`\n[discord] ${bot.user!.username} is online!`));
 
 	set('strictQuery', false);
-	await connect(`${process.env.MONGO_PASSWORD}`).then((): void => console.log(green(`[mongo_database]: Connected to MongoDB successfully.`)));
+	await connect(`${process.env.MONGO_PASSWORD}`).then((): void => console.log(chalk.green(`[mongo_database]: Connected to MongoDB successfully.`)));
 
 	// -- Setting status
 	const statuses: string[] = [`🎮 SaikouBot | /help`, `🥪 Kaiou's picnic`, `✨ @SaikouDev`];
