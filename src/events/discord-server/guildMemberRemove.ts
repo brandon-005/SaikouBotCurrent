@@ -21,7 +21,7 @@ export = async (bot: any, member: GuildMember) => {
 			});
 		})
 		.catch(async () => {
-			return bot.channels.cache.get(process.env.ADMIN_LOG).send({
+			bot.channels.cache.get(process.env.ADMIN_LOG).send({
 				embeds: [
 					new EmbedBuilder() // prettier-ignore
 						.setTitle('ℹ Member left!')
@@ -36,5 +36,17 @@ export = async (bot: any, member: GuildMember) => {
 						.setTimestamp(),
 				],
 			});
+
+			return bot.channels.cache.get(process.env.JOIN_LEAVES_CHANNEL).send({
+							embeds: [
+								new EmbedBuilder() // prettier-ignore
+									.setTitle('👋 Member left **Saikou Discord**!')
+									.setDescription(`**${member.nickname ? member.user.username : member.nickname}** you will be missed!`)
+									.setColor(EMBED_COLOURS.red)
+									.setThumbnail(member.displayAvatarURL({ extension: 'webp' }))
+									.setFooter({ text: 'User left' })
+									.setTimestamp()
+							],
+						});
 		});
 };

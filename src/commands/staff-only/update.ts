@@ -94,7 +94,7 @@ const command: Command = {
 				.setFooter({ text: 'THIS IS AN AUTOMATED MESSAGE' })
 				.setTimestamp();
 
-			if (args[2] === 'false') {
+			if (args[1] === 'false') {
 				newReportEmbed.setTitle('❌ Report Denied!');
 				dmEmbed.setTitle('❌ Report Denied!');
 				newReportEmbed.setColor(EMBED_COLOURS.red);

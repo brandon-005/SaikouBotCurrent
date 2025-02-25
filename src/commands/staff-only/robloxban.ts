@@ -31,6 +31,10 @@ const command: Command = {
 						name: 'Killstreak',
 						value: 'Killstreak',
 					},
+					{
+						name: 'White Rabbit',
+						value: 'White Rabbit',
+					},
 				],
 			},
 			{

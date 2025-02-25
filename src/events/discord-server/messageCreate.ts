@@ -1,6 +1,6 @@
 import { Message, EmbedBuilder, ChannelType, PermissionFlagsBits } from 'discord.js';
-import urlRegex from 'url-regex-safe';
 import stringSimilarity from 'string-similarity';
+import urlRegex from 'url-regex-safe';
 
 import { EMBED_COLOURS, MESSAGE_TIMEOUT, QUESTION_ANSWERS } from '../../utils/constants';
 import { inviteLinkCheck, statusCheck, everyoneMention, devMention, personalInfoCheck, insultCheck } from '../../utils/autoMod';
@@ -35,7 +35,7 @@ export = async (bot: any, message: Message) => {
 	}
 
 	/* Deleting messages in feedback and report channels */
-	if (((message.channel.type === ChannelType.GuildText && message.channel.name === '📝report-abuse')) || (message.channel.type === ChannelType.GuildText && message.channel.name === '👋introductions')) {
+	if (message.channel.type === ChannelType.GuildText && message.channel.name === '👋introductions') {
 		try {
 			setTimeout(() => {
 				if (message.deletable) message.delete().catch(() => {});
@@ -44,12 +44,21 @@ export = async (bot: any, message: Message) => {
 			return;
 		}
 	}
+	
+
+	/* Deleting content that isn't a discord attachment in memes and art */
+	if (message.channel.type === ChannelType.GuildText && message.channel.name.match('media-and-memes')) {
+		if (!(message.attachments.size > 0 || urlRegex({ exact: false }).test(message.content))) {
+			if (message.deletable) return message.delete().catch(() => {});
+			return;
+		}
 
 		/* Deleting attachments that are invisible with less than 5 pixel height and width */
 		if (message.attachments.size > 0 && message.attachments.first().height < 5 && message.attachments.first().width < 5) {
 			if (message.deletable) return message.delete();
 			return;
 		}
+	}
 
 	/* Story Corner Character limit */
 	if (message.channel.name === '📚story-corner' && message.content.length < 150) {

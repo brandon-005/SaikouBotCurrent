@@ -6,7 +6,7 @@ import { choose } from '../../utils/functions';
 export = async (bot: any, oldMember: GuildMember, newMember: GuildMember) => {
 	/* Booster Message + Posting Discord nickname in specified channel */
 	if (newMember.premiumSinceTimestamp !== oldMember.premiumSinceTimestamp && newMember.roles.cache.find((role) => role.name === 'Server Booster')) {
-		(bot.channels.cache.find((channel: any) => channel.name === '💬roblox-topic') as TextChannel).send({
+		(bot.channels.cache.find((channel: any) => channel.name === '💬general') as TextChannel).send({
 			content: `<@${newMember.id}>`,
 			embeds: [
 				new EmbedBuilder() // prettier-ignore
@@ -29,19 +29,5 @@ export = async (bot: any, oldMember: GuildMember, newMember: GuildMember) => {
 
 		tokensUser.tokens += 1;
 		return tokensUser.save();
-	}
-
-	if (newMember.roles.cache.find((role) => role.name === 'Follower')) {
-			bot.channels.cache.get(process.env.JOIN_LEAVES_CHANNEL).send({
-				embeds: [
-					new EmbedBuilder() // prettier-ignore
-						.setTitle('👋 Welcome to the **Saikou Discord**!')
-						.setDescription(`**${newMember.nickname ? newMember.user.username : newMember.nickname}** ${choose(WELCOME_MESSAGES)}`)
-						.setColor(EMBED_COLOURS.green)
-						.setThumbnail(oldMember.displayAvatarURL({ extension: 'webp' }))
-						.setFooter({ text: 'User joined' })
-						.setTimestamp()
-				],
-			});
 	}
 };
